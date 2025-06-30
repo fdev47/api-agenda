@@ -3,7 +3,11 @@ firebase-admin>=6.2.0
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 pydantic[email]>=2.4.0
+pydantic-settings>=2.0.0
 python-multipart>=0.0.6
+SQLAlchemy>=2.0.0
+asyncpg>=0.28.0
+dependency-injector>=4.41.0
 
 # Security  
 python-jose[cryptography]>=3.3.0

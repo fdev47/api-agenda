@@ -1,6 +1,6 @@
 ## ESTRUCTURA
 auth-service/
-├── auth_service/                    # Paquete principal
+├── auth/                    # Paquete principal
 │   ├── __init__.py
 │   ├── domain/                      # Capa de dominio
 │   │   ├── __init__.py
@@ -40,12 +40,12 @@ auth-service/
    # Editar .env con tus valores
 
 4. Ejecutar el servicio:
-   uvicorn auth_service.api.main:create_app --factory --reload --host 0.0.0.0 --port 8000
+   uvicorn auth.api.main:create_app --factory --reload --host 0.0.0.0 --port 8000
 
 ## EJEMPLO DE USO
 
 ```python
-from auth_service import AuthServiceContainer, UserRegistration
+from auth import AuthServiceContainer, UserRegistration
 
 # Inicializar container
 container = AuthServiceContainer("path/to/firebase-credentials.json")
