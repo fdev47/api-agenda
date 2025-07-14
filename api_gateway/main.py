@@ -15,52 +15,37 @@ from dotenv import load_dotenv
 load_dotenv()  # Busca .env en el directorio actual y directorios padre
 
 from commons.config import config
-from .domain.exceptions import GatewayError
-from .domain.dto.responses import ErrorResponse
-from .infrastructure.container import container
-from .api.routes import auth_router, user_router, admin_router
-
-
-def get_settings():
-    """Función simple para obtener configuración"""
-    return {
-        "cors_origins": config.USER_CORS_ORIGINS,
-        "log_level": config.LOG_LEVEL,
-        "environment": config.ENVIRONMENT,
-        "service_port": config.GATEWAY_SERVICE_PORT,
-        "service_name": os.getenv("GATEWAY_SERVICE_NAME", "api-gateway"),
-        "service_version": os.getenv("GATEWAY_SERVICE_VERSION", "1.0.0"),
-        "api_version": config.API_VERSION,
-        "api_prefix": config.API_PREFIX,
-        "auth_service_url": config.AUTH_SERVICE_URL,
-        "user_service_url": config.USER_SERVICE_URL
-    }
+from api_gateway.domain.exceptions import GatewayError
+from api_gateway.domain.dto.responses import ErrorResponse
+from api_gateway.infrastructure.container import container
+from api_gateway.api.routes import auth_router, user_router, admin_router
+from api_gateway.config import GatewayConfig
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = get_settings()
+    """Gestión del ciclo de vida de la aplicación"""
+    config_info = GatewayConfig.get_service_info()
+    service_urls = GatewayConfig.get_service_urls()
+    
     logging.info("🚀 Iniciando API Gateway...")
     logging.info(f"📄 .env encontrado: {os.path.exists('.env')}")
     logging.info(f"📂 Directorio actual: {os.getcwd()}")
-    logging.info(f"🌐 API Version: {settings['api_version']}")
-    logging.info(f"🔗 Auth Service URL: {settings['auth_service_url']}")
-    logging.info(f"👥 User Service URL: {settings['user_service_url']}")
+    logging.info(f"🌐 API Version: {config_info['api_version']}")
+    logging.info(f"🔗 Auth Service URL: {service_urls['auth']}")
+    logging.info(f"👥 User Service URL: {service_urls['user']}")
+    logging.info(f"📍 Location Service URL: {service_urls['location']}")
+    
     yield
+    
     logging.info("🛑 Cerrando API Gateway...")
 
 
 def create_app() -> FastAPI:
     """Factory para crear la aplicación FastAPI"""
     
-    # Obtener configuración
-    settings = get_settings()
-    
-    # Configurar logging
-    logging.basicConfig(level=getattr(logging, settings["log_level"]))
-    
     # Validar configuración mínima
-    if not settings["auth_service_url"] or not settings["user_service_url"]:
+    if not GatewayConfig.validate_configuration():
         raise ValueError(
             "🚨 Servicios no configurados!\n\n"
             "Soluciones:\n"
@@ -69,20 +54,26 @@ def create_app() -> FastAPI:
             f"3. Archivo .env existe: {os.path.exists('.env')}"
         )
     
+    # Configurar logging
+    logging.basicConfig(level=getattr(logging, GatewayConfig.LOG_LEVEL))
+    
+    # Obtener información del servicio
+    service_info = GatewayConfig.get_service_info()
+    
     app = FastAPI(
-        title=f"{settings['service_name']} API",
-        version=settings["service_version"],
-        description=f"API Gateway - Orquestador de microservicios - API {settings['api_version']}",
+        title=f"{service_info['name']} API",
+        version=service_info['version'],
+        description=f"API Gateway - Orquestador de microservicios - API {service_info['api_version']}",
         lifespan=lifespan,
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json"
+        docs_url=GatewayConfig.DOCS_URL,
+        redoc_url=GatewayConfig.REDOC_URL,
+        openapi_url=GatewayConfig.OPENAPI_URL
     )
     
     # CORS
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings["cors_origins"],
+        allow_origins=GatewayConfig.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -100,9 +91,9 @@ def create_app() -> FastAPI:
         
         # Agregar headers estándar
         response.headers["X-Request-ID"] = request_id
-        response.headers["X-API-Version"] = settings["api_version"]
-        response.headers["X-Service-Name"] = settings["service_name"]
-        response.headers["X-Service-Version"] = settings["service_version"]
+        response.headers["X-API-Version"] = service_info['api_version']
+        response.headers["X-Service-Name"] = service_info['name']
+        response.headers["X-Service-Version"] = service_info['version']
         
         return response
     
@@ -167,39 +158,43 @@ def create_app() -> FastAPI:
         )
     
     # Health check
-    @app.get("/health")
+    @app.get(GatewayConfig.HEALTH_CHECK_PATH)
     async def health_check():
-        settings = get_settings()
+        service_info = GatewayConfig.get_service_info()
+        service_urls = GatewayConfig.get_service_urls()
+        
         return {
             "status": "healthy", 
-            "service": settings["service_name"],
-            "version": settings["service_version"],
-            "api_version": settings["api_version"],
-            "auth_service_url": settings["auth_service_url"],
-            "user_service_url": settings["user_service_url"],
+            "service": service_info['name'],
+            "version": service_info['version'],
+            "api_version": service_info['api_version'],
+            "auth_service_url": service_urls['auth'],
+            "user_service_url": service_urls['user'],
+            "location_service_url": service_urls['location'],
             "timestamp": datetime.now().isoformat(),
             "debug": {
                 "env_file_exists": os.path.exists(".env"),
                 "current_directory": os.getcwd(),
-                "has_auth_service": bool(settings["auth_service_url"]),
-                "has_user_service": bool(settings["user_service_url"])
+                "has_auth_service": bool(service_urls['auth']),
+                "has_user_service": bool(service_urls['user']),
+                "has_location_service": bool(service_urls['location'])
             }
         }
     
     # Incluir rutas con prefijo de versión centralizado
     app.include_router(
         auth_router, 
-        prefix=f"{settings['api_prefix']}/auth", 
+        prefix=f"{GatewayConfig.API_PREFIX}/auth", 
         tags=["Authentication"]
     )
     app.include_router(
         user_router, 
-        prefix=f"{settings['api_prefix']}/users", 
+        prefix=f"{GatewayConfig.API_PREFIX}/users", 
         tags=["Users"]
     )
     app.include_router(
         admin_router, 
-        prefix=f"{settings['api_prefix']}/admin", 
+        prefix=f"{GatewayConfig.API_PREFIX}/admin", 
         tags=["Administration"]
     )
     
@@ -238,26 +233,40 @@ def create_app() -> FastAPI:
     app.openapi = custom_openapi
     
     # Agregar rutas de documentación con prefijo /api/ para compatibilidad
-    @app.get("/api/docs", include_in_schema=False)
+    @app.get(GatewayConfig.API_DOCS_REDIRECT_PATH, include_in_schema=False)
     async def api_docs_redirect():
         """Redirigir a la documentación principal"""
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/docs")
+        return RedirectResponse(url=GatewayConfig.DOCS_URL)
     
-    @app.get("/api/redoc", include_in_schema=False)
+    @app.get(GatewayConfig.API_REDOC_REDIRECT_PATH, include_in_schema=False)
     async def api_redoc_redirect():
         """Redirigir a ReDoc"""
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/redoc")
+        return RedirectResponse(url=GatewayConfig.REDOC_URL)
     
-    @app.get("/api/openapi.json", include_in_schema=False)
+    @app.get(GatewayConfig.API_OPENAPI_REDIRECT_PATH, include_in_schema=False)
     async def api_openapi_redirect():
         """Redirigir a OpenAPI JSON"""
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/openapi.json")
+        return RedirectResponse(url=GatewayConfig.OPENAPI_URL)
     
     return app
 
 
-# Crear la aplicación
-app = create_app() 
+# Crear instancia de la aplicación
+app = create_app()
+
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    service_info = GatewayConfig.get_service_info()
+    
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=service_info['port'],
+        reload=True,
+        log_level=GatewayConfig.LOG_LEVEL.lower()
+    ) 
