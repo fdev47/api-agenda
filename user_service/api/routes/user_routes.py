@@ -3,6 +3,7 @@ Rutas de usuarios
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+from uuid import UUID
 from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
 from ...domain.dto.responses import UserResponse, UserListResponse, SuccessResponse
 from ...infrastructure.container import container
@@ -20,7 +21,8 @@ async def create_user(request: CreateUserRequest):
     - Si Firebase falla, no toca PostgreSQL
     """
     try:
-        user = await container.create_user_use_case.execute(request)
+        create_use_case = container.create_user_use_case()
+        user = await create_use_case.execute(request)
         return user
     except Exception as e:
         # Si falla, la excepción ya está manejada en el use case
@@ -31,14 +33,21 @@ async def create_user(request: CreateUserRequest):
 async def get_current_user(current_user=Depends(auth_middleware["require_auth"])):
     """Obtener información del usuario actual"""
     user_id = current_user["user_id"]
-    user = await container.get_user_by_id_use_case.execute(user_id)
+    get_use_case = container.get_user_by_id_use_case()
+    user = await get_use_case.execute(user_id)
     return user
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user_by_id(user_id: str, current_user=Depends(auth_middleware["require_auth"])):
+async def get_user_by_id(user_id: UUID, current_user=Depends(auth_middleware["require_auth"])):
     """Obtener usuario por ID (requiere autenticación)"""
-    user = await container.get_user_by_id_use_case.execute(user_id)
+    get_use_case = container.get_user_by_id_use_case()
+    user = await get_use_case.execute(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
     return user
 
 
@@ -49,28 +58,41 @@ async def list_users(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Listar usuarios (requiere autenticación)"""
-    users = await container.list_users_use_case.execute(skip=skip, limit=limit)
+    list_use_case = container.list_users_use_case()
+    users = await list_use_case.execute(skip=skip, limit=limit)
     return users
 
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(
-    user_id: str,
+    user_id: UUID,
     request: UpdateUserRequest,
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar usuario (requiere autenticación)"""
-    user = await container.update_user_use_case.execute(user_id, request)
+    update_use_case = container.update_user_use_case()
+    user = await update_use_case.execute(user_id, request)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
     return user
 
 
 @router.delete("/{user_id}", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def delete_user(
-    user_id: str,
+    user_id: UUID,
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar usuario (requiere autenticación)"""
-    await container.delete_user_use_case.execute(user_id)
+    delete_use_case = container.delete_user_use_case()
+    success = await delete_use_case.execute(user_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
     return SuccessResponse(
         success=True,
         message=f"Usuario {user_id} eliminado exitosamente"

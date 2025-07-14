@@ -4,6 +4,7 @@ Contenedor de dependencias para el user_service
 from dependency_injector import containers, providers
 from sqlalchemy.ext.asyncio import AsyncSession
 import os
+from commons.database import db_manager
 
 from ..domain.interfaces.user_repository import UserRepository
 from ..domain.interfaces.profile_repository import IProfileRepository
@@ -33,7 +34,9 @@ class UserServiceContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
     
     # Base de datos
-    db_session = providers.Singleton(AsyncSession)
+    db_session = providers.Factory(
+        lambda: db_manager.AsyncSessionLocal()
+    )
     
     # Cliente de Auth Service
     auth_service_client = providers.Singleton(
@@ -42,17 +45,17 @@ class UserServiceContainer(containers.DeclarativeContainer):
     )
     
     # Repositorios
-    user_repository = providers.Singleton(
+    user_repository = providers.Factory(
         UserRepositoryImpl,
         session=db_session
     )
     
-    profile_repository = providers.Singleton(
+    profile_repository = providers.Factory(
         ProfileRepositoryImpl,
         session=db_session
     )
     
-    role_repository = providers.Singleton(
+    role_repository = providers.Factory(
         RoleRepositoryImpl,
         session=db_session
     )
