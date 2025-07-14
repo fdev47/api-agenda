@@ -217,6 +217,31 @@ class ReservationRepositoryImpl(ReservationRepository):
         
         return query.first() is not None
     
+    async def check_conflicts(self, branch_id: int, sector_id: int, start_time: datetime, end_time: datetime, exclude_reservation_id: Optional[int] = None) -> List[Reservation]:
+        """Verificar conflictos de horario y retornar las reservas que causan conflicto"""
+        query = self.session.query(ReservationModel).filter(
+            and_(
+                ReservationModel.branch_id == branch_id,
+                ReservationModel.sector_id == sector_id,
+                ReservationModel.status.in_([ReservationStatus.PENDING, ReservationStatus.CONFIRMED]),
+                or_(
+                    # Caso 1: La nueva reserva empieza durante una reserva existente
+                    and_(start_time >= ReservationModel.start_time, start_time < ReservationModel.end_time),
+                    # Caso 2: La nueva reserva termina durante una reserva existente
+                    and_(end_time > ReservationModel.start_time, end_time <= ReservationModel.end_time),
+                    # Caso 3: La nueva reserva contiene completamente una reserva existente
+                    and_(start_time <= ReservationModel.start_time, end_time >= ReservationModel.end_time)
+                )
+            )
+        )
+        
+        if exclude_reservation_id:
+            query = query.filter(ReservationModel.id != exclude_reservation_id)
+        
+        reservation_models = query.all()
+        
+        return [model.to_domain() for model in reservation_models]
+    
     async def get_conflicting_reservation(self, branch_id: int, sector_id: int, start_time: datetime, end_time: datetime, exclude_id: Optional[int] = None) -> Optional[Reservation]:
         """Obtener la reserva que causa conflicto de horario"""
         query = self.session.query(ReservationModel).filter(

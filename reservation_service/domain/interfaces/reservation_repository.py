@@ -42,6 +42,11 @@ class ReservationRepository(ABC):
         pass
     
     @abstractmethod
+    async def check_conflicts(self, branch_id: int, sector_id: int, start_time: datetime, end_time: datetime, exclude_reservation_id: Optional[int] = None) -> List[Reservation]:
+        """Verificar conflictos de horario y retornar las reservas que causan conflicto"""
+        pass
+    
+    @abstractmethod
     async def get_conflicting_reservation(self, branch_id: int, sector_id: int, start_time: datetime, end_time: datetime, exclude_id: Optional[int] = None) -> Optional[Reservation]:
         """Obtener la reserva que causa conflicto de horario"""
         pass

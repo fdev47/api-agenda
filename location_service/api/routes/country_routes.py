@@ -12,7 +12,7 @@ from ...application.use_cases import (
     UpdateCountryUseCase, DeleteCountryUseCase
 )
 
-router = APIRouter(prefix="/v1/countries", tags=["Countries"])
+router = APIRouter(prefix="/countries", tags=["Countries"])
 
 
 def get_create_country_use_case() -> CreateCountryUseCase:

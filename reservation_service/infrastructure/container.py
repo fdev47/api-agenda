@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from commons.database import get_db_session
 from .repositories import ReservationRepositoryImpl, ScheduleRepositoryImpl
 from ..application.use_cases import (
+    # Casos de uso de horarios
     CreateBranchScheduleUseCase,
     GetBranchScheduleUseCase,
     ListBranchSchedulesUseCase,
@@ -12,7 +13,15 @@ from ..application.use_cases import (
     GetAvailableSlotsUseCase,
     ValidateScheduleChangesUseCase,
     UpdateBranchScheduleUseCase,
-    DeleteBranchScheduleWithValidationUseCase
+    DeleteBranchScheduleWithValidationUseCase,
+    # Casos de uso de reservas
+    CreateReservationUseCase,
+    GetReservationUseCase,
+    ListReservationsUseCase,
+    UpdateReservationUseCase,
+    DeleteReservationUseCase,
+    ConfirmReservationUseCase,
+    CancelReservationUseCase
 )
 
 
@@ -36,7 +45,7 @@ class Container(containers.DeclarativeContainer):
         session=db_session
     )
     
-    # Casos de uso de horarios básicos
+    # Casos de uso de horarios
     create_branch_schedule_use_case = providers.Factory(
         CreateBranchScheduleUseCase,
         schedule_repository=schedule_repository
@@ -79,6 +88,42 @@ class Container(containers.DeclarativeContainer):
         DeleteBranchScheduleWithValidationUseCase,
         schedule_repository=schedule_repository,
         validate_changes_use_case=validate_schedule_changes_use_case
+    )
+    
+    # Casos de uso de reservas
+    create_reservation_use_case = providers.Factory(
+        CreateReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    get_reservation_use_case = providers.Factory(
+        GetReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    list_reservations_use_case = providers.Factory(
+        ListReservationsUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    update_reservation_use_case = providers.Factory(
+        UpdateReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    delete_reservation_use_case = providers.Factory(
+        DeleteReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    confirm_reservation_use_case = providers.Factory(
+        ConfirmReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    cancel_reservation_use_case = providers.Factory(
+        CancelReservationUseCase,
+        reservation_repository=reservation_repository
     )
 
 __all__ = ["get_db_session"] 

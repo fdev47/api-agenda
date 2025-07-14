@@ -12,7 +12,7 @@ from ...application.use_cases import (
     UpdateCityUseCase, DeleteCityUseCase
 )
 
-router = APIRouter(prefix="/v1/cities", tags=["Cities"])
+router = APIRouter(prefix="/cities", tags=["Cities"])
 
 
 def get_create_city_use_case() -> CreateCityUseCase:

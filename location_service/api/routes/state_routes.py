@@ -12,7 +12,7 @@ from ...application.use_cases import (
     UpdateStateUseCase, DeleteStateUseCase
 )
 
-router = APIRouter(prefix="/v1/states", tags=["States"])
+router = APIRouter(prefix="/states", tags=["States"])
 
 
 def get_create_state_use_case() -> CreateStateUseCase:

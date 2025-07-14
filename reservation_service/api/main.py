@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 
-from .routes import schedule_routes, schedule_validation_routes
+from .routes import schedule_routes, schedule_validation_routes, reservation_routes
 from ..infrastructure.config import settings
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.add_middleware(
 # Incluir rutas
 app.include_router(schedule_routes.router, prefix="/api/v1")
 app.include_router(schedule_validation_routes.router, prefix="/api/v1")
+app.include_router(reservation_routes.router, prefix="/api/v1")
 
 # Configurar Swagger UI con autenticación
 @app.get("/docs", include_in_schema=False)
