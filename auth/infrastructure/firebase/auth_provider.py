@@ -6,6 +6,8 @@ from firebase_admin import credentials, auth as firebase_auth
 from firebase_admin.exceptions import FirebaseError
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from auth.domain.interfaces import IAuthProvider
 from auth.domain.models import (
@@ -25,6 +27,10 @@ class FirebaseAuthProvider(IAuthProvider):
             credentials_path: Ruta al archivo de credenciales JSON
             project_id: ID del proyecto de Firebase (opcional si está en credenciales)
         """
+        # Asegurar que se cargan las variables de entorno
+        credentials_path = credentials_path or os.getenv("FIREBASE_CREDENTIALS_PATH")
+        project_id = project_id or os.getenv("FIREBASE_PROJECT_ID")
+
         if not firebase_admin._apps:
             try:
                 if credentials_path and os.path.exists(credentials_path):

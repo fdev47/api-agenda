@@ -23,13 +23,11 @@ class AuthServiceContainer(containers.DeclarativeContainer):
     
     # Implementaciones de Firebase
     firebase_auth_provider = providers.Singleton(
-        FirebaseAuthProvider,
-        config=config
+        FirebaseAuthProvider
     )
     
     firebase_token_validator = providers.Singleton(
-        FirebaseTokenValidator,
-        config=config
+        FirebaseTokenValidator
     )
     
     firebase_claims_manager = providers.Singleton(
@@ -39,17 +37,14 @@ class AuthServiceContainer(containers.DeclarativeContainer):
     
     # Interfaces (inyectadas con implementaciones concretas)
     auth_provider = providers.Singleton(
-        IAuthProvider,
         firebase_auth_provider
     )
     
     token_validator = providers.Singleton(
-        ITokenValidator,
         firebase_token_validator
     )
     
     user_claims_manager = providers.Singleton(
-        IUserClaimsManager,
         firebase_claims_manager
     )
     

@@ -26,7 +26,8 @@ async def validate_token_header(authorization: Optional[str] = Header(None)):
     token = authorization.replace("Bearer ", "")
     
     try:
-        user = container.validate_token_use_case.execute(token)
+        validate_use_case = container.validate_token_use_case()
+        user = validate_use_case.execute(token)
         return {
             "valid": True,
             "message": "Token válido",
@@ -63,7 +64,8 @@ async def get_user_info(authorization: Optional[str] = Header(None)):
     token = authorization.replace("Bearer ", "")
     
     try:
-        user = container.validate_token_use_case.execute(token)
+        validate_use_case = container.validate_token_use_case()
+        user = validate_use_case.execute(token)
         return UserInfoResponse.model_validate(user)
     except Exception as e:
         return {
