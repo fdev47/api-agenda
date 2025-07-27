@@ -5,6 +5,19 @@ from enum import Enum
 from typing import Optional
 
 
+class AuthException(Exception):
+    """Excepción base para errores de autenticación"""
+    def __init__(self, message: str, error_code: Optional[str] = None):
+        super().__init__(message)
+        self.error_code = error_code
+
+
+class UserNotFoundException(AuthException):
+    """Excepción cuando no se encuentra el usuario"""
+    def __init__(self, user_id: str):
+        super().__init__(f"Usuario con ID '{user_id}' no encontrado", "USER_NOT_FOUND")
+
+
 class AuthError(Exception):
     """Excepción personalizada para errores de autenticación"""
     def __init__(self, message: str, error_code: Optional[str] = None):

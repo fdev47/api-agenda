@@ -173,10 +173,10 @@ def create_service_factory(
         # Manejar caso donde exc.detail es un diccionario con error_code
         if isinstance(exc.detail, dict):
             message = exc.detail.get('message', str(exc.detail))
-            error_code = exc.detail.get('error_code', ErrorCode.UNEXPECTED_ERROR.value)
+            error_code = exc.detail.get('error_code', ErrorCode.INTERNAL_SERVER_ERROR.value)
         else:
             message = str(exc.detail)
-            error_code = ErrorCode.UNEXPECTED_ERROR.value
+            error_code = ErrorCode.INTERNAL_SERVER_ERROR.value
             
         error_response = ErrorResponse(
             message=message,

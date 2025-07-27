@@ -145,10 +145,10 @@ async def main():
     try:
         # address_results = await start_populate_address_data(dry_run)
         # results["addresses"] = address_results
-        # role_results = await start_populate_role_data(dry_run)
-        # results["roles"] = role_results
-        # profile_results = await start_populate_profile_data(dry_run)
-        # results["profiles"] = profile_results
+        role_results = await start_populate_role_data(dry_run)
+        results["roles"] = role_results
+        profile_results = await start_populate_profile_data(dry_run)
+        results["profiles"] = profile_results
         user_results = await start_populate_user_data(dry_run)
         results["users"] = user_results
         # customer_results = await start_populate_customer_data(dry_run)

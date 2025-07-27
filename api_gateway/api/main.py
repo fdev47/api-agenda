@@ -9,7 +9,7 @@ load_dotenv()
 
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
-from .routes import user_router
+from .routes import user_router, profile_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -17,7 +17,7 @@ def create_api_gateway_service() -> ServiceConfig:
     return ServiceConfig(
         service_name="API Gateway",
         service_version="1.0.0",
-        service_port=config.GATEWAY_SERVICE_PORT,
+        service_port=config.API_GATEWAY_PORT,
         cors_origins=["*"],
         database_url=None,  # API Gateway no tiene BD
         api_version=config.API_VERSION,
@@ -36,7 +36,8 @@ def create_api_gateway_app():
     
     # Configurar routers
     routers = [
-        RouterConfig(user_router, prefix="/users", tags=["Users"])
+        RouterConfig(user_router, prefix="/users", tags=["Users"]),
+        RouterConfig(profile_router, prefix="/profiles", tags=["Profiles"])
     ]
     
     # Crear aplicación usando factory común

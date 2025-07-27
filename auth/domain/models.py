@@ -29,6 +29,8 @@ class UserRegistration:
     password: str
     display_name: Optional[str] = None
     phone_number: Optional[str] = None
+    two_factor_enabled: bool = False
+    send_email_verification: bool = True
 
 
 @dataclass

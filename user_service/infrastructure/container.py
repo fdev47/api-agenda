@@ -73,8 +73,7 @@ class UserServiceContainer(containers.DeclarativeContainer):
     # Casos de uso
     create_user_use_case = providers.Factory(
         CreateUserUseCase,
-        user_repository=user_repository,
-        auth_service_client=auth_service_client
+        user_repository=user_repository
     )
     
     # Casos de uso de obtención separados

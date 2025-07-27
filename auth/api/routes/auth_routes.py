@@ -3,11 +3,115 @@ Rutas de autenticación para Firebase Auth
 """
 from fastapi import APIRouter, Depends, Header
 from typing import Optional
-from ...domain.dto.requests import CreateUserRequest
+from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
 from ...domain.dto.responses import UserInfoResponse
+from ...domain.models import UserRegistration, AuthError, AuthErrorCode
+from ...domain.exceptions.auth_exceptions import UserNotFoundException
 from ...infrastructure.container import container
+from commons.error_utils import raise_conflict_error, raise_validation_error, raise_internal_error, raise_not_found_error
+from commons.error_codes import ErrorCode
 
 router = APIRouter()
+
+
+@router.post("/register", response_model=UserInfoResponse)
+async def register_user(request: CreateUserRequest):
+    """
+    Registrar usuario en Firebase
+    Endpoint para uso del API Gateway y user_service
+    """
+    try:
+        # Crear usuario en Firebase
+        auth_provider = container.auth_provider()
+        registration = UserRegistration(
+            email=request.email,
+            password=request.password,
+            display_name=request.display_name,
+            phone_number=request.phone_number,
+            two_factor_enabled=request.two_factor_enabled,
+            send_email_verification=request.send_email_verification
+        )
+        user = auth_provider.create_user(registration)
+        
+        # Convertir AuthenticatedUser a UserInfoResponse
+        return UserInfoResponse(
+            user_id=user.user_id,
+            email=user.email,
+            display_name=user.display_name,
+            phone_number=user.phone_number,
+            email_verified=user.email_verified,
+            custom_claims=user.custom_claims,
+            created_at=user.created_at,
+            last_sign_in=user.last_sign_in
+        )
+    except AuthError as e:
+        # Manejar errores específicos de autenticación
+        if e.error_code == AuthErrorCode.EMAIL_ALREADY_EXISTS.value:
+            raise_conflict_error(
+                message="El usuario ya existe en Firebase",
+                error_code=ErrorCode.USER_ALREADY_EXISTS.value
+            )
+        elif e.error_code == AuthErrorCode.WEAK_PASSWORD.value:
+            raise_validation_error(
+                message="La contraseña es demasiado débil",
+                error_code=ErrorCode.VALIDATION_ERROR.value
+            )
+        else:
+            raise_validation_error(
+                message=str(e),
+                error_code=ErrorCode.VALIDATION_ERROR.value
+            )
+    except Exception as e:
+        # Re-lanzar errores inesperados
+        raise_internal_error(
+            message=f"Error interno del servidor: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
+
+
+@router.put("/users/{user_id}", response_model=UserInfoResponse)
+async def update_user(user_id: str, request: UpdateUserRequest):
+    """
+    Actualizar usuario en Firebase
+    """
+    try:
+        update_use_case = container.update_user_use_case()
+        user = update_use_case.execute(user_id, request)
+        return user
+    except UserNotFoundException:
+        raise_not_found_error(
+            message=f"Usuario con ID '{user_id}' no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    except Exception as e:
+        raise_internal_error(
+            message=f"Error actualizando usuario: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
+
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: str):
+    """
+    Eliminar usuario de Firebase
+    """
+    try:
+        delete_use_case = container.delete_user_use_case()
+        success = delete_use_case.execute(user_id)
+        return {
+            "success": success,
+            "message": f"Usuario '{user_id}' eliminado correctamente"
+        }
+    except UserNotFoundException:
+        raise_not_found_error(
+            message=f"Usuario con ID '{user_id}' no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    except Exception as e:
+        raise_internal_error(
+            message=f"Error eliminando usuario: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
 
 
 @router.get("/validate-token")
@@ -66,30 +170,19 @@ async def get_user_info(authorization: Optional[str] = Header(None)):
     try:
         validate_use_case = container.validate_token_use_case()
         user = validate_use_case.execute(token)
-        return UserInfoResponse.model_validate(user)
+        return UserInfoResponse(
+            user_id=user.user_id,
+            email=user.email,
+            display_name=user.display_name,
+            phone_number=user.phone_number,
+            email_verified=user.email_verified,
+            custom_claims=user.custom_claims,
+            created_at=user.created_at,
+            last_sign_in=user.last_sign_in
+        )
     except Exception as e:
         return {
             "valid": False,
             "message": str(e),
             "user": None
-        }
-
-
-@router.post("/create-user", response_model=UserInfoResponse)
-async def create_user_in_firebase(request: CreateUserRequest):
-    """
-    Crear usuario en Firebase
-    Endpoint para uso interno de user_service
-    """
-    try:
-        # Crear usuario en Firebase
-        user = container.auth_provider.create_user(
-            email=request.email,
-            password=request.password,
-            display_name=request.display_name
-        )
-        
-        return UserInfoResponse.model_validate(user)
-    except Exception as e:
-        # Re-lanzar la excepción para que user_service la maneje
-        raise e 
+        } 

@@ -11,7 +11,8 @@ from ..infrastructure.firebase.claims_manager import FirebaseUserClaimsManager
 from ..application.use_cases import (
     CreateUserUseCase, ValidateTokenUseCase, LoginUserUseCase, RefreshTokenUseCase,
     # Nuevos casos de uso separados
-    AssignRoleUseCase, AssignPermissionUseCase, GetUserRolesUseCase
+    AssignRoleUseCase, AssignPermissionUseCase, GetUserRolesUseCase,
+    UpdateUserUseCase, DeleteUserUseCase
 )
 
 
@@ -37,15 +38,16 @@ class AuthServiceContainer(containers.DeclarativeContainer):
     
     # Interfaces (inyectadas con implementaciones concretas)
     auth_provider = providers.Singleton(
-        firebase_auth_provider
+        FirebaseAuthProvider
     )
     
     token_validator = providers.Singleton(
-        firebase_token_validator
+        FirebaseTokenValidator
     )
     
     user_claims_manager = providers.Singleton(
-        firebase_claims_manager
+        FirebaseUserClaimsManager,
+        auth_provider=auth_provider
     )
     
     # Casos de uso
@@ -88,6 +90,17 @@ class AuthServiceContainer(containers.DeclarativeContainer):
         GetUserRolesUseCase,
         auth_provider=auth_provider,
         claims_manager=user_claims_manager
+    )
+    
+    # Casos de uso para actualizar y eliminar usuarios
+    update_user_use_case = providers.Factory(
+        UpdateUserUseCase,
+        auth_provider=auth_provider
+    )
+    
+    delete_user_use_case = providers.Factory(
+        DeleteUserUseCase,
+        auth_provider=auth_provider
     )
 
 

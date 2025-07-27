@@ -12,16 +12,18 @@ class UserType(str, Enum):
     USER = "user"
 
 class CreateUserRequest(BaseModel):
-    """DTO para crear un usuario interno"""
+    """DTO para crear usuario"""
     auth_uid: str = Field(..., description="UID del proveedor de autenticación")
     email: EmailStr = Field(..., description="Email del usuario")
+    username: Optional[str] = Field(None, description="Nombre de usuario")  # Nuevo campo
     first_name: Optional[str] = Field(None, description="Nombre del usuario")
     last_name: Optional[str] = Field(None, description="Apellido del usuario")
     phone: Optional[str] = Field(None, description="Número de teléfono fijo")
     cellphone_number: Optional[str] = Field(None, description="Número de celular")
-    cellphone_country_code: Optional[str] = Field(None, description="Código de país del celular (+52, +1, etc.)")
-    user_type: UserType = Field(..., description="Tipo de usuario interno")
+    cellphone_country_code: Optional[str] = Field(None, description="Código de país del celular")
     is_active: bool = Field(True, description="Estado activo del usuario")
+    user_type: UserType = Field(..., description="Tipo de usuario")
+    profile_ids: List[UUID] = Field(default=[], description="IDs de perfiles a asignar")
 
 class UpdateUserRequest(BaseModel):
     """DTO para actualizar un usuario interno"""

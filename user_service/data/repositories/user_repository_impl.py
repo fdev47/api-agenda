@@ -6,12 +6,15 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 
 from ...domain.interfaces.user_repository import UserRepository
 from ...domain.entities.user import User
 from ...domain.dto.requests.user_requests import CreateUserRequest, UpdateUserRequest
+from ...domain.exceptions.user_exceptions import UserAlreadyExistsException
 from ...infrastructure.models.user import UserDB
+from ...infrastructure.models.profile import ProfileDB
 
 
 class UserRepositoryImpl(UserRepository):
@@ -55,6 +58,7 @@ class UserRepositoryImpl(UserRepository):
         user_db = UserDB(
             auth_uid=user_data.auth_uid,
             email=user_data.email,
+            username=user_data.username,  # Agregar username
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             phone=user_data.phone,
@@ -64,11 +68,32 @@ class UserRepositoryImpl(UserRepository):
             user_type=user_data.user_type.value
         )
         
-        self._session.add(user_db)
-        await self._session.commit()
-        await self._session.refresh(user_db)
+        # Asignar perfiles si se proporcionan
+        if user_data.profile_ids:
+            for profile_id in user_data.profile_ids:
+                profile_query = select(ProfileDB).where(ProfileDB.id == profile_id)
+                profile_result = await self._session.execute(profile_query)
+                profile_db = profile_result.scalar_one_or_none()
+                if profile_db:
+                    user_db.profiles.append(profile_db)
         
-        return User.model_validate(user_db)
+        self._session.add(user_db)
+        try:
+            await self._session.commit()
+            await self._session.refresh(user_db)
+            
+            # Recargar el usuario con las relaciones explícitamente
+            # Solo cargar perfiles, sin cargar roles
+            query = select(UserDB).options(
+                selectinload(UserDB.profiles)
+            ).where(UserDB.id == user_db.id)
+            result = await self._session.execute(query)
+            user_db_with_relations = result.scalar_one()
+            
+        except IntegrityError:
+            raise UserAlreadyExistsException(f"User with auth_uid '{user_data.auth_uid}' or email '{user_data.email}' already exists.")
+        
+        return User.model_validate(user_db_with_relations)
     
     async def list_users(self, skip: int = 0, limit: int = 100) -> List[User]:
         """Listar usuarios con paginación"""

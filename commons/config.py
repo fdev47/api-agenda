@@ -93,12 +93,13 @@ class APIConfig:
     API_PREFIX = f"/api/{API_VERSION}"
     
     # Configuración de servicios
+    API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
     AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
     USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8002")
     LOCATION_SERVICE_URL = os.getenv("LOCATION_SERVICE_URL", "http://localhost:8003")
     
     # Puertos de servicios
-    GATEWAY_SERVICE_PORT = int(os.getenv("GATEWAY_SERVICE_PORT", "8000"))
+    API_GATEWAY_PORT = int(os.getenv("API_GATEWAY_PORT", "8000"))
     AUTH_SERVICE_PORT = int(os.getenv("AUTH_SERVICE_PORT", "8001"))
     USER_SERVICE_PORT = int(os.getenv("USER_SERVICE_PORT", "8002"))
     LOCATION_SERVICE_PORT = int(os.getenv("LOCATION_SERVICE_PORT", "8003"))
@@ -135,6 +136,7 @@ class APIConfig:
     def get_service_urls(cls) -> dict:
         """Obtener URLs de servicios"""
         return {
+            "gateway": cls.API_GATEWAY_URL,
             "auth": cls.AUTH_SERVICE_URL,
             "user": cls.USER_SERVICE_URL,
             "location": cls.LOCATION_SERVICE_URL
@@ -144,7 +146,7 @@ class APIConfig:
     def get_service_ports(cls) -> dict:
         """Obtener puertos de servicios"""
         return {
-            "gateway": cls.GATEWAY_SERVICE_PORT,
+            "gateway": cls.API_GATEWAY_PORT,
             "auth": cls.AUTH_SERVICE_PORT,
             "user": cls.USER_SERVICE_PORT,
             "location": cls.LOCATION_SERVICE_PORT

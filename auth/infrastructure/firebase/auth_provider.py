@@ -14,6 +14,7 @@ from auth.domain.models import (
     UserRegistration, AuthenticatedUser, AuthToken, UserCredentials, 
     CustomClaims, AuthError, AuthErrorCode
 )
+from auth.domain.exceptions.auth_exceptions import UserNotFoundException
 
 
 class FirebaseAuthProvider(IAuthProvider):
@@ -76,13 +77,37 @@ class FirebaseAuthProvider(IAuthProvider):
     def create_user(self, registration: UserRegistration) -> AuthenticatedUser:
         """Crear usuario en Firebase Auth"""
         try:
-            user_record = firebase_auth.create_user(
-                email=registration.email,
-                password=registration.password,
-                display_name=registration.display_name,
-                phone_number=registration.phone_number,
-                email_verified=False
-            )
+            # Configurar parámetros básicos
+            user_params = {
+                'email': registration.email,
+                'password': registration.password,
+                'display_name': registration.display_name,
+                'phone_number': registration.phone_number,
+                'email_verified': False
+            }
+            
+            # Crear usuario en Firebase
+            user_record = firebase_auth.create_user(**user_params)
+            
+            # Si se requiere 2FA, configurarlo después de crear el usuario
+            if registration.two_factor_enabled:
+                # Firebase requiere configurar 2FA después de crear el usuario
+                # Por ahora solo marcamos que está habilitado en custom claims
+                firebase_auth.set_custom_user_claims(user_record.uid, {
+                    'two_factor_enabled': True
+                })
+            
+            # Enviar email de verificación si se solicita
+            if registration.send_email_verification:
+                try:
+                    # Firebase envía automáticamente el email de verificación
+                    # cuando se crea un usuario con email_verified=False
+                    # Pero podemos forzar el envío si es necesario
+                    firebase_auth.generate_email_verification_link(registration.email)
+                except Exception as e:
+                    # Si falla el envío, no bloqueamos la creación del usuario
+                    print(f"⚠️ No se pudo enviar email de verificación: {e}")
+            
             return self._map_firebase_user_to_domain(user_record)
         except FirebaseError as e:
             raise self._map_firebase_error(e)
@@ -137,16 +162,61 @@ class FirebaseAuthProvider(IAuthProvider):
         except FirebaseError as e:
             raise self._map_firebase_error(e)
     
+    def update_user(self, user_id: str, user_data) -> AuthenticatedUser:
+        """Actualizar usuario en Firebase Auth"""
+        try:
+            # Verificar que el usuario existe
+            user_record = firebase_auth.get_user(user_id)
+            
+            # Preparar parámetros de actualización
+            update_params = {}
+            
+            if user_data.email is not None:
+                update_params['email'] = user_data.email
+            if user_data.display_name is not None:
+                update_params['display_name'] = user_data.display_name
+            if user_data.phone_number is not None:
+                update_params['phone_number'] = user_data.phone_number
+            if user_data.password is not None:
+                update_params['password'] = user_data.password
+            if user_data.email_verified is not None:
+                update_params['email_verified'] = user_data.email_verified
+            if user_data.two_factor_enabled is not None:
+                # Actualizar custom claims para 2FA
+                current_claims = user_record.custom_claims or {}
+                current_claims['two_factor_enabled'] = user_data.two_factor_enabled
+                firebase_auth.set_custom_user_claims(user_id, current_claims)
+            
+            # Actualizar usuario en Firebase
+            if update_params:
+                updated_user = firebase_auth.update_user(user_id, **update_params)
+                return self._map_firebase_user_to_domain(updated_user)
+            else:
+                # Si no hay parámetros para actualizar, devolver usuario actual
+                return self._map_firebase_user_to_domain(user_record)
+                
+        except FirebaseError as e:
+            raise self._map_firebase_error(e)
+    
     def disable_user(self, user_id: str) -> None:
         try:
             firebase_auth.update_user(user_id, disabled=True)
         except FirebaseError as e:
             raise self._map_firebase_error(e)
     
-    def delete_user(self, user_id: str) -> None:
+    def delete_user(self, user_id: str) -> bool:
+        """Eliminar usuario de Firebase Auth"""
         try:
+            # Verificar que el usuario existe
+            firebase_auth.get_user(user_id)
+            
+            # Eliminar usuario
             firebase_auth.delete_user(user_id)
+            return True
+            
         except FirebaseError as e:
+            if e.code == 'user-not-found':
+                raise UserNotFoundException(user_id)
             raise self._map_firebase_error(e)
     
     def _map_firebase_user_to_domain(self, user_record) -> AuthenticatedUser:
@@ -168,6 +238,7 @@ class FirebaseAuthProvider(IAuthProvider):
     def _map_firebase_error(self, firebase_error: FirebaseError) -> AuthError:
         error_mapping = {
             'EMAIL_ALREADY_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,
+            'EMAIL_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,  # Agregado
             'WEAK_PASSWORD': AuthErrorCode.WEAK_PASSWORD,
             'USER_NOT_FOUND': AuthErrorCode.USER_NOT_FOUND,
             'INVALID_ID_TOKEN': AuthErrorCode.INVALID_TOKEN,

@@ -6,6 +6,7 @@ from typing import Optional
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
 from ...domain.dto.responses.user import UserResponse, UserListResponse
+from ...domain.dto.requests.user_requests import CreateUserRequest
 
 router = APIRouter()
 
@@ -13,6 +14,23 @@ router = APIRouter()
 def get_container() -> Container:
     """Obtener el container de dependencias"""
     return Container()
+
+
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    request: CreateUserRequest,
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Crear nuevo usuario (requiere autenticación)"""
+    access_token = authorization.replace("Bearer ", "") if authorization else ""
+    
+    # Crear usuario usando el use case
+    create_user_use_case = container.create_user_use_case()
+    user = await create_user_use_case.execute(request, access_token)
+    
+    return user
 
 
 @router.get("/me", response_model=UserResponse)

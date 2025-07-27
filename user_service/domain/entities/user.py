@@ -4,7 +4,7 @@ Entidad User del dominio - Usuarios internos del sistema
 from pydantic import BaseModel, Field, ConfigDict
 from uuid import UUID, uuid4
 from typing import List, Literal, Optional
-from .profile import Profile
+from .profile import ProfileSimple
 
 class User(BaseModel):
     """Entidad User del dominio - Usuarios internos del sistema"""
@@ -13,6 +13,7 @@ class User(BaseModel):
     id: UUID = Field(default_factory=uuid4, description="Identificador único del usuario")
     auth_uid: str = Field(..., description="UID del proveedor de autenticación")
     email: str = Field(..., description="Email del usuario")
+    username: Optional[str] = Field(None, description="Nombre de usuario")
     first_name: str | None = Field(None, description="Nombre del usuario")
     last_name: str | None = Field(None, description="Apellido del usuario")
     phone: str | None = Field(None, description="Número de teléfono fijo")
@@ -20,4 +21,4 @@ class User(BaseModel):
     cellphone_country_code: str | None = Field(None, description="Código de país del celular (+52, +1, etc.)")
     is_active: bool = Field(True, description="Estado activo del usuario")
     user_type: Literal['admin', 'user'] = Field(..., description="Tipo de usuario interno")
-    profiles: List[Profile] = Field(default=[], description="Perfiles del usuario") 
+    profiles: List[ProfileSimple] = Field(default=[], description="Perfiles del usuario") 

@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Boolean, Table, ForeignKey
+from sqlalchemy import Column, String, Boolean, Table, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 import uuid
 from .profile import ProfileDB
 from .base import Base
@@ -17,6 +18,7 @@ class UserDB(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     auth_uid = Column(String(128), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
+    username = Column(String(50), unique=True, nullable=True)  # Nuevo campo
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
     phone = Column(String(20), nullable=True)  # Teléfono fijo
@@ -24,4 +26,6 @@ class UserDB(Base):
     cellphone_country_code = Column(String(5), nullable=True)  # Código de país del celular
     is_active = Column(Boolean, default=True)
     user_type = Column(String(20), nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     profiles = relationship("ProfileDB", secondary=user_profiles, backref="users")
