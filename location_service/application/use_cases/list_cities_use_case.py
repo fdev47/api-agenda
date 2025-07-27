@@ -46,6 +46,7 @@ class ListCitiesUseCase:
             city_response = CityResponse(
                 id=city.id,
                 name=city.name,
+                code=city.code,
                 state_id=city.state_id,
                 state_name=state_name,
                 country_id=country_id,

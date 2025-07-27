@@ -9,7 +9,7 @@ class StateResponse(BaseModel):
     """Response para un estado"""
     id: int = Field(..., description="ID del estado")
     name: str = Field(..., description="Nombre del estado/provincia")
-    code: str = Field(..., description="Código del estado")
+    code: Optional[str] = Field(None, description="Código del estado")
     country_id: int = Field(..., description="ID del país al que pertenece")
     country_name: str = Field(..., description="Nombre del país")
     is_active: bool = Field(..., description="Estado activo del estado")

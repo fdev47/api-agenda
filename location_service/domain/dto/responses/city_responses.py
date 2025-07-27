@@ -9,6 +9,7 @@ class CityResponse(BaseModel):
     """Response para una ciudad"""
     id: int = Field(..., description="ID de la ciudad")
     name: str = Field(..., description="Nombre de la ciudad")
+    code: Optional[str] = Field(None, description="Código de la ciudad")
     state_id: int = Field(..., description="ID del estado al que pertenece")
     state_name: str = Field(..., description="Nombre del estado")
     country_id: int = Field(..., description="ID del país")
