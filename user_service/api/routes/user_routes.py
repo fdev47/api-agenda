@@ -8,6 +8,9 @@ from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
 from ...domain.dto.responses import UserResponse, UserListResponse, SuccessResponse
 from ...infrastructure.container import container
 from ..middleware import auth_middleware
+from ...domain.exceptions.user_exceptions import UserNotFoundException
+from commons.error_utils import raise_not_found_error, raise_internal_error
+from commons.error_codes import ErrorCode
 
 router = APIRouter()
 
@@ -32,10 +35,21 @@ async def create_user(request: CreateUserRequest):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(current_user=Depends(auth_middleware["require_auth"])):
     """Obtener información del usuario actual"""
-    auth_uid = current_user["user_id"]
-    get_use_case = container.get_user_by_auth_uid_use_case()
-    user = await get_use_case.execute(auth_uid)
-    return user
+    try:
+        auth_uid = current_user["user_id"]
+        get_use_case = container.get_user_by_auth_uid_use_case()
+        user = await get_use_case.execute(auth_uid)
+        return user
+    except UserNotFoundException as e:
+        raise_not_found_error(
+            message="Usuario no encontrado en el sistema",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    except Exception as e:
+        raise_internal_error(
+            message=f"Error obteniendo usuario: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -44,9 +58,9 @@ async def get_user_by_id(user_id: UUID, current_user=Depends(auth_middleware["re
     get_use_case = container.get_user_by_id_use_case()
     user = await get_use_case.execute(user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
+        raise_not_found_error(
+            message="Usuario no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
         )
     return user
 
@@ -73,9 +87,9 @@ async def update_user(
     update_use_case = container.update_user_use_case()
     user = await update_use_case.execute(user_id, request)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
+        raise_not_found_error(
+            message="Usuario no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
         )
     return user
 
@@ -89,9 +103,9 @@ async def delete_user(
     delete_use_case = container.delete_user_use_case()
     success = await delete_use_case.execute(user_id)
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
+        raise_not_found_error(
+            message="Usuario no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
         )
     return SuccessResponse(
         success=True,

@@ -168,13 +168,15 @@ def create_service_factory(
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
         """Manejador de excepciones HTTP estándar"""
-        # Manejar caso donde exc.detail es un diccionario
+        from .error_codes import ErrorCode
+        
+        # Manejar caso donde exc.detail es un diccionario con error_code
         if isinstance(exc.detail, dict):
             message = exc.detail.get('message', str(exc.detail))
-            error_code = exc.detail.get('error_code', 'HTTP_ERROR')
+            error_code = exc.detail.get('error_code', ErrorCode.UNEXPECTED_ERROR.value)
         else:
             message = str(exc.detail)
-            error_code = "HTTP_ERROR"
+            error_code = ErrorCode.UNEXPECTED_ERROR.value
             
         error_response = ErrorResponse(
             message=message,
@@ -191,9 +193,13 @@ def create_service_factory(
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
         """Manejador de excepciones generales estándar"""
+        from .error_codes import get_error_code_by_exception, ErrorCode
+        
+        error_code = get_error_code_by_exception(exc)
+        
         error_response = ErrorResponse(
             message="Error interno del servidor",
-            error_code="INTERNAL_ERROR",
+            error_code=error_code,
             timestamp=datetime.utcnow().isoformat(),
             path=request.url.path,
             request_id=getattr(request.state, 'request_id', None)
