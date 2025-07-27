@@ -1,0 +1,67 @@
+"""
+Rutas de location en el API Gateway
+"""
+from fastapi import APIRouter, Query
+from typing import List, Optional
+from ...domain.dto.responses.location_responses import CountryListResponse, StateListResponse, CityListResponse
+from ...application.use_cases.location.list_countries_use_case import ListCountriesUseCase
+from ...application.use_cases.location.list_states_use_case import ListStatesUseCase
+from ...application.use_cases.location.list_cities_use_case import ListCitiesUseCase
+
+router = APIRouter()
+
+@router.get("/countries", response_model=CountryListResponse)
+async def list_countries(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros")
+):
+    """
+    Listar países disponibles
+    """
+    use_case = ListCountriesUseCase()
+    countries = await use_case.execute(skip=skip, limit=limit)
+    
+    return CountryListResponse(
+        countries=countries,
+        total=len(countries),
+        skip=skip,
+        limit=limit
+    )
+
+@router.get("/states", response_model=StateListResponse)
+async def list_states(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    country_id: Optional[str] = Query(None, description="ID del país para filtrar estados")
+):
+    """
+    Listar estados/provincias disponibles
+    """
+    use_case = ListStatesUseCase()
+    states = await use_case.execute(skip=skip, limit=limit, country_id=country_id)
+    
+    return StateListResponse(
+        states=states,
+        total=len(states),
+        skip=skip,
+        limit=limit
+    )
+
+@router.get("/cities", response_model=CityListResponse)
+async def list_cities(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    state_id: Optional[str] = Query(None, description="ID del estado para filtrar ciudades")
+):
+    """
+    Listar ciudades disponibles
+    """
+    use_case = ListCitiesUseCase()
+    cities = await use_case.execute(skip=skip, limit=limit, state_id=state_id)
+    
+    return CityListResponse(
+        cities=cities,
+        total=len(cities),
+        skip=skip,
+        limit=limit
+    ) 

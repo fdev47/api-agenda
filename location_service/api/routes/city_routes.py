@@ -13,7 +13,7 @@ from ...application.use_cases import (
 )
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/cities", tags=["Cities"])
+router = APIRouter(tags=["Cities"])
 
 
 def get_create_city_use_case() -> CreateCityUseCase:
@@ -36,8 +36,7 @@ def get_delete_city_use_case() -> DeleteCityUseCase:
 async def get_cities(
     skip: int = 0,
     limit: int = 100,
-    use_case: ListCitiesUseCase = Depends(get_list_cities_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: ListCitiesUseCase = Depends(get_list_cities_use_case)
 ):
     filter_request = CityFilterRequest(skip=skip, limit=limit)
     return await use_case.execute(filter_request)
@@ -46,8 +45,7 @@ async def get_cities(
 @router.get("/{city_id}", response_model=CityResponse)
 async def get_city(
     city_id: int,
-    use_case: GetCityUseCase = Depends(get_get_city_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: GetCityUseCase = Depends(get_get_city_use_case)
 ):
     city = await use_case.execute(city_id)
     if not city:

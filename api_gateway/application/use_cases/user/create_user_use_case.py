@@ -30,11 +30,10 @@ class CreateUserUseCase:
         """
         try:
             # 1. Crear usuario en Firebase (auth_service)
-            #auth_user = await self._create_firebase_user(request, access_token)
+            auth_user = await self._create_firebase_user(request, access_token)
             
             # 2. Crear usuario en la base de datos (user_service)
-            #user_id = auth_user["user_id"]
-            user_id = "emQy1KAxP5XU0g3No6dKs3KB1tz2"
+            user_id = auth_user["user_id"]
             db_user = await self._create_db_user(request, user_id, access_token)
             
             return db_user

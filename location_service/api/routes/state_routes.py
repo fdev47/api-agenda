@@ -13,7 +13,7 @@ from ...application.use_cases import (
 )
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/states", tags=["States"])
+router = APIRouter(tags=["States"])
 
 
 def get_create_state_use_case() -> CreateStateUseCase:
@@ -36,8 +36,7 @@ def get_delete_state_use_case() -> DeleteStateUseCase:
 async def get_states(
     skip: int = 0,
     limit: int = 100,
-    use_case: ListStatesUseCase = Depends(get_list_states_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: ListStatesUseCase = Depends(get_list_states_use_case)
 ):
     filter_request = StateFilterRequest(skip=skip, limit=limit)
     return await use_case.execute(filter_request)
@@ -46,8 +45,7 @@ async def get_states(
 @router.get("/{state_id}", response_model=StateResponse)
 async def get_state(
     state_id: int,
-    use_case: GetStateUseCase = Depends(get_get_state_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: GetStateUseCase = Depends(get_get_state_use_case)
 ):
     state = await use_case.execute(state_id)
     if not state:

@@ -22,6 +22,7 @@ class CityRepositoryImpl(CityRepository):
         """Crear una ciudad"""
         city_model = CityModel(
             name=city.name,
+            code=city.code,
             state_id=city.state_id,
             is_active=city.is_active
         )
@@ -33,6 +34,7 @@ class CityRepositoryImpl(CityRepository):
         return City(
             id=city_model.id,
             name=city_model.name,
+            code=city_model.code,
             state_id=city_model.state_id,
             is_active=city_model.is_active,
             created_at=city_model.created_at,
@@ -52,6 +54,7 @@ class CityRepositoryImpl(CityRepository):
         return City(
             id=city_model.id,
             name=city_model.name,
+            code=city_model.code,
             state_id=city_model.state_id,
             is_active=city_model.is_active,
             created_at=city_model.created_at,
@@ -71,6 +74,7 @@ class CityRepositoryImpl(CityRepository):
         return City(
             id=city_model.id,
             name=city_model.name,
+            code=city_model.code,
             state_id=city_model.state_id,
             is_active=city_model.is_active,
             created_at=city_model.created_at,
@@ -90,6 +94,7 @@ class CityRepositoryImpl(CityRepository):
             City(
                 id=model.id,
                 name=model.name,
+                code=model.code,
                 state_id=model.state_id,
                 is_active=model.is_active,
                 created_at=model.created_at,
@@ -112,6 +117,7 @@ class CityRepositoryImpl(CityRepository):
             City(
                 id=model.id,
                 name=model.name,
+                code=model.code,
                 state_id=model.state_id,
                 is_active=model.is_active,
                 created_at=model.created_at,
@@ -159,6 +165,7 @@ class CityRepositoryImpl(CityRepository):
             City(
                 id=model.id,
                 name=model.name,
+                code=model.code,
                 state_id=model.state_id,
                 is_active=model.is_active,
                 created_at=model.created_at,
@@ -176,6 +183,7 @@ class CityRepositoryImpl(CityRepository):
             .where(CityModel.id == city_id)
             .values(
                 name=city.name,
+                code=city.code,
                 state_id=city.state_id,
                 is_active=city.is_active
             )

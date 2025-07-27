@@ -11,9 +11,10 @@ from ...application.use_cases import (
     CreateCountryUseCase, GetCountryByIdUseCase, ListCountriesUseCase,
     UpdateCountryUseCase, DeleteCountryUseCase
 )
+from ...domain.dto.requests import CountryFilterRequest
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/countries", tags=["Countries"])
+router = APIRouter(tags=["Countries"])
 
 
 def get_create_country_use_case() -> CreateCountryUseCase:
@@ -47,17 +48,16 @@ def get_delete_country_use_case() -> DeleteCountryUseCase:
 async def get_countries(
     skip: int = 0,
     limit: int = 100,
-    use_case: ListCountriesUseCase = Depends(get_list_countries_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: ListCountriesUseCase = Depends(get_list_countries_use_case)
 ):
-    return await use_case.execute(skip=skip, limit=limit)
+    filter_request = CountryFilterRequest(limit=limit, offset=skip)
+    return await use_case.execute(filter_request)
 
 
 @router.get("/{country_id}", response_model=CountryResponse)
 async def get_country(
     country_id: int,
-    use_case: GetCountryByIdUseCase = Depends(get_get_country_use_case),
-    current_user=Depends(auth_middleware["require_auth"])
+    use_case: GetCountryByIdUseCase = Depends(get_get_country_use_case)
 ):
     country = await use_case.execute(country_id)
     if not country:

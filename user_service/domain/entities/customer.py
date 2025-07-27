@@ -17,6 +17,7 @@ class Customer(BaseModel):
     ruc: str = Field(..., description="RUC del cliente")
     company_name: str = Field(..., description="Razón Social")
     email: str = Field(..., description="Email del cliente")
+    username: Optional[str] = Field(None, description="Nombre de usuario del cliente")
     phone: str | None = Field(None, description="Número de teléfono fijo")
     cellphone_number: str | None = Field(None, description="Número de celular")
     cellphone_country_code: str | None = Field(None, description="Código de país del celular (+52, +1, etc.)")
