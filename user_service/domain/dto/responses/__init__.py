@@ -5,7 +5,13 @@ from .user_responses import UserResponse, UserListResponse, UserType
 from .profile_responses import ProfileResponse, ProfileListResponse
 from .role_responses import RoleResponse, RoleListResponse
 from .customer_responses import CustomerResponse, CustomerListResponse
-from .address_responses import AddressResponse, AddressListResponse, AddressLocationDetails
+from .address_responses import (
+    AddressResponse, 
+    AddressListResponse, 
+    AddressCreatedResponse,
+    AddressUpdatedResponse,
+    AddressDeletedResponse
+)
 from .error_responses import ErrorResponse, ValidationErrorResponse
 from .success_responses import SuccessResponse, MessageResponse, RoleAssignmentResponse, PermissionAssignmentResponse, UserRolesResponse
 
@@ -21,7 +27,9 @@ __all__ = [
     'CustomerListResponse',
     'AddressResponse',
     'AddressListResponse',
-    'AddressLocationDetails',
+    'AddressCreatedResponse',
+    'AddressUpdatedResponse',
+    'AddressDeletedResponse',
     'ErrorResponse',
     'ValidationErrorResponse',
     'SuccessResponse',

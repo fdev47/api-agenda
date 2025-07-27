@@ -26,6 +26,11 @@ from .get_customer_by_auth_uid_use_case import GetCustomerByAuthUidUseCase
 from .assign_role_use_case import AssignRoleUseCase
 from .assign_permission_use_case import AssignPermissionUseCase
 from .get_user_roles_use_case import GetUserRolesUseCase
+from .create_address_use_case import CreateAddressUseCase
+from .get_address_use_case import GetAddressUseCase
+from .list_addresses_use_case import ListAddressesUseCase
+from .update_address_use_case import UpdateAddressUseCase
+from .delete_address_use_case import DeleteAddressUseCase
 
 __all__ = [
     "CreateUserUseCase",
@@ -52,5 +57,10 @@ __all__ = [
     "GetCustomerByAuthUidUseCase",
     "AssignRoleUseCase",
     "AssignPermissionUseCase",
-    "GetUserRolesUseCase"
+    "GetUserRolesUseCase",
+    "CreateAddressUseCase",
+    "GetAddressUseCase",
+    "ListAddressesUseCase",
+    "UpdateAddressUseCase",
+    "DeleteAddressUseCase"
 ] 

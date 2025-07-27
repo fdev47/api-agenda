@@ -8,6 +8,7 @@ from commons.auth_client import AuthClient
 from ..data.repositories.profile_repository_impl import ProfileRepositoryImpl
 from ..data.repositories.role_repository_impl import RoleRepositoryImpl
 from ..data.repositories.user_repository_impl import UserRepositoryImpl
+from ..data.repositories.address_repository_impl import AddressRepositoryImpl
 from ..application.use_cases import (
     CreateUserUseCase,
     GetUserByIdUseCase,
@@ -33,7 +34,12 @@ from ..application.use_cases import (
     GetCustomerByAuthUidUseCase,
     AssignRoleUseCase,
     AssignPermissionUseCase,
-    GetUserRolesUseCase
+    GetUserRolesUseCase,
+    CreateAddressUseCase,
+    GetAddressUseCase,
+    ListAddressesUseCase,
+    UpdateAddressUseCase,
+    DeleteAddressUseCase
 )
 
 
@@ -67,6 +73,11 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     role_repository = providers.Factory(
         RoleRepositoryImpl,
+        session=db_session
+    )
+    
+    address_repository = providers.Factory(
+        AddressRepositoryImpl,
         session=db_session
     )
     
@@ -187,6 +198,32 @@ class UserServiceContainer(containers.DeclarativeContainer):
         GetUserRolesUseCase,
         user_repository=user_repository,
         role_repository=role_repository
+    )
+    
+    # Casos de uso de Address
+    create_address_use_case = providers.Factory(
+        CreateAddressUseCase,
+        address_repository=address_repository
+    )
+    
+    get_address_use_case = providers.Factory(
+        GetAddressUseCase,
+        address_repository=address_repository
+    )
+    
+    list_addresses_use_case = providers.Factory(
+        ListAddressesUseCase,
+        address_repository=address_repository
+    )
+    
+    update_address_use_case = providers.Factory(
+        UpdateAddressUseCase,
+        address_repository=address_repository
+    )
+    
+    delete_address_use_case = providers.Factory(
+        DeleteAddressUseCase,
+        address_repository=address_repository
     )
 
 
