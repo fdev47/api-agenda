@@ -17,6 +17,10 @@ class IProfileRepository(ABC):
         ...
 
     @abstractmethod
+    async def assign_roles(self, profile_id: UUID, role_ids: List[UUID]) -> Profile:
+        ...
+
+    @abstractmethod
     async def update(self, profile: Profile) -> Profile:
         ...
 

@@ -13,4 +13,12 @@ class ProfileResponse(BaseModel):
     name: str
     description: Optional[str]
     # Removemos la referencia circular por ahora
-    # roles: List["RoleResponse"] = [] 
+    # roles: List["RoleResponse"] = []
+
+
+class ProfileListResponse(BaseModel):
+    """DTO para lista de perfiles"""
+    profiles: List[ProfileResponse]
+    total: int
+    skip: int
+    limit: int 

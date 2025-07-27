@@ -2,8 +2,8 @@
 DTOs de responses para el dominio de usuarios
 """
 from .user_responses import UserResponse, UserListResponse, UserType
-from .profile_responses import ProfileResponse
-from .role_responses import RoleResponse
+from .profile_responses import ProfileResponse, ProfileListResponse
+from .role_responses import RoleResponse, RoleListResponse
 from .customer_responses import CustomerResponse, CustomerListResponse
 from .address_responses import AddressResponse, AddressListResponse, AddressLocationDetails
 from .error_responses import ErrorResponse, ValidationErrorResponse
@@ -14,7 +14,9 @@ __all__ = [
     'UserListResponse',
     'UserType',
     'ProfileResponse',
+    'ProfileListResponse',
     'RoleResponse',
+    'RoleListResponse',
     'CustomerResponse',
     'CustomerListResponse',
     'AddressResponse',

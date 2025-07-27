@@ -31,40 +31,40 @@ async def populate_user_data(dry_run: bool = False):
             "cellphone_country_code": "+52",
             "user_type": "user",
             "is_active": True
-        },
-        {
-            "auth_uid": "user_recepcionista_frio_001", 
-            "email": "recepcionista.frio@fortis.com",
-            "first_name": "Carlos",
-            "last_name": "Rodríguez",
-            "phone": "555-5678",
-            "cellphone_number": "5587654321",
-            "cellphone_country_code": "+52",
-            "user_type": "user",
-            "is_active": True
-        },
-        {
-            "auth_uid": "user_agendamiento_001",
-            "email": "agendamiento@fortis.com", 
-            "first_name": "Ana",
-            "last_name": "Martínez",
-            "phone": "555-9012",
-            "cellphone_number": "5598765432",
-            "cellphone_country_code": "+52",
-            "user_type": "user",
-            "is_active": True
-        },
-        {
-            "auth_uid": "user_admin_001",
-            "email": "admin@fortis.com",
-            "first_name": "Luis",
-            "last_name": "Pérez",
-            "phone": "555-3456",
-            "cellphone_number": "5567890123",
-            "cellphone_country_code": "+52", 
-            "user_type": "admin",
-            "is_active": True
         }
+        # {
+        #     "auth_uid": "user_recepcionista_frio_001", 
+        #     "email": "recepcionista.frio@fortis.com",
+        #     "first_name": "Carlos",
+        #     "last_name": "Rodríguez",
+        #     "phone": "555-5678",
+        #     "cellphone_number": "5587654321",
+        #     "cellphone_country_code": "+52",
+        #     "user_type": "user",
+        #     "is_active": True
+        # },
+        # {
+        #     "auth_uid": "user_agendamiento_001",
+        #     "email": "agendamiento@fortis.com", 
+        #     "first_name": "Ana",
+        #     "last_name": "Martínez",
+        #     "phone": "555-9012",
+        #     "cellphone_number": "5598765432",
+        #     "cellphone_country_code": "+52",
+        #     "user_type": "user",
+        #     "is_active": True
+        # },
+        # {
+        #     "auth_uid": "user_admin_001",
+        #     "email": "admin@fortis.com",
+        #     "first_name": "Luis",
+        #     "last_name": "Pérez",
+        #     "phone": "555-3456",
+        #     "cellphone_number": "5567890123",
+        #     "cellphone_country_code": "+52", 
+        #     "user_type": "admin",
+        #     "is_active": True
+        # }
     ]
     
     if dry_run:

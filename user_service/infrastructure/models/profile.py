@@ -17,4 +17,4 @@ class ProfileDB(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(50), unique=True, nullable=False)
     description = Column(Text, nullable=True)
-    roles = relationship("RoleDB", secondary=profile_roles, backref="profiles")
+    roles = relationship("RoleDB", secondary=profile_roles, back_populates="profiles")

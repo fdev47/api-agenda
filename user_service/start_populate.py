@@ -143,16 +143,16 @@ async def main():
     print("=" * 50)
     results = {}
     try:
-        address_results = await start_populate_address_data(dry_run)
-        results["addresses"] = address_results
-        role_results = await start_populate_role_data(dry_run)
-        results["roles"] = role_results
-        profile_results = await start_populate_profile_data(dry_run)
-        results["profiles"] = profile_results
+        # address_results = await start_populate_address_data(dry_run)
+        # results["addresses"] = address_results
+        # role_results = await start_populate_role_data(dry_run)
+        # results["roles"] = role_results
+        # profile_results = await start_populate_profile_data(dry_run)
+        # results["profiles"] = profile_results
         user_results = await start_populate_user_data(dry_run)
         results["users"] = user_results
-        customer_results = await start_populate_customer_data(dry_run)
-        results["customers"] = customer_results
+        # customer_results = await start_populate_customer_data(dry_run)
+        # results["customers"] = customer_results
         print_summary(results, dry_run)
     except Exception as e:
         print(f"\n❌ Error durante la población: {e}")

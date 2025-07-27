@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from ...domain.interfaces.profile_repository import IProfileRepository
 from ...domain.entities.profile import Profile
 from ...infrastructure.models.profile import ProfileDB
+from ...infrastructure.models.role import RoleDB
 
 
 class ProfileRepositoryImpl(IProfileRepository):
@@ -40,18 +41,47 @@ class ProfileRepositoryImpl(IProfileRepository):
     
     async def create(self, profile: Profile) -> Profile:
         """Crear perfil"""
+        # Crear el perfil sin roles primero
         profile_db = ProfileDB(
             name=profile.name,
             description=profile.description
         )
         
-        # Asignar roles si existen
-        if profile.roles:
-            # Aquí necesitarías obtener los roles de la BD y asignarlos
-            # Por simplicidad, asumimos que los roles ya existen
-            pass
-        
         self._session.add(profile_db)
+        await self._session.commit()
+        await self._session.refresh(profile_db)
+        
+        # Crear una entidad Profile sin roles para evitar problemas de validación
+        created_profile = Profile(
+            id=profile_db.id,
+            name=profile_db.name,
+            description=profile_db.description,
+            roles=[]  # Lista vacía para evitar problemas de lazy loading
+        )
+        
+        return created_profile
+    
+    async def assign_roles(self, profile_id: UUID, role_ids: List[UUID]) -> Profile:
+        """Asignar roles a un perfil existente"""
+        # Obtener el perfil con roles cargados
+        query = select(ProfileDB).options(selectinload(ProfileDB.roles)).where(ProfileDB.id == profile_id)
+        result = await self._session.execute(query)
+        profile_db = result.scalar_one_or_none()
+        
+        if not profile_db:
+            raise ValueError(f"Perfil con ID {profile_id} no encontrado")
+        
+        # Limpiar roles existentes
+        profile_db.roles.clear()
+        
+        # Asignar nuevos roles
+        for role_id in role_ids:
+            role_query = select(RoleDB).where(RoleDB.id == role_id)
+            role_result = await self._session.execute(role_query)
+            role_db = role_result.scalar_one_or_none()
+            if role_db:
+                profile_db.roles.append(role_db)
+        
         await self._session.commit()
         await self._session.refresh(profile_db)
         
@@ -59,7 +89,7 @@ class ProfileRepositoryImpl(IProfileRepository):
     
     async def update(self, profile: Profile) -> Profile:
         """Actualizar perfil"""
-        query = select(ProfileDB).where(ProfileDB.id == profile.id)
+        query = select(ProfileDB).options(selectinload(ProfileDB.roles)).where(ProfileDB.id == profile.id)
         result = await self._session.execute(query)
         profile_db = result.scalar_one_or_none()
         

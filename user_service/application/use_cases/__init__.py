@@ -10,7 +10,15 @@ from .delete_user_use_case import DeleteUserUseCase
 from .activate_user_use_case import ActivateUserUseCase
 from .deactivate_user_use_case import DeactivateUserUseCase
 from .create_profile_use_case import CreateProfileUseCase
+from .get_profile_by_id_use_case import GetProfileByIdUseCase
+from .list_profiles_use_case import ListProfilesUseCase
+from .update_profile_use_case import UpdateProfileUseCase
+from .delete_profile_use_case import DeleteProfileUseCase
 from .create_role_use_case import CreateRoleUseCase
+from .get_role_by_id_use_case import GetRoleByIdUseCase
+from .list_roles_use_case import ListRolesUseCase
+from .update_role_use_case import UpdateRoleUseCase
+from .delete_role_use_case import DeleteRoleUseCase
 from .create_customer_use_case import CreateCustomerUseCase
 from .get_customer_by_id_use_case import GetCustomerByIdUseCase
 from .get_user_by_auth_uid_use_case import GetUserByAuthUidUseCase
@@ -29,7 +37,15 @@ __all__ = [
     "ActivateUserUseCase",
     "DeactivateUserUseCase",
     "CreateProfileUseCase",
+    "GetProfileByIdUseCase",
+    "ListProfilesUseCase",
+    "UpdateProfileUseCase",
+    "DeleteProfileUseCase",
     "CreateRoleUseCase",
+    "GetRoleByIdUseCase",
+    "ListRolesUseCase",
+    "UpdateRoleUseCase",
+    "DeleteRoleUseCase",
     "CreateCustomerUseCase",
     "GetCustomerByIdUseCase",
     "GetUserByAuthUidUseCase",

@@ -11,7 +11,7 @@ load_dotenv()
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from ..domain.exceptions import UserError
-from .routes import user_router, admin_router
+from .routes import user_router, admin_router, profile_router, role_router
 from ..infrastructure.models.base import Base
 
 
@@ -27,7 +27,7 @@ def create_user_service() -> ServiceConfig:
         api_prefix=config.API_PREFIX,
         title="User Service API",
         description="Servicio de gestión de usuarios",
-        tags=["Users", "Administration"],
+        tags=["Users", "Administration", "Profiles", "Roles"],
         additional_settings={
             "auth_service_url": config.AUTH_SERVICE_URL
         }
@@ -46,7 +46,9 @@ def create_user_app():
     # Configurar routers con prefijos personalizados
     routers = [
         RouterConfig(user_router, prefix="/users", tags=["Users"]),
-        RouterConfig(admin_router, prefix="/admin", tags=["Administration"])
+        RouterConfig(admin_router, prefix="/admin", tags=["Administration"]),
+        RouterConfig(profile_router, prefix="/profiles", tags=["Profiles"]),
+        RouterConfig(role_router, prefix="/roles", tags=["Roles"])
     ]
     
     # Crear aplicación usando factory común

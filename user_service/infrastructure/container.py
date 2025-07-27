@@ -1,30 +1,40 @@
 """
-Contenedor de dependencias para el user_service
+Container de dependencias para el user_service
 """
-from dependency_injector import containers, providers
-from sqlalchemy.ext.asyncio import AsyncSession
 import os
+from dependency_injector import containers, providers
 from commons.database import db_manager
-
-from ..domain.interfaces.user_repository import UserRepository
-from ..domain.interfaces.profile_repository import IProfileRepository
-from ..domain.interfaces.role_repository import IRoleRepository
-
-from ..data.repositories import (
-    UserRepositoryImpl, ProfileRepositoryImpl, RoleRepositoryImpl
-)
-
+from commons.auth_client import AuthClient
+from ..data.repositories.profile_repository_impl import ProfileRepositoryImpl
+from ..data.repositories.role_repository_impl import RoleRepositoryImpl
+from ..data.repositories.user_repository_impl import UserRepositoryImpl
 from ..application.use_cases import (
-    CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase, ListUsersUseCase,
-    CreateProfileUseCase, CreateRoleUseCase,
-    # Nuevos casos de uso separados
-    ActivateUserUseCase, DeactivateUserUseCase,
-    GetUserByIdUseCase, GetUserByEmailUseCase, GetUserByAuthUidUseCase,
-    # Casos de uso de administración
-    AssignRoleUseCase, AssignPermissionUseCase, GetUserRolesUseCase
+    CreateUserUseCase,
+    GetUserByIdUseCase,
+    GetUserByEmailUseCase,
+    ListUsersUseCase,
+    UpdateUserUseCase,
+    DeleteUserUseCase,
+    ActivateUserUseCase,
+    DeactivateUserUseCase,
+    CreateProfileUseCase,
+    GetProfileByIdUseCase,
+    ListProfilesUseCase,
+    UpdateProfileUseCase,
+    DeleteProfileUseCase,
+    CreateRoleUseCase,
+    GetRoleByIdUseCase,
+    ListRolesUseCase,
+    UpdateRoleUseCase,
+    DeleteRoleUseCase,
+    CreateCustomerUseCase,
+    GetCustomerByIdUseCase,
+    GetUserByAuthUidUseCase,
+    GetCustomerByAuthUidUseCase,
+    AssignRoleUseCase,
+    AssignPermissionUseCase,
+    GetUserRolesUseCase
 )
-
-from .auth_service_client import AuthServiceClient
 
 
 class UserServiceContainer(containers.DeclarativeContainer):
@@ -40,8 +50,8 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     # Cliente de Auth Service
     auth_service_client = providers.Singleton(
-        AuthServiceClient,
-        base_url=os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
+        AuthClient,
+        auth_service_url=os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
     )
     
     # Repositorios
@@ -109,14 +119,56 @@ class UserServiceContainer(containers.DeclarativeContainer):
         user_repository=user_repository
     )
     
+    # Casos de uso de Profile
     create_profile_use_case = providers.Factory(
         CreateProfileUseCase,
         profile_repository=profile_repository,
         role_repository=role_repository
     )
     
+    get_profile_by_id_use_case = providers.Factory(
+        GetProfileByIdUseCase,
+        profile_repository=profile_repository
+    )
+    
+    list_profiles_use_case = providers.Factory(
+        ListProfilesUseCase,
+        profile_repository=profile_repository
+    )
+    
+    update_profile_use_case = providers.Factory(
+        UpdateProfileUseCase,
+        profile_repository=profile_repository
+    )
+    
+    delete_profile_use_case = providers.Factory(
+        DeleteProfileUseCase,
+        profile_repository=profile_repository
+    )
+    
+    # Casos de uso de Role
     create_role_use_case = providers.Factory(
         CreateRoleUseCase,
+        role_repository=role_repository
+    )
+    
+    get_role_by_id_use_case = providers.Factory(
+        GetRoleByIdUseCase,
+        role_repository=role_repository
+    )
+    
+    list_roles_use_case = providers.Factory(
+        ListRolesUseCase,
+        role_repository=role_repository
+    )
+    
+    update_role_use_case = providers.Factory(
+        UpdateRoleUseCase,
+        role_repository=role_repository
+    )
+    
+    delete_role_use_case = providers.Factory(
+        DeleteRoleUseCase,
         role_repository=role_repository
     )
     
