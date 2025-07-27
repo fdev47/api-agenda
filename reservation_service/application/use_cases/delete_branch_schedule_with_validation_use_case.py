@@ -1,11 +1,15 @@
-from typing import Dict, Any
+"""
+Use case para eliminar horario de sucursal con validación
+"""
+from typing import Dict, Any, List
 from datetime import datetime
 
-from ...domain.interfaces import ScheduleRepository
-from ...domain.entities.schedule import DayOfWeek
+from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.responses.schedule_responses import DeleteBranchScheduleResponse
 from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
 from .validate_schedule_changes_use_case import ValidateScheduleChangesUseCase
+from ...domain.interfaces.schedule_repository import ScheduleRepository
+from ...domain.interfaces.reservation_repository import ReservationRepository
 
 
 class DeleteBranchScheduleWithValidationUseCase:

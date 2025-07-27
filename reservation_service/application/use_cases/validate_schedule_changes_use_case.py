@@ -1,10 +1,15 @@
+"""
+Use case para validar cambios en horarios
+"""
 from typing import List, Dict, Any
 from datetime import datetime
 
-from ...domain.interfaces import ScheduleRepository, ReservationRepository
-from ...domain.entities.schedule import DayOfWeek
-from ...domain.entities.reservation import Reservation, ReservationStatus
-from ...domain.dto.requests.reservation_requests import ReservationFilterRequest
+from ...domain.entities.day_of_week import DayOfWeek
+from ...domain.entities.reservation import Reservation
+from ...domain.entities.reservation_status import ReservationStatus
+from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
+from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
 
 

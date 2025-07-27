@@ -2,7 +2,7 @@
 Container de dependencias para el servicio de ubicaciones
 """
 from dependency_injector import containers, providers
-from commons.database import get_db_session
+from commons.database import db_manager
 
 # Repositorios
 from .repositories.country_repository_impl import CountryRepositoryImpl
@@ -71,7 +71,9 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     
     # Base de datos
-    db_session = providers.Singleton(get_db_session)
+    db_session = providers.Factory(
+        lambda: db_manager.AsyncSessionLocal()
+    )
     
     # Repositorios
     country_repository = providers.Factory(

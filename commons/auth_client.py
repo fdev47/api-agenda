@@ -14,10 +14,10 @@ from commons.config import config
 class AuthClient:
     """Cliente para comunicarse con Auth Service"""
     
-    def __init__(self, auth_service_url: Optional[str] = None, api_prefix: Optional[str] = None):
+    def __init__(self, auth_service_url: Optional[str] = None, api_prefix: Optional[str] = None, timeout: Optional[int] = None):
         self.auth_service_url = auth_service_url or config.AUTH_SERVICE_URL
         self.api_prefix = api_prefix or config.API_PREFIX
-        self.timeout = 10.0  # 10 segundos timeout
+        self.timeout = timeout or config.AUTH_TIMEOUT
     
     async def _validate_token(self, token: str) -> dict:
         """Validar token con Auth Service"""

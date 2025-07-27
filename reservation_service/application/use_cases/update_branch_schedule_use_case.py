@@ -1,8 +1,10 @@
+"""
+Use case para actualizar horario de sucursal
+"""
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from ...domain.interfaces import ScheduleRepository
-from ...domain.entities.schedule import DayOfWeek
+from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import UpdateBranchScheduleRequest
 from ...domain.dto.responses.schedule_responses import UpdateBranchScheduleResponse, BranchScheduleResponse
 from ...domain.exceptions.schedule_exceptions import (
@@ -12,6 +14,7 @@ from ...domain.exceptions.schedule_exceptions import (
     InvalidIntervalException
 )
 from .validate_schedule_changes_use_case import ValidateScheduleChangesUseCase
+from ...domain.interfaces.schedule_repository import ScheduleRepository
 
 
 class UpdateBranchScheduleUseCase:

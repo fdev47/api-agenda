@@ -2,7 +2,8 @@ from datetime import datetime, time
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from ...entities.schedule import DayOfWeek, TimeSlot
+from ...entities.day_of_week import DayOfWeek
+from ...entities.time_slot import TimeSlot
 
 
 class TimeSlotResponse(BaseModel):

@@ -32,9 +32,9 @@ async def create_user(request: CreateUserRequest):
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(current_user=Depends(auth_middleware["require_auth"])):
     """Obtener información del usuario actual"""
-    user_id = current_user["user_id"]
-    get_use_case = container.get_user_by_id_use_case()
-    user = await get_use_case.execute(user_id)
+    auth_uid = current_user["user_id"]
+    get_use_case = container.get_user_by_auth_uid_use_case()
+    user = await get_use_case.execute(auth_uid)
     return user
 
 

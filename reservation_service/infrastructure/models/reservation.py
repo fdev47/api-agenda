@@ -1,22 +1,34 @@
+"""
+Modelo de base de datos para reservas
+"""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, Boolean, JSON, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, Boolean, Float, JSON, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+import uuid
 
-from .base import BaseModel
-from ...domain.entities.reservation import ReservationStatus
+from .base import Base
+from ...domain.entities.reservation_status import ReservationStatus
+from ...domain.entities.reservation import Reservation
+from ...domain.entities.branch_data import BranchData
+from ...domain.entities.sector_data import SectorData
+from ...domain.entities.customer_data import CustomerData
+from ...domain.entities.order_number import OrderNumber
 
 
-class ReservationModel(BaseModel):
+class ReservationModel(Base):
     """Modelo de base de datos para reservas"""
     
     __tablename__ = "reservations"
+    
+    # Clave primaria
+    id = Column(Integer, primary_key=True, autoincrement=True)
     
     # Identificación básica
     user_id = Column(Integer, nullable=False, index=True)
     customer_id = Column(Integer, nullable=True, index=True)
     
-    # IDs de referencia (para consultas eficientes)
+    # IDs de referencia (para consultas eficientes) - Sin foreign keys para evitar dependencias
     branch_id = Column(Integer, nullable=False, index=True)
     sector_id = Column(Integer, nullable=False, index=True)
     
@@ -38,12 +50,15 @@ class ReservationModel(BaseModel):
     sector_data = Column(JSON, nullable=False)  # Datos completos del sector
     customer_data = Column(JSON, nullable=False)  # Datos completos del cliente
     
+    # Campos de auditoría
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
     # Relaciones
     order_numbers = relationship("ReservationOrderNumberModel", back_populates="reservation", cascade="all, delete-orphan")
     
     def to_domain(self) -> 'Reservation':
         """Convierte el modelo de BD a entidad de dominio"""
-        from ...domain.entities.reservation import Reservation, BranchData, SectorData, CustomerData, OrderNumber
         
         # Convertir datos JSON a objetos de dominio
         branch_data = BranchData(**self.branch_data)
@@ -98,18 +113,19 @@ class ReservationModel(BaseModel):
             "description": reservation.sector_data.description,
             "sector_type_id": reservation.sector_data.sector_type_id,
             "sector_type_name": reservation.sector_data.sector_type_name,
-            "measurement_unit": reservation.sector_data.measurement_unit
+            "capacity": reservation.sector_data.capacity,
+            "measurement_unit_id": reservation.sector_data.measurement_unit_id,
+            "measurement_unit_name": reservation.sector_data.measurement_unit_name
         }
         
         customer_data = {
             "customer_id": reservation.customer_data.customer_id,
-            "ruc": reservation.customer_data.ruc,
-            "company_name": reservation.customer_data.company_name,
-            "phone_number": reservation.customer_data.phone_number
+            "name": reservation.customer_data.name,
+            "email": reservation.customer_data.email,
+            "phone": reservation.customer_data.phone
         }
         
         return cls(
-            id=reservation.id,
             user_id=reservation.user_id,
             customer_id=reservation.customer_id,
             branch_id=reservation.branch_data.branch_id,
@@ -123,26 +139,31 @@ class ReservationModel(BaseModel):
             notes=reservation.notes,
             branch_data=branch_data,
             sector_data=sector_data,
-            customer_data=customer_data,
-            created_at=reservation.created_at,
-            updated_at=reservation.updated_at
+            customer_data=customer_data
         )
 
 
-class ReservationOrderNumberModel(BaseModel):
+class ReservationOrderNumberModel(Base):
     """Modelo de base de datos para números de pedido de reservas"""
     
     __tablename__ = "reservation_order_numbers"
     
-    # Relación con la reserva
+    # Clave primaria
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    
+    # Relación con la reserva (foreign key interno del servicio)
     reservation_id = Column(Integer, ForeignKey("reservations.id"), nullable=False, index=True)
     
     # Datos del pedido
     code = Column(String(50), nullable=False, index=True)
     description = Column(Text, nullable=True)
     
+    # Campos de auditoría
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
     # Relaciones
     reservation = relationship("ReservationModel", back_populates="order_numbers")
     
     def __repr__(self):
-        return f"<ReservationOrderNumber(id={self.id}, code='{self.code}', reservation_id={self.reservation_id})>" 
+        return f"<ReservationOrderNumberModel(id={self.id}, code='{self.code}')>" 

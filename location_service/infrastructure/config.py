@@ -11,8 +11,8 @@ class LocationServiceSettings(BaseSettings):
     SERVICE_PORT: int = 8003
     
     # Configuraciones específicas del servicio de ubicación
-    LOCATION_DEFAULT_COUNTRY: str = "MEX"
-    LOCATION_DEFAULT_STATE: str = "CDMX"
+    LOCATION_DEFAULT_COUNTRY: str = "PY"
+    LOCATION_DEFAULT_STATE: str = "ASU"
     
     class Config:
         env_file = ".env"

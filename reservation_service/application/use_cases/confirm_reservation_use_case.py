@@ -1,5 +1,8 @@
-from ...domain.interfaces import ReservationRepository
-from ...domain.dto.responses.reservation_responses import ReservationResponse
+"""
+Use case para confirmar una reserva
+"""
+from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationStatusException

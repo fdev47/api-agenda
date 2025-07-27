@@ -1,64 +1,12 @@
+"""
+Entidad para horarios de sucursal
+"""
 from datetime import datetime, time
-from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
 
-
-class DayOfWeek(Enum):
-    """Días de la semana"""
-    MONDAY = 1
-    TUESDAY = 2
-    WEDNESDAY = 3
-    THURSDAY = 4
-    FRIDAY = 5
-    SATURDAY = 6
-    SUNDAY = 7
-    
-    @classmethod
-    def get_name(cls, day_number: int) -> str:
-        """Obtener nombre del día por número"""
-        names = {
-            1: "Lunes",
-            2: "Martes", 
-            3: "Miércoles",
-            4: "Jueves",
-            5: "Viernes",
-            6: "Sábado",
-            7: "Domingo"
-        }
-        return names.get(day_number, "Desconocido")
-
-
-@dataclass
-class TimeSlot:
-    """Slot de tiempo disponible"""
-    start_time: time
-    end_time: time
-    is_available: bool = True
-    reservation_id: Optional[int] = None
-    
-    def __post_init__(self):
-        """Validaciones post-inicialización"""
-        if self.start_time >= self.end_time:
-            raise ValueError("El tiempo de inicio debe ser anterior al de fin")
-    
-    def overlaps_with(self, other: 'TimeSlot') -> bool:
-        """Verificar si hay solapamiento con otro slot"""
-        return not (self.end_time <= other.start_time or other.end_time <= self.start_time)
-    
-    def contains(self, check_time: time) -> bool:
-        """Verificar si un tiempo está dentro del slot"""
-        return self.start_time <= check_time < self.end_time
-    
-    def duration_minutes(self) -> int:
-        """Obtener duración en minutos"""
-        start_minutes = self.start_time.hour * 60 + self.start_time.minute
-        end_minutes = self.end_time.hour * 60 + self.end_time.minute
-        return end_minutes - start_minutes
-    
-    def duration_hours(self) -> float:
-        """Obtener duración en horas"""
-        return self.duration_minutes() / 60.0
+from .day_of_week import DayOfWeek
+from .time_slot import TimeSlot
 
 
 @dataclass
@@ -152,22 +100,4 @@ class BranchSchedule:
         if not self.is_same_day(other):
             return False
         
-        return not (self.end_time <= other.start_time or other.end_time <= self.start_time)
-
-
-@dataclass
-class AvailableSlotsResponse:
-    """Respuesta con slots disponibles para una fecha"""
-    branch_id: int
-    branch_name: str
-    date: datetime
-    day_of_week: int
-    day_name: str
-    slots: List[TimeSlot]
-    total_slots: int
-    available_slots: int
-    
-    def __post_init__(self):
-        """Calcular estadísticas"""
-        self.total_slots = len(self.slots)
-        self.available_slots = len([slot for slot in self.slots if slot.is_available]) 
+        return not (self.end_time <= other.start_time or other.end_time <= self.start_time) 

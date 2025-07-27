@@ -1,8 +1,13 @@
+"""
+Interfaz para el repositorio de horarios
+"""
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from datetime import date, datetime
 
-from ..entities.schedule import BranchSchedule, DayOfWeek, TimeSlot
+from ..entities.branch_schedule import BranchSchedule
+from ..entities.day_of_week import DayOfWeek
+from ..entities.time_slot import TimeSlot
 from ..entities.reservation import Reservation
 
 

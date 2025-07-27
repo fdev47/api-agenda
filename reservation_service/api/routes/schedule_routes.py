@@ -1,18 +1,28 @@
+"""
+Rutas para horarios
+"""
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
-
+from datetime import date
+from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import (
     CreateBranchScheduleRequest,
+    UpdateBranchScheduleRequest,
     GetAvailableSlotsRequest,
     GetBranchSchedulesRequest
 )
 from ...domain.dto.responses.schedule_responses import (
-    CreateBranchScheduleResponse,
     BranchScheduleResponse,
+    AvailableSlotsResponse,
     BranchScheduleListResponse,
-    DeleteBranchScheduleResponse,
-    AvailableSlotsResponse
+    CreateBranchScheduleResponse,
+    UpdateBranchScheduleResponse,
+    DeleteBranchScheduleResponse
 )
+from ...application.use_cases.create_branch_schedule_use_case import CreateBranchScheduleUseCase
+from ...application.use_cases.update_branch_schedule_use_case import UpdateBranchScheduleUseCase
+from ...application.use_cases.delete_branch_schedule_with_validation_use_case import DeleteBranchScheduleWithValidationUseCase
+from ...application.use_cases.list_branch_schedules_use_case import ListBranchSchedulesUseCase
+from ...application.use_cases.get_available_slots_use_case import GetAvailableSlotsUseCase
 from ...domain.exceptions.schedule_exceptions import (
     ScheduleNotFoundException,
     ScheduleAlreadyExistsException,
@@ -23,6 +33,7 @@ from ...domain.exceptions.schedule_exceptions import (
     PastDateException
 )
 from ...infrastructure.container import Container
+from ..middleware import auth_middleware
 
 router = APIRouter(prefix="/schedules", tags=["Schedules"])
 
@@ -35,7 +46,8 @@ def get_container() -> Container:
 @router.post("/", response_model=CreateBranchScheduleResponse, status_code=status.HTTP_201_CREATED)
 async def create_branch_schedule(
     request: CreateBranchScheduleRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Crear un nuevo horario de sucursal"""
     try:
@@ -62,7 +74,8 @@ async def create_branch_schedule(
 @router.get("/{schedule_id}", response_model=BranchScheduleResponse)
 async def get_branch_schedule(
     schedule_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Obtener un horario de sucursal por ID"""
     try:
@@ -86,7 +99,8 @@ async def list_branch_schedules(
     branch_id: int,
     day_of_week: int = None,
     is_active: bool = None,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Listar horarios de una sucursal"""
     try:
@@ -116,7 +130,8 @@ async def list_branch_schedules(
 @router.delete("/{schedule_id}", response_model=DeleteBranchScheduleResponse)
 async def delete_branch_schedule(
     schedule_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar un horario de sucursal"""
     try:
@@ -138,7 +153,8 @@ async def delete_branch_schedule(
 @router.post("/available-slots", response_model=AvailableSlotsResponse)
 async def get_available_slots(
     request: GetAvailableSlotsRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Obtener slots disponibles para una fecha específica"""
     try:

@@ -1,14 +1,7 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+"""
+Modelo base para el microservicio de reservas
+"""
+from commons.database import Base
 
-Base = declarative_base()
-
-
-class BaseModel(Base):
-    """Clase base para todos los modelos de la base de datos"""
-    __abstract__ = True
-
-    id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False) 
+# Re-exportar Base para compatibilidad con código existente
+__all__ = ['Base'] 

@@ -1,10 +1,14 @@
+"""
+Use case para crear horario de sucursal
+"""
 from typing import Optional
 from datetime import datetime
 
-from ...domain.interfaces import ScheduleRepository
-from ...domain.entities.schedule import BranchSchedule, DayOfWeek
+from ...domain.entities.branch_schedule import BranchSchedule
+from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import CreateBranchScheduleRequest
 from ...domain.dto.responses.schedule_responses import CreateBranchScheduleResponse, BranchScheduleResponse
+from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.exceptions.schedule_exceptions import (
     ScheduleAlreadyExistsException,
     ScheduleOverlapException

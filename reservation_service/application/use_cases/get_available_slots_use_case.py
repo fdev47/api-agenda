@@ -1,10 +1,16 @@
+"""
+Use case para obtener slots disponibles
+"""
 from datetime import datetime, date
 from typing import List
 
-from ...domain.interfaces import ScheduleRepository
-from ...domain.entities.schedule import DayOfWeek, TimeSlot, AvailableSlotsResponse
+from ...domain.entities.day_of_week import DayOfWeek
+from ...domain.entities.time_slot import TimeSlot
+from ...domain.entities.available_slots_response import AvailableSlotsResponse
 from ...domain.dto.requests.schedule_requests import GetAvailableSlotsRequest
 from ...domain.dto.responses.schedule_responses import AvailableSlotsResponse as AvailableSlotsResponseDTO, TimeSlotResponse
+from ...domain.interfaces.schedule_repository import ScheduleRepository
+from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.exceptions.schedule_exceptions import (
     NoScheduleForDateException,
     PastDateException

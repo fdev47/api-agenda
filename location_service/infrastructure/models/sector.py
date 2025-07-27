@@ -1,11 +1,10 @@
 """
 Modelo de base de datos para sectores
 """
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Enum as SqlEnum
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import Base
-from ...domain.entities.measurement_unit import MeasurementUnit
 
 
 class Sector(Base):
@@ -18,7 +17,6 @@ class Sector(Base):
     description = Column(Text, nullable=True)
     branch_id = Column(Integer, ForeignKey("branches.id"), nullable=False, index=True)
     sector_type_id = Column(Integer, ForeignKey("sector_types.id"), nullable=False, index=True)
-    measurement_unit = Column(SqlEnum(MeasurementUnit), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

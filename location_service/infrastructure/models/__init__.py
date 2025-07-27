@@ -10,6 +10,7 @@ from .branch import Branch
 from .ramp import Ramp
 from .sector import Sector
 from .sector_type import SectorType
+from .measurement_unit import MeasurementUnit
 
 __all__ = [
     "Base",
@@ -20,5 +21,6 @@ __all__ = [
     "Branch",
     "Ramp",
     "Sector",
-    "SectorType"
+    "SectorType",
+    "MeasurementUnit"
 ] 

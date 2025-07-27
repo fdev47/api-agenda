@@ -41,31 +41,63 @@ async def list_users(request: Request, authorization: Optional[str] = Header(Non
 
 
 @router.post("/")
-async def create_user(request: Request, authorization: Optional[str] = Header(None)):
+async def create_user(
+    request: Request, 
+    authorization: Optional[str] = Header(None),
+    user_data: dict = None
+):
     """
-    Crear usuario
+    Crear usuario a través del API Gateway
     
     Esta ruta requiere autenticación y valida el token.
+    Orquesta la creación de usuarios en el user_service.
     
     Args:
         authorization: Header de autorización con el token Bearer
+        user_data: Datos del usuario a crear
         
     Returns:
-        dict: Información sobre el servicio de usuarios
+        dict: Resultado de la creación del usuario
     """
     # Validar autenticación
     await auth_middleware.validate_auth(request, authorization)
     
-    user_service_url = GatewayConfig.USER_SERVICE_URL
+    if not user_data:
+        raise HTTPException(
+            status_code=400,
+            detail="Datos del usuario requeridos"
+        )
     
-    return {
-        "message": "Use User Service directly for user operations",
-        "user_service_url": f"{user_service_url}/users",
-        "documentation": f"{user_service_url}/docs",
-        "timestamp": datetime.now().isoformat(),
-        "service": "api-gateway",
-        "endpoint": "/users"
-    }
+    # Obtener token de autorización para el user_service
+    token = authorization.replace("Bearer ", "") if authorization else None
+    
+    try:
+        # Crear cliente para user_service
+        from commons.api_client import create_api_client
+        
+        async with create_api_client(
+            GatewayConfig.USER_SERVICE_URL, 
+            token
+        ) as user_client:
+            
+            # Crear usuario en user_service
+            response = await user_client.post("/users/", user_data)
+            
+            return {
+                "success": True,
+                "message": "Usuario creado exitosamente",
+                "data": response,
+                "timestamp": datetime.now().isoformat(),
+                "service": "api-gateway",
+                "orchestrated_service": "user-service"
+            }
+            
+    except Exception as e:
+        logging.error(f"Error creando usuario: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creando usuario: {str(e)}"
+        )
 
 
 @router.get("/{user_id}")

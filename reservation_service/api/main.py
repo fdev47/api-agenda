@@ -1,81 +1,64 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
+"""
+API principal del Reservation Service usando factory común
+"""
+import os
+from dotenv import load_dotenv
+from datetime import datetime
 
+# ⭐ CARGAR .env AL INICIO
+load_dotenv()
+
+from commons.config import config
+from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from .routes import schedule_routes, schedule_validation_routes, reservation_routes
-from ..infrastructure.config import settings
+from ..infrastructure.models.base import Base
 
-app = FastAPI(
-    title="Reservation Service API",
-    description="API para gestión de reservas y horarios de sucursales",
-    version="1.0.0",
-    docs_url=None,
-    redoc_url=None
-)
 
-# Configurar CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Incluir rutas
-app.include_router(schedule_routes.router, prefix="/api/v1")
-app.include_router(schedule_validation_routes.router, prefix="/api/v1")
-app.include_router(reservation_routes.router, prefix="/api/v1")
-
-# Configurar Swagger UI con autenticación
-@app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
-        openapi_url=app.openapi_url,
-        title=app.title + " - Swagger UI",
-        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-        swagger_ui_parameters={
-            "defaultModelsExpandDepth": -1,
-            "docExpansion": "none",
-            "persistAuthorization": True,
-        }
+def create_reservation_service() -> ServiceConfig:
+    """Crear configuración del Reservation Service"""
+    return ServiceConfig(
+        service_name="Reservation Service",
+        service_version="1.0.0",
+        service_port=8004,  # Puerto por defecto para reservation service
+        cors_origins=["*"],
+        database_url=config.DATABASE_URL,
+        api_version=config.API_VERSION,
+        api_prefix=config.API_PREFIX,
+        title="Reservation Service API",
+        description="API para gestión de reservas y horarios de sucursales",
+        tags=["Reservations", "Schedules", "Validation"]
     )
 
-# Configurar OpenAPI
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
+
+def create_reservation_app():
+    """Crear aplicación Reservation Service usando factory común"""
     
-    openapi_schema = get_openapi(
-        title=app.title,
-        version=app.version,
-        description=app.description,
-        routes=app.routes,
+    # Configuración del servicio
+    service_config = create_reservation_service()
+    
+    # Configurar routers con prefijos y tags personalizados
+    routers = [
+        RouterConfig(schedule_routes.router, prefix="/schedules", tags=["Schedules"]),
+        RouterConfig(schedule_validation_routes.router, prefix="/schedule-validation", tags=["Schedule Validation"]),
+        RouterConfig(reservation_routes.router, prefix="/reservations", tags=["Reservations"])
+    ]
+    
+    # Crear aplicación usando factory común
+    app = create_service_factory(
+        service_config=service_config,
+        base_model=Base,  # ✅ Habilitar ORM con modelos de Reservation Service
+        routers=routers,
+        enable_auth=False,  # Deshabilitado para usar dependencias
+        enable_auto_tables=True  # ✅ Habilitar creación automática de tablas
     )
     
-    # Agregar configuración de seguridad
-    openapi_schema["components"]["securitySchemes"] = {
-        "bearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-        }
-    }
-    
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+    return app
 
-app.openapi = custom_openapi
 
-@app.get("/")
-async def root():
-    return {
-        "message": "Reservation Service API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+# Crear la aplicación
+app = create_reservation_app()
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "reservation"} 
+
+if __name__ == "__main__":
+    service_config = create_reservation_service()
+    run_service(app, service_config) 

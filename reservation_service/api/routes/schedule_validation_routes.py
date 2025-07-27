@@ -14,6 +14,7 @@ from ...domain.exceptions.schedule_exceptions import (
     InvalidIntervalException
 )
 from ...infrastructure.container import Container
+from ..middleware import auth_middleware
 
 router = APIRouter(prefix="/schedules", tags=["Schedule Validation"])
 
@@ -27,7 +28,8 @@ def get_container() -> Container:
 async def validate_schedule_update(
     schedule_id: int,
     request: UpdateBranchScheduleRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Validar el impacto de actualizar un horario sin aplicarlo"""
     try:
@@ -69,7 +71,8 @@ async def update_branch_schedule(
     schedule_id: int,
     request: UpdateBranchScheduleRequest,
     auto_reschedule: bool = Query(False, description="Aplicar cambios automáticamente y reagendar reservas afectadas"),
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar un horario de sucursal con validación de reservas"""
     try:
@@ -108,7 +111,8 @@ async def update_branch_schedule(
 @router.get("/{schedule_id}/validate-deletion", status_code=status.HTTP_200_OK)
 async def validate_schedule_deletion(
     schedule_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Validar el impacto de eliminar un horario sin eliminarlo"""
     try:
@@ -145,7 +149,8 @@ async def validate_schedule_deletion(
 async def delete_branch_schedule_with_validation(
     schedule_id: int,
     auto_reschedule: bool = Query(False, description="Eliminar automáticamente y reagendar reservas afectadas"),
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar un horario de sucursal con validación de reservas"""
     try:

@@ -1,9 +1,11 @@
-from typing import List, Optional
-
-from ...domain.interfaces import ScheduleRepository
-from ...domain.entities.schedule import DayOfWeek
+"""
+Use case para listar horarios de sucursal
+"""
+from typing import List
+from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import GetBranchSchedulesRequest
 from ...domain.dto.responses.schedule_responses import BranchScheduleListResponse, BranchScheduleResponse
+from ...domain.interfaces.schedule_repository import ScheduleRepository
 
 
 class ListBranchSchedulesUseCase:

@@ -1,9 +1,9 @@
-from .base import BaseModel
+from .base import Base
 from .reservation import ReservationModel, ReservationOrderNumberModel
 from .schedule import BranchScheduleModel
 
 __all__ = [
-    "BaseModel",
+    "Base",
     "ReservationModel",
     "ReservationOrderNumberModel",
     "BranchScheduleModel"

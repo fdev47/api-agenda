@@ -106,6 +106,7 @@ class APIConfig:
     # Configuración global
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    AUTH_TIMEOUT = int(os.getenv("AUTH_TIMEOUT", "30"))
     
     # CORS
     GATEWAY_CORS_ORIGINS = os.getenv("GATEWAY_CORS_ORIGINS", "*").split(",")

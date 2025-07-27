@@ -1,21 +1,22 @@
 """
-Implementación del repositorio para reservas
+Implementación del repositorio de reservas
 """
 from typing import List, Optional, Tuple
 from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, or_, func
+from ...domain.entities.reservation import Reservation
+from ...domain.entities.reservation_status import ReservationStatus
+from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
 from ...domain.interfaces.reservation_repository import ReservationRepository
-from ...domain.entities.reservation import Reservation, ReservationStatus
-from ...domain.dto.requests.reservation_requests import ReservationFilterRequest
+from ...infrastructure.models.reservation import ReservationModel, ReservationOrderNumberModel
 from ...domain.exceptions import ReservationNotFoundException
-from ..models.reservation import ReservationModel, ReservationOrderNumberModel
 
 
 class ReservationRepositoryImpl(ReservationRepository):
     """Implementación del repositorio para reservas"""
     
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
     
     async def create(self, reservation: Reservation) -> Reservation:
@@ -31,16 +32,16 @@ class ReservationRepositoryImpl(ReservationRepository):
             )
             reservation_model.order_numbers.append(order_model)
         
-        self.session.add(reservation_model)
-        self.session.commit()
-        self.session.refresh(reservation_model)
+        await self.session.add(reservation_model)
+        await self.session.commit()
+        await self.session.refresh(reservation_model)
         
         # Retornar entidad de dominio
         return reservation_model.to_domain()
     
     async def get_by_id(self, reservation_id: int) -> Optional[Reservation]:
         """Obtener una reserva por ID"""
-        reservation_model = self.session.query(ReservationModel).filter(
+        reservation_model = await self.session.query(ReservationModel).filter(
             ReservationModel.id == reservation_id
         ).first()
         

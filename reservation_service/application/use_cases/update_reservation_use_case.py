@@ -1,10 +1,14 @@
+"""
+Use case para actualizar una reserva
+"""
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from ...domain.interfaces import ReservationRepository
-from ...domain.entities.reservation import OrderNumber
-from ...domain.dto.requests.reservation_requests import UpdateReservationRequest
-from ...domain.dto.responses.reservation_responses import ReservationResponse
+from ...domain.entities.order_number import OrderNumber
+from ...domain.dto.requests.update_reservation_request import UpdateReservationRequest
+from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.entities.reservation import Reservation
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationAlreadyExistsException,
@@ -97,18 +101,19 @@ class UpdateReservationUseCase:
         # Convertir a DTO de respuesta
         return self.to_response(updated_reservation)
     
-    def to_response(self, reservation) -> ReservationResponse:
+    def to_response(self, reservation: Reservation) -> ReservationResponse:
         """Convertir entidad a DTO de respuesta"""
-        from ...domain.dto.responses.reservation_responses import (
-            CustomerDataResponse, BranchDataResponse, SectorDataResponse, OrderNumberResponse
-        )
+        from ...domain.dto.responses.customer_data_response import CustomerDataResponse
+        from ...domain.dto.responses.branch_data_response import BranchDataResponse
+        from ...domain.dto.responses.sector_data_response import SectorDataResponse
+        from ...domain.dto.responses.order_number_response import OrderNumberResponse
         
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
             customer_id=reservation.customer_data.customer_id,
-            ruc=reservation.customer_data.ruc,
-            company_name=reservation.customer_data.company_name,
-            phone_number=reservation.customer_data.phone_number
+            name=reservation.customer_data.name,
+            email=reservation.customer_data.email,
+            phone=reservation.customer_data.phone
         )
         
         # Convertir datos de la sucursal
@@ -132,7 +137,9 @@ class UpdateReservationUseCase:
             description=reservation.sector_data.description,
             sector_type_id=reservation.sector_data.sector_type_id,
             sector_type_name=reservation.sector_data.sector_type_name,
-            measurement_unit=reservation.sector_data.measurement_unit
+            capacity=reservation.sector_data.capacity,
+            measurement_unit_id=reservation.sector_data.measurement_unit_id,
+            measurement_unit_name=reservation.sector_data.measurement_unit_name
         )
         
         # Convertir números de pedido

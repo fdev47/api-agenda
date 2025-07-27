@@ -18,6 +18,3 @@ class AddressDB(Base):
     country_id = Column(UUID(as_uuid=True), nullable=False)
     postal_code = Column(String(20), nullable=True)
     additional_info = Column(Text, nullable=True)
-    
-    # Relaciones (opcional, para referencias)
-    # Nota: No hay foreign keys reales porque los datos están en location_service 

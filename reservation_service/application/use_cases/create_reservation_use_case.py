@@ -1,10 +1,20 @@
+"""
+Use case para crear una reserva
+"""
+from typing import Optional
 from datetime import datetime
 from typing import List
 
-from ...domain.interfaces import ReservationRepository
-from ...domain.entities.reservation import Reservation, OrderNumber, CustomerData, BranchData, SectorData, ReservationStatus
-from ...domain.dto.requests.reservation_requests import CreateReservationRequest
-from ...domain.dto.responses.reservation_responses import ReservationResponse
+from ...domain.entities.reservation import Reservation
+from ...domain.entities.order_number import OrderNumber
+from ...domain.entities.customer_data import CustomerData
+from ...domain.entities.branch_data import BranchData
+from ...domain.entities.sector_data import SectorData
+from ...domain.entities.reservation_status import ReservationStatus
+from ...domain.dto.requests.create_reservation_request import CreateReservationRequest
+from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.exceptions.reservation_exceptions import (
     ReservationAlreadyExistsException,
     ReservationValidationException

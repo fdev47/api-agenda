@@ -2,7 +2,7 @@ from datetime import date, time
 from typing import Optional
 from pydantic import BaseModel, Field, validator
 
-from ...entities.schedule import DayOfWeek
+from ...entities.day_of_week import DayOfWeek
 
 
 class CreateBranchScheduleRequest(BaseModel):

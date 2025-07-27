@@ -1,17 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+"""
+Rutas para reservas
+"""
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
 
-from ...domain.dto.requests.reservation_requests import (
-    CreateReservationRequest,
-    UpdateReservationRequest,
-    ReservationFilterRequest
-)
-from ...domain.dto.responses.reservation_responses import (
-    ReservationResponse,
-    ReservationListResponse,
-    ReservationSummaryResponse,
-    ReservationSummaryListResponse
-)
+from ...domain.dto.requests.create_reservation_request import CreateReservationRequest
+from ...domain.dto.requests.update_reservation_request import UpdateReservationRequest
+from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
+from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.dto.responses.reservation_list_response import ReservationListResponse
+from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
+from ...domain.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationAlreadyExistsException,
@@ -20,6 +19,7 @@ from ...domain.exceptions.reservation_exceptions import (
     ReservationStatusException
 )
 from ...infrastructure.container import Container
+from ..middleware import auth_middleware
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
@@ -32,7 +32,8 @@ def get_container() -> Container:
 @router.post("/", response_model=ReservationResponse, status_code=status.HTTP_201_CREATED)
 async def create_reservation(
     request: CreateReservationRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Crear una nueva reserva"""
     try:
@@ -64,7 +65,8 @@ async def create_reservation(
 @router.get("/{reservation_id}", response_model=ReservationResponse)
 async def get_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Obtener una reserva por ID"""
     try:
@@ -106,7 +108,7 @@ async def list_reservations(
     reservation_date_to: Optional[str] = Query(None, description="Fecha de reserva hasta (YYYY-MM-DD)"),
     
     # Filtros por estado
-    status: Optional[str] = Query(None, description="Estado de la reserva"),
+    reservation_status: Optional[str] = Query(None, description="Estado de la reserva"),
     
     # Filtros por pedido
     order_code: Optional[str] = Query(None, description="Código del pedido"),
@@ -115,7 +117,8 @@ async def list_reservations(
     page: int = Query(1, ge=1, description="Número de página"),
     limit: int = Query(10, ge=1, le=100, description="Elementos por página"),
     
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Listar reservas con filtros y paginación"""
     try:
@@ -165,7 +168,8 @@ async def list_reservations(
 async def update_reservation(
     reservation_id: int,
     request: UpdateReservationRequest,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar una reserva existente"""
     try:
@@ -202,22 +206,18 @@ async def update_reservation(
 @router.delete("/{reservation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar una reserva"""
     try:
         use_case = container.delete_reservation_use_case()
-        await use_case.execute(reservation_id)
-        return None
+        result = await use_case.execute(reservation_id)
+        return result
     except ReservationNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": "RESERVATION_NOT_FOUND"}
-        )
-    except ReservationStatusException as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": e.message, "error_code": "INVALID_STATUS"}
         )
     except Exception as e:
         raise HTTPException(
@@ -229,7 +229,8 @@ async def delete_reservation(
 @router.post("/{reservation_id}/confirm", response_model=ReservationResponse)
 async def confirm_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Confirmar una reserva"""
     try:
@@ -256,7 +257,8 @@ async def confirm_reservation(
 @router.post("/{reservation_id}/cancel", response_model=ReservationResponse)
 async def cancel_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container)
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     """Cancelar una reserva"""
     try:

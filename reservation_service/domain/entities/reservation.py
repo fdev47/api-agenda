@@ -1,64 +1,15 @@
+"""
+Entidad principal de reserva
+"""
 from datetime import datetime
-from enum import Enum
 from typing import Optional, List, Dict, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-
-class ReservationStatus(Enum):
-    """Estados de una reserva"""
-    PENDING = "PENDING"
-    CONFIRMED = "CONFIRMED"
-    CANCELLED = "CANCELLED"
-    COMPLETED = "COMPLETED"
-    RESCHEDULING_REQUIRED = "RESCHEDULING_REQUIRED"  # Nuevo estado para reagendamiento
-
-
-@dataclass
-class OrderNumber:
-    """Número de pedido con su código"""
-    code: str
-    description: Optional[str] = None
-
-
-@dataclass
-class CustomerData:
-    """Datos del cliente al momento de la reserva"""
-    # Datos completos al momento de la reserva
-    ruc: str
-    company_name: str
-    phone_number: str
-    # ID de referencia (opcional, puede no existir en el sistema)
-    customer_id: Optional[int] = None
-
-
-@dataclass
-class BranchData:
-    """Datos de la sucursal al momento de la reserva"""
-    # ID de referencia en location_service
-    branch_id: int
-    # Datos completos al momento de la reserva
-    name: str
-    code: str
-    address: str
-    country_id: int
-    country_name: str
-    state_id: int
-    state_name: str
-    city_id: int
-    city_name: str
-
-
-@dataclass
-class SectorData:
-    """Datos del sector al momento de la reserva"""
-    # ID de referencia en location_service
-    sector_id: int
-    # Datos completos al momento de la reserva
-    name: str
-    sector_type_id: int
-    sector_type_name: str
-    measurement_unit: str
-    description: Optional[str] = None
+from .reservation_status import ReservationStatus
+from .order_number import OrderNumber
+from .customer_data import CustomerData
+from .branch_data import BranchData
+from .sector_data import SectorData
 
 
 @dataclass
@@ -98,7 +49,7 @@ class Reservation:
     updated_at: Optional[datetime] = None
     
     def __post_init__(self):
-        """Validaciones post-inicialización"""
+        """Validaciones después de la inicialización"""
         if not self.branch_data:
             raise ValueError("Los datos de la sucursal son obligatorios")
         
@@ -204,7 +155,7 @@ class Reservation:
             "schedule_end_time": self.end_time.strftime("%H:%M") if self.end_time else None,
             "merchandise_description": self.reason,
             "merchandise_quantity": self.unloading_time_minutes,
-            "merchandise_unit": self.sector_data.measurement_unit,
+            "merchandise_unit": self.sector_data.measurement_unit_name,
             "special_requirements": self.notes,
             "status": self.status.value,
             "order_numbers": [order.code for order in self.order_numbers],

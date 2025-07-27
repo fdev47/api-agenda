@@ -11,6 +11,7 @@ from ...application.use_cases import (
     CreateCountryUseCase, GetCountryByIdUseCase, ListCountriesUseCase,
     UpdateCountryUseCase, DeleteCountryUseCase
 )
+from ..middleware import auth_middleware
 
 router = APIRouter(prefix="/countries", tags=["Countries"])
 
@@ -46,7 +47,8 @@ def get_delete_country_use_case() -> DeleteCountryUseCase:
 async def get_countries(
     skip: int = 0,
     limit: int = 100,
-    use_case: ListCountriesUseCase = Depends(get_list_countries_use_case)
+    use_case: ListCountriesUseCase = Depends(get_list_countries_use_case),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     return await use_case.execute(skip=skip, limit=limit)
 
@@ -54,15 +56,23 @@ async def get_countries(
 @router.get("/{country_id}", response_model=CountryResponse)
 async def get_country(
     country_id: int,
-    use_case: GetCountryByIdUseCase = Depends(get_get_country_use_case)
+    use_case: GetCountryByIdUseCase = Depends(get_get_country_use_case),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
-    return await use_case.execute(country_id)
+    country = await use_case.execute(country_id)
+    if not country:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="País no encontrado"
+        )
+    return country
 
 
 @router.post("/", response_model=CountryResponse, status_code=status.HTTP_201_CREATED)
 async def create_country(
     request: CreateCountryRequest,
-    use_case: CreateCountryUseCase = Depends(get_create_country_use_case)
+    use_case: CreateCountryUseCase = Depends(get_create_country_use_case),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
     return await use_case.execute(request)
 
@@ -71,15 +81,28 @@ async def create_country(
 async def update_country(
     country_id: int,
     request: UpdateCountryRequest,
-    use_case: UpdateCountryUseCase = Depends(get_update_country_use_case)
+    use_case: UpdateCountryUseCase = Depends(get_update_country_use_case),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
-    return await use_case.execute(country_id, request)
+    country = await use_case.execute(country_id, request)
+    if not country:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="País no encontrado"
+        )
+    return country
 
 
 @router.delete("/{country_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_country(
     country_id: int,
-    use_case: DeleteCountryUseCase = Depends(get_delete_country_use_case)
+    use_case: DeleteCountryUseCase = Depends(get_delete_country_use_case),
+    current_user=Depends(auth_middleware["require_auth"])
 ):
-    await use_case.execute(country_id)
+    success = await use_case.execute(country_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="País no encontrado"
+        )
     return None 

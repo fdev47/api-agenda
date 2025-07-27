@@ -1,11 +1,11 @@
 """
-Interfaz del repositorio para reservas
+Interfaz para el repositorio de reservas
 """
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 from datetime import datetime
 from ..entities.reservation import Reservation
-from ..dto.requests.reservation_requests import ReservationFilterRequest
+from ..dto.requests.reservation_filter_request import ReservationFilterRequest
 
 
 class ReservationRepository(ABC):

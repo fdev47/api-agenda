@@ -4,6 +4,7 @@ Entidad SectorType del dominio de ubicaciones
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+from .measurement_unit import MeasurementUnit
 
 
 @dataclass
@@ -14,6 +15,9 @@ class SectorType:
     name: str
     code: str
     created_at: datetime
+    measurement_unit: MeasurementUnit
+    description: Optional[str] = None
+    is_active: bool = True
     updated_at: Optional[datetime] = None
     
     def __post_init__(self):
