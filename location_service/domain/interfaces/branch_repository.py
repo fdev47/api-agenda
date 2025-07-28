@@ -58,4 +58,9 @@ class BranchRepository(ABC):
     @abstractmethod
     async def exists_by_local_id(self, local_id: int) -> bool:
         """Verificar si existe un local con el ID dado"""
+        pass
+    
+    @abstractmethod
+    async def get_branch_with_relations(self, branch_id: int) -> Optional[dict]:
+        """Obtener una sucursal con todas sus relaciones"""
         pass 

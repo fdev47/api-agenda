@@ -4,7 +4,6 @@ Entidad Sector del dominio de ubicaciones
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-from .measurement_unit import MeasurementUnit
 
 
 @dataclass
@@ -16,7 +15,6 @@ class Sector:
     description: Optional[str]
     branch_id: int
     sector_type_id: int
-    measurement_unit: MeasurementUnit
     created_at: datetime
     updated_at: Optional[datetime] = None
     
@@ -31,8 +29,7 @@ class Sector:
         if self.sector_type_id <= 0:
             raise ValueError("El ID del tipo de sector debe ser mayor a 0")
         
-        if not isinstance(self.measurement_unit, MeasurementUnit):
-            raise ValueError("La unidad de medida debe ser una instancia válida de MeasurementUnit")
+        pass
     
     def update_name(self, new_name: str) -> None:
         """Actualizar el nombre del sector"""
@@ -47,13 +44,10 @@ class Sector:
         self.description = new_description.strip() if new_description else None
         self.updated_at = datetime.utcnow()
     
-    def update_measurement_unit(self, new_unit: MeasurementUnit) -> None:
+    def update_measurement_unit(self, new_unit: str) -> None:
         """Actualizar la unidad de medida del sector"""
-        if not isinstance(new_unit, MeasurementUnit):
-            raise ValueError("La unidad de medida debe ser una instancia válida de MeasurementUnit")
-        
-        self.measurement_unit = new_unit
-        self.updated_at = datetime.utcnow()
+        # TODO: Implementar cuando se agregue el campo measurement_unit al modelo
+        pass
     
     def update_sector_type(self, new_sector_type_id: int) -> None:
         """Actualizar el tipo de sector"""

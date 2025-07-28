@@ -6,6 +6,20 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class RampSummaryResponse(BaseModel):
+    """Resumen de rampa para incluir en respuesta de sucursal"""
+    id: int = Field(..., description="ID de la rampa")
+    name: str = Field(..., description="Nombre de la rampa")
+    is_available: bool = Field(..., description="Disponibilidad de la rampa")
+
+
+class SectorSummaryResponse(BaseModel):
+    """Resumen de sector para incluir en respuesta de sucursal"""
+    id: int = Field(..., description="ID del sector")
+    name: str = Field(..., description="Nombre del sector")
+    sector_type_id: int = Field(..., description="ID del tipo de sector")
+
+
 class BranchResponse(BaseModel):
     """Response para una sucursal"""
     id: int = Field(..., description="ID de la sucursal")
@@ -22,7 +36,8 @@ class BranchResponse(BaseModel):
     city_id: int = Field(..., description="ID de la ciudad")
     city_name: str = Field(..., description="Nombre de la ciudad")
     address: Optional[str] = Field(None, description="Dirección específica de la sucursal")
-    ramps: int = Field(..., description="Número de rampas")
+    ramps: List[RampSummaryResponse] = Field(default_factory=list, description="Lista de rampas")
+    sectors: List[SectorSummaryResponse] = Field(default_factory=list, description="Lista de sectores")
     is_active: bool = Field(..., description="Estado activo de la sucursal")
     created_at: datetime = Field(..., description="Fecha de creación")
     updated_at: datetime = Field(..., description="Fecha de última actualización")

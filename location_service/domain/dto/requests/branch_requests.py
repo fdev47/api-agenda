@@ -1,7 +1,7 @@
 """
 DTOs de requests para sucursales
 """
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field, validator
 
 
@@ -14,7 +14,8 @@ class CreateBranchRequest(BaseModel):
     state_id: int = Field(..., gt=0, description="ID del estado")
     city_id: int = Field(..., gt=0, description="ID de la ciudad")
     address: Optional[str] = Field(None, max_length=255, description="Dirección específica de la sucursal")
-    ramps: int = Field(0, ge=0, description="Número de rampas")
+    ramps: List[int] = Field(default_factory=list, description="Lista de IDs de rampas")
+    sectors: List[int] = Field(default_factory=list, description="Lista de IDs de sectores")
     is_active: bool = Field(True, description="Estado activo de la sucursal")
 
     @validator('code')
@@ -39,7 +40,8 @@ class UpdateBranchRequest(BaseModel):
     state_id: Optional[int] = Field(None, gt=0, description="ID del estado")
     city_id: Optional[int] = Field(None, gt=0, description="ID de la ciudad")
     address: Optional[str] = Field(None, max_length=255, description="Dirección específica de la sucursal")
-    ramps: Optional[int] = Field(None, ge=0, description="Número de rampas")
+    ramps: Optional[List[int]] = Field(None, description="Lista de IDs de rampas")
+    sectors: Optional[List[int]] = Field(None, description="Lista de IDs de sectores")
     is_active: Optional[bool] = Field(None, description="Estado activo de la sucursal")
 
     @validator('code')

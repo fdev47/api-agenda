@@ -30,11 +30,7 @@ def get_create_branch_use_case() -> CreateBranchUseCase:
 
 def get_get_branch_use_case() -> GetBranchUseCase:
     return GetBranchUseCase(
-        branch_repository=container.branch_repository(),
-        local_repository=container.local_repository(),
-        country_repository=container.country_repository(),
-        state_repository=container.state_repository(),
-        city_repository=container.city_repository()
+        branch_repository=container.branch_repository()
     )
 
 def get_list_branches_use_case() -> ListBranchesUseCase:
@@ -43,7 +39,9 @@ def get_list_branches_use_case() -> ListBranchesUseCase:
         local_repository=container.local_repository(),
         country_repository=container.country_repository(),
         state_repository=container.state_repository(),
-        city_repository=container.city_repository()
+        city_repository=container.city_repository(),
+        ramp_repository=container.ramp_repository(),
+        sector_repository=container.sector_repository()
     )
 
 def get_update_branch_use_case() -> UpdateBranchUseCase:

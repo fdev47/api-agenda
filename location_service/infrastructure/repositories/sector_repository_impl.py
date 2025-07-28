@@ -59,12 +59,6 @@ class SectorRepositoryImpl(SectorRepository):
                 description=sector_model.description,
                 branch_id=sector_model.branch_id,
                 sector_type_id=sector_model.sector_type_id,
-                measurement_unit=MeasurementUnit(
-                    id=1,  # Valor por defecto
-                    name="Default",
-                    code="DEFAULT",
-                    created_at=sector_model.created_at
-                ),
                 created_at=sector_model.created_at,
                 updated_at=sector_model.updated_at
             )
@@ -122,12 +116,6 @@ class SectorRepositoryImpl(SectorRepository):
                     description=model.description,
                     branch_id=model.branch_id,
                     sector_type_id=model.sector_type_id,
-                    measurement_unit=MeasurementUnit(
-                        id=1,  # Valor por defecto
-                        name="Default",
-                        code="DEFAULT",
-                        created_at=model.created_at
-                    ),
                     created_at=model.created_at,
                     updated_at=model.updated_at
                 )
@@ -153,12 +141,6 @@ class SectorRepositoryImpl(SectorRepository):
                     description=model.description,
                     branch_id=model.branch_id,
                     sector_type_id=model.sector_type_id,
-                    measurement_unit=MeasurementUnit(
-                        id=1,  # Valor por defecto
-                        name="Default",
-                        code="DEFAULT",
-                        created_at=model.created_at
-                    ),
                     created_at=model.created_at,
                     updated_at=model.updated_at
                 )
@@ -191,7 +173,6 @@ class SectorRepositoryImpl(SectorRepository):
                 description=sector_model.description,
                 branch_id=sector_model.branch_id,
                 sector_type_id=sector_model.sector_type_id,
-                measurement_unit=sector.measurement_unit,
                 created_at=sector_model.created_at,
                 updated_at=sector_model.updated_at
             )

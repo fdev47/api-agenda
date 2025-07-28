@@ -240,11 +240,7 @@ class Container(containers.DeclarativeContainer):
     
     get_branch_use_case = providers.Factory(
         GetBranchUseCase,
-        branch_repository=branch_repository,
-        local_repository=local_repository,
-        country_repository=country_repository,
-        state_repository=state_repository,
-        city_repository=city_repository
+        branch_repository=branch_repository
     )
     
     list_branches_use_case = providers.Factory(
@@ -253,7 +249,9 @@ class Container(containers.DeclarativeContainer):
         local_repository=local_repository,
         country_repository=country_repository,
         state_repository=state_repository,
-        city_repository=city_repository
+        city_repository=city_repository,
+        ramp_repository=ramp_repository,
+        sector_repository=sector_repository
     )
     
     update_branch_use_case = providers.Factory(
