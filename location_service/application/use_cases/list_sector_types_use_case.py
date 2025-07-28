@@ -24,6 +24,8 @@ class ListSectorTypesUseCase:
                 id=sector_type.id,
                 name=sector_type.name,
                 code=sector_type.code,
+                description=sector_type.description,
+                is_active=sector_type.is_active,
                 created_at=sector_type.created_at,
                 updated_at=sector_type.updated_at
             )

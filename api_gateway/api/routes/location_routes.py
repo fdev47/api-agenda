@@ -3,10 +3,18 @@ Rutas de location en el API Gateway
 """
 from fastapi import APIRouter, Query
 from typing import List, Optional
-from ...domain.dto.responses.location_responses import CountryListResponse, StateListResponse, CityListResponse
+from ...domain.dto.responses.location_responses import (
+    CountryListResponse, 
+    StateListResponse, 
+    CityListResponse,
+    MeasurementUnitListResponse,
+    SectorTypeListResponse
+)
 from ...application.use_cases.location.list_countries_use_case import ListCountriesUseCase
 from ...application.use_cases.location.list_states_use_case import ListStatesUseCase
 from ...application.use_cases.location.list_cities_use_case import ListCitiesUseCase
+from ...application.use_cases.location.list_measurement_units_use_case import ListMeasurementUnitsUseCase
+from ...application.use_cases.location.list_sector_types_use_case import ListSectorTypesUseCase
 
 router = APIRouter()
 
@@ -64,4 +72,46 @@ async def list_cities(
         total=len(cities),
         skip=skip,
         limit=limit
+    )
+
+@router.get("/measurement-units", response_model=MeasurementUnitListResponse)
+async def list_measurement_units(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    name: Optional[str] = Query(None, description="Filtrar por nombre"),
+    code: Optional[str] = Query(None, description="Filtrar por código"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo")
+):
+    """
+    Listar unidades de medida disponibles
+    """
+    use_case = ListMeasurementUnitsUseCase()
+    measurement_units = await use_case.execute(skip=skip, limit=limit, name=name, code=code, is_active=is_active)
+    
+    return MeasurementUnitListResponse(
+        items=measurement_units,
+        total=len(measurement_units),
+        limit=limit,
+        offset=skip
+    )
+
+@router.get("/sector-types", response_model=SectorTypeListResponse)
+async def list_sector_types(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    name: Optional[str] = Query(None, description="Filtrar por nombre"),
+    code: Optional[str] = Query(None, description="Filtrar por código"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo")
+):
+    """
+    Listar tipos de sector disponibles
+    """
+    use_case = ListSectorTypesUseCase()
+    sector_types = await use_case.execute(skip=skip, limit=limit, name=name, code=code, is_active=is_active)
+    
+    return SectorTypeListResponse(
+        sector_types=sector_types,
+        total=len(sector_types),
+        page=1,  # Por defecto página 1
+        size=limit
     ) 
