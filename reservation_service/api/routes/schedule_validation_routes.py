@@ -84,13 +84,25 @@ async def update_branch_schedule(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar un horario de sucursal con validación de reservas"""
+    logger.info(f"🚀 Endpoint update_branch_schedule llamado con schedule_id: {schedule_id}")
+    logger.info(f"📝 Datos de actualización recibidos: {request}")
+    logger.info(f"📝 Auto reschedule: {auto_reschedule}")
+    
     try:
+        logger.info("📝 Obteniendo use case...")
         use_case = container.update_branch_schedule_use_case()
+        logger.info("✅ Use case obtenido correctamente")
+        
+        logger.info(f"🔄 Ejecutando actualización para schedule_id: {schedule_id}")
         result = await use_case.execute(schedule_id, request, auto_reschedule=auto_reschedule)
+        logger.info("✅ Actualización completada exitosamente")
+        logger.info(f"📊 Resultado: success={result.get('success')}, message={result.get('message', 'N/A')}")
         
         if result["success"]:
+            logger.info("✅ Actualización exitosa, retornando horario actualizado")
             return result["schedule"]
         else:
+            logger.warning(f"⚠️ Actualización requiere confirmación: {result.get('message')}")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
@@ -101,16 +113,19 @@ async def update_branch_schedule(
             )
             
     except ScheduleNotFoundException as e:
+        logger.warning(f"⚠️ Horario no encontrado: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": e.error_code}
         )
     except (ScheduleOverlapException, InvalidScheduleTimeException, InvalidIntervalException) as e:
+        logger.warning(f"⚠️ Error de validación: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "error_code": e.error_code}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en update_branch_schedule: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
