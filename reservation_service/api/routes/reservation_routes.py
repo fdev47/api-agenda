@@ -332,21 +332,32 @@ async def confirm_reservation(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Confirmar una reserva"""
+    logger.info(f"🚀 Endpoint confirm_reservation llamado con ID: {reservation_id}")
+    
     try:
+        logger.info("📝 Obteniendo use case...")
         use_case = container.confirm_reservation_use_case()
+        logger.info("✅ Use case obtenido correctamente")
+        
+        logger.info(f"🔄 Ejecutando confirmación para reservation_id: {reservation_id}")
         result = await use_case.execute(reservation_id)
+        logger.info("✅ Reserva confirmada exitosamente")
+        
         return result
     except ReservationNotFoundException as e:
+        logger.warning(f"⚠️ Reserva no encontrada: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": "RESERVATION_NOT_FOUND"}
         )
     except ReservationStatusException as e:
+        logger.warning(f"⚠️ Estado de reserva inválido: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "error_code": "INVALID_STATUS"}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en confirm_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -360,21 +371,32 @@ async def cancel_reservation(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Cancelar una reserva"""
+    logger.info(f"🚀 Endpoint cancel_reservation llamado con ID: {reservation_id}")
+    
     try:
+        logger.info("📝 Obteniendo use case...")
         use_case = container.cancel_reservation_use_case()
+        logger.info("✅ Use case obtenido correctamente")
+        
+        logger.info(f"🔄 Ejecutando cancelación para reservation_id: {reservation_id}")
         result = await use_case.execute(reservation_id)
+        logger.info("✅ Reserva cancelada exitosamente")
+        
         return result
     except ReservationNotFoundException as e:
+        logger.warning(f"⚠️ Reserva no encontrada: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": "RESERVATION_NOT_FOUND"}
         )
     except ReservationStatusException as e:
+        logger.warning(f"⚠️ Estado de reserva inválido: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "error_code": "INVALID_STATUS"}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en cancel_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
