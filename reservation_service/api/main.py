@@ -17,7 +17,7 @@ load_dotenv()
 
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
-from .routes import schedule_routes, schedule_validation_routes, reservation_routes
+from .routes import schedule_routes, reservation_routes
 from ..infrastructure.models.base import Base
 from ..infrastructure.container import container
 
@@ -44,8 +44,7 @@ def create_reservation_app():
     # ⭐ INICIALIZAR EL CONTAINER
     container.wire(modules=[
         "reservation_service.api.routes.reservation_routes",
-        "reservation_service.api.routes.schedule_routes",
-        "reservation_service.api.routes.schedule_validation_routes"
+        "reservation_service.api.routes.schedule_routes"
     ])
     
     # Inicializar el container
@@ -54,11 +53,10 @@ def create_reservation_app():
     # Configuración del servicio
     service_config = create_reservation_service()
     
-    # Configurar routers con prefijos y tags personalizados
+    # Configurar routers con tags personalizados (sin prefijos duplicados)
     routers = [
-        RouterConfig(schedule_routes.router, prefix="/schedules", tags=["Schedules"]),
-        RouterConfig(schedule_validation_routes.router, prefix="/schedule-validation", tags=["Schedule Validation"]),
-        RouterConfig(reservation_routes.router, prefix="/reservations", tags=["Reservations"])
+        RouterConfig(schedule_routes.router, tags=["Schedules"]),
+        RouterConfig(reservation_routes.router, tags=["Reservations"])
     ]
     
     # Crear aplicación usando factory común
