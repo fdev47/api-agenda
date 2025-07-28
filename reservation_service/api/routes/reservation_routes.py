@@ -246,31 +246,40 @@ async def update_reservation(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar una reserva existente"""
+    logger.info(f"🚀 Endpoint update_reservation llamado con ID: {reservation_id}")
     try:
+        logger.info(f"📝 Datos de actualización recibidos: {request}")
         use_case = container.update_reservation_use_case()
+        logger.info("✅ Use case obtenido correctamente")
         result = await use_case.execute(reservation_id, request)
+        logger.info("✅ Reserva actualizada exitosamente")
         return result
     except ReservationNotFoundException as e:
+        logger.warning(f"⚠️ Reserva no encontrada: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": "RESERVATION_NOT_FOUND"}
         )
     except ReservationConflictException as e:
+        logger.warning(f"⚠️ Conflicto de reserva: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": e.message, "error_code": "RESERVATION_CONFLICT"}
         )
     except ReservationValidationException as e:
+        logger.warning(f"⚠️ Error de validación: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "field_errors": e.field_errors, "error_code": "VALIDATION_ERROR"}
         )
     except ReservationStatusException as e:
+        logger.warning(f"⚠️ Estado de reserva inválido: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "error_code": "INVALID_STATUS"}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en update_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

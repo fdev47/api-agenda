@@ -6,6 +6,9 @@ from typing import List, Optional
 from datetime import datetime
 
 from .order_number_request import OrderNumberRequest
+from .update_sector_data_request import UpdateSectorDataRequest
+from .update_branch_data_request import UpdateBranchDataRequest
+from .update_customer_data_request import UpdateCustomerDataRequest
 
 
 class UpdateReservationRequest(BaseModel):
@@ -18,6 +21,11 @@ class UpdateReservationRequest(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     notes: Optional[str] = Field(None, max_length=1000)
+    
+    # Datos de entidades relacionadas (opcionales para actualización parcial)
+    sector_data: Optional[UpdateSectorDataRequest] = None
+    branch_data: Optional[UpdateBranchDataRequest] = None
+    customer_data: Optional[UpdateCustomerDataRequest] = None
     
     @validator('end_time')
     def validate_end_time(cls, v, values):
