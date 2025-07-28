@@ -12,107 +12,130 @@ from ...domain.entities.reservation import Reservation
 from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...infrastructure.models.schedule import BranchScheduleModel
 from ...infrastructure.models.reservation import ReservationModel
+from commons.database import get_db_session
 
 
 class ScheduleRepositoryImpl(ScheduleRepository):
     """Implementación del repositorio de horarios de sucursales"""
     
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self):
+        pass
     
     async def create(self, schedule: BranchSchedule) -> BranchSchedule:
         """Crear un nuevo horario de sucursal"""
-        schedule_model = BranchScheduleModel.from_domain(schedule)
-        self.session.add(schedule_model)
-        await self.session.flush()
-        await self.session.refresh(schedule_model)
-        
-        return schedule_model.to_domain()
+        async for session in get_db_session():
+            print(f"        🔄 Iniciando transacción para horario de sucursal {schedule.branch_id}")
+            
+            schedule_model = BranchScheduleModel.from_domain(schedule)
+            print(f"        📋 Modelo creado: {schedule_model}")
+            
+            session.add(schedule_model)
+            print(f"        ➕ Modelo agregado a la sesión")
+            
+            await session.flush()
+            print(f"        💾 Flush ejecutado")
+            
+            await session.commit()
+            print(f"        ✅ Commit ejecutado")
+            
+            await session.refresh(schedule_model)
+            print(f"        🔄 Modelo refrescado con ID: {schedule_model.id}")
+            
+            result = schedule_model.to_domain()
+            print(f"        ✅ Entidad de dominio creada: {result}")
+            
+            return result
     
     async def get_by_id(self, schedule_id: int) -> Optional[BranchSchedule]:
         """Obtener un horario por ID"""
-        stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
-        result = await self.session.execute(stmt)
-        schedule_model = result.scalar_one_or_none()
-        
-        return schedule_model.to_domain() if schedule_model else None
+        async for session in get_db_session():
+            stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
+            result = await session.execute(stmt)
+            schedule_model = result.scalar_one_or_none()
+            
+            return schedule_model.to_domain() if schedule_model else None
     
     async def get_by_branch_and_day(self, branch_id: int, day_of_week: DayOfWeek) -> Optional[BranchSchedule]:
         """Obtener horario de una sucursal para un día específico"""
-        stmt = select(BranchScheduleModel).where(
-            and_(
-                BranchScheduleModel.branch_id == branch_id,
-                BranchScheduleModel.day_of_week == day_of_week
+        async for session in get_db_session():
+            stmt = select(BranchScheduleModel).where(
+                and_(
+                    BranchScheduleModel.branch_id == branch_id,
+                    BranchScheduleModel.day_of_week == day_of_week
+                )
             )
-        )
-        result = await self.session.execute(stmt)
-        schedule_model = result.scalar_one_or_none()
-        
-        return schedule_model.to_domain() if schedule_model else None
+            result = await session.execute(stmt)
+            schedule_model = result.scalar_one_or_none()
+            
+            return schedule_model.to_domain() if schedule_model else None
     
     async def list_by_branch(self, branch_id: int, day_of_week: Optional[DayOfWeek] = None, 
                            is_active: Optional[bool] = None) -> List[BranchSchedule]:
         """Listar horarios de una sucursal con filtros opcionales"""
-        conditions = [BranchScheduleModel.branch_id == branch_id]
-        
-        if day_of_week is not None:
-            conditions.append(BranchScheduleModel.day_of_week == day_of_week)
-        
-        if is_active is not None:
-            conditions.append(BranchScheduleModel.is_active == is_active)
-        
-        stmt = select(BranchScheduleModel).where(and_(*conditions))
-        result = await self.session.execute(stmt)
-        schedule_models = result.scalars().all()
-        
-        return [model.to_domain() for model in schedule_models]
+        async for session in get_db_session():
+            conditions = [BranchScheduleModel.branch_id == branch_id]
+            
+            if day_of_week is not None:
+                conditions.append(BranchScheduleModel.day_of_week == day_of_week)
+            
+            if is_active is not None:
+                conditions.append(BranchScheduleModel.is_active == is_active)
+            
+            stmt = select(BranchScheduleModel).where(and_(*conditions))
+            result = await session.execute(stmt)
+            schedule_models = result.scalars().all()
+            
+            return [model.to_domain() for model in schedule_models]
     
     async def update(self, schedule_id: int, schedule_data: dict) -> Optional[BranchSchedule]:
         """Actualizar un horario existente"""
-        stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
-        result = await self.session.execute(stmt)
-        schedule_model = result.scalar_one_or_none()
-        
-        if not schedule_model:
-            return None
-        
-        # Actualizar campos
-        for key, value in schedule_data.items():
-            if hasattr(schedule_model, key):
-                setattr(schedule_model, key, value)
-        
-        schedule_model.updated_at = datetime.utcnow()
-        await self.session.flush()
-        await self.session.refresh(schedule_model)
-        
-        return schedule_model.to_domain()
+        async for session in get_db_session():
+            stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
+            result = await session.execute(stmt)
+            schedule_model = result.scalar_one_or_none()
+            
+            if not schedule_model:
+                return None
+            
+            # Actualizar campos
+            for key, value in schedule_data.items():
+                if hasattr(schedule_model, key):
+                    setattr(schedule_model, key, value)
+            
+            schedule_model.updated_at = datetime.utcnow()
+            await session.flush()
+            await session.refresh(schedule_model)
+            
+            return schedule_model.to_domain()
     
     async def delete(self, schedule_id: int) -> bool:
         """Eliminar un horario"""
-        stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
-        result = await self.session.execute(stmt)
-        schedule_model = result.scalar_one_or_none()
-        
-        if not schedule_model:
-            return False
-        
-        await self.session.delete(schedule_model)
-        return True
+        async for session in get_db_session():
+            stmt = select(BranchScheduleModel).where(BranchScheduleModel.id == schedule_id)
+            result = await session.execute(stmt)
+            schedule_model = result.scalar_one_or_none()
+            
+            if not schedule_model:
+                return False
+            
+            await session.delete(schedule_model)
+            return True
     
     async def exists_by_branch_and_day(self, branch_id: int, day_of_week: DayOfWeek, 
                                      exclude_id: Optional[int] = None) -> bool:
         """Verificar si existe un horario para una sucursal y día"""
-        conditions = [
-            BranchScheduleModel.branch_id == branch_id,
-            BranchScheduleModel.day_of_week == day_of_week
-        ]
-        
-        if exclude_id:
-            conditions.append(BranchScheduleModel.id != exclude_id)
-        
-        stmt = select(BranchScheduleModel).where(and_(*conditions))
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none() is not None
+        async for session in get_db_session():
+            conditions = [
+                BranchScheduleModel.branch_id == branch_id,
+                BranchScheduleModel.day_of_week == day_of_week
+            ]
+            
+            if exclude_id:
+                conditions.append(BranchScheduleModel.id != exclude_id)
+            
+            stmt = select(BranchScheduleModel).where(and_(*conditions))
+            result = await session.execute(stmt)
+            return result.scalar_one_or_none() is not None
     
     async def get_available_slots(self, branch_id: int, target_date: date) -> List[TimeSlot]:
         """Obtener slots disponibles para una fecha específica"""

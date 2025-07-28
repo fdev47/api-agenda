@@ -2,7 +2,7 @@
 Modelo de base de datos para horarios
 """
 from datetime import datetime, time
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Time, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Time, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -23,7 +23,7 @@ class BranchScheduleModel(Base):
     branch_id = Column(Integer, nullable=False, index=True)
     
     # Configuración del horario
-    day_of_week = Column(Integer, nullable=False, index=True)  # Almacena el valor del enum
+    day_of_week = Column(Enum(DayOfWeek), nullable=False, index=True)  # Usar Enum directamente
     start_time = Column(Time, nullable=False)
     end_time = Column(Time, nullable=False)
     interval_minutes = Column(Integer, default=60, nullable=False)  # Intervalo por defecto 1 hora
@@ -41,7 +41,7 @@ class BranchScheduleModel(Base):
         return BranchSchedule(
             id=self.id,
             branch_id=self.branch_id,
-            day_of_week=DayOfWeek(self.day_of_week),  # Convertir de int a enum
+            day_of_week=self.day_of_week,  # Ya es un enum
             start_time=self.start_time,
             end_time=self.end_time,
             interval_minutes=self.interval_minutes,
@@ -55,7 +55,7 @@ class BranchScheduleModel(Base):
         """Convierte la entidad de dominio a modelo de BD"""
         return cls(
             branch_id=schedule.branch_id,
-            day_of_week=schedule.day_of_week.value,  # Convertir de enum a int
+            day_of_week=schedule.day_of_week,  # Ya es un enum
             start_time=schedule.start_time,
             end_time=schedule.end_time,
             interval_minutes=schedule.interval_minutes,
@@ -63,4 +63,4 @@ class BranchScheduleModel(Base):
         )
     
     def __repr__(self):
-        return f"<BranchSchedule(id={self.id}, branch_id={self.branch_id}, day={DayOfWeek(self.day_of_week).name}, time={self.start_time}-{self.end_time})>" 
+        return f"<BranchSchedule(id={self.id}, branch_id={self.branch_id}, day={self.day_of_week.name}, time={self.start_time}-{self.end_time})>" 
