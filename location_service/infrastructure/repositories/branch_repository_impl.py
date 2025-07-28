@@ -2,8 +2,8 @@
 Implementación del repositorio para sucursales
 """
 from typing import List, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_, select, func
 from ...domain.interfaces.branch_repository import BranchRepository
 from ...domain.entities.branch import Branch
 from ...domain.dto.requests.branch_requests import BranchFilterRequest
@@ -13,7 +13,7 @@ from ..models.branch import Branch as BranchModel
 class BranchRepositoryImpl(BranchRepository):
     """Implementación del repositorio para sucursales"""
     
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
     
     async def create(self, branch: Branch) -> Branch:
@@ -26,13 +26,12 @@ class BranchRepositoryImpl(BranchRepository):
             state_id=branch.state_id,
             city_id=branch.city_id,
             address=branch.address,
-            ramps=branch.ramps,
             is_active=branch.is_active
         )
         
         self.session.add(branch_model)
-        self.session.commit()
-        self.session.refresh(branch_model)
+        await self.session.commit()
+        await self.session.refresh(branch_model)
         
         return Branch(
             id=branch_model.id,
@@ -43,7 +42,7 @@ class BranchRepositoryImpl(BranchRepository):
             state_id=branch_model.state_id,
             city_id=branch_model.city_id,
             address=branch_model.address,
-            ramps=branch_model.ramps,
+            ramps=0,  # Valor por defecto
             is_active=branch_model.is_active,
             created_at=branch_model.created_at,
             updated_at=branch_model.updated_at
@@ -51,7 +50,10 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def get_by_id(self, branch_id: int) -> Optional[Branch]:
         """Obtener una sucursal por ID"""
-        branch_model = self.session.query(BranchModel).filter(BranchModel.id == branch_id).first()
+        result = await self.session.execute(
+            select(BranchModel).where(BranchModel.id == branch_id)
+        )
+        branch_model = result.scalar_one_or_none()
         
         if not branch_model:
             return None
@@ -65,7 +67,7 @@ class BranchRepositoryImpl(BranchRepository):
             state_id=branch_model.state_id,
             city_id=branch_model.city_id,
             address=branch_model.address,
-            ramps=branch_model.ramps,
+            ramps=0,  # Valor por defecto
             is_active=branch_model.is_active,
             created_at=branch_model.created_at,
             updated_at=branch_model.updated_at
@@ -73,7 +75,10 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def get_by_code(self, code: str) -> Optional[Branch]:
         """Obtener una sucursal por código"""
-        branch_model = self.session.query(BranchModel).filter(BranchModel.code == code).first()
+        result = await self.session.execute(
+            select(BranchModel).where(BranchModel.code == code)
+        )
+        branch_model = result.scalar_one_or_none()
         
         if not branch_model:
             return None
@@ -87,7 +92,7 @@ class BranchRepositoryImpl(BranchRepository):
             state_id=branch_model.state_id,
             city_id=branch_model.city_id,
             address=branch_model.address,
-            ramps=branch_model.ramps,
+            ramps=0,  # Valor por defecto
             is_active=branch_model.is_active,
             created_at=branch_model.created_at,
             updated_at=branch_model.updated_at
@@ -95,40 +100,40 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def list_all(self, filter_request: BranchFilterRequest) -> Tuple[List[Branch], int]:
         """Listar todas las sucursales con filtros"""
-        query = self.session.query(BranchModel)
+        query = select(BranchModel)
         
         # Aplicar filtros
         if filter_request.name:
-            query = query.filter(BranchModel.name.ilike(f"%{filter_request.name}%"))
+            query = query.where(BranchModel.name.ilike(f"%{filter_request.name}%"))
         
         if filter_request.code:
-            query = query.filter(BranchModel.code.ilike(f"%{filter_request.code}%"))
+            query = query.where(BranchModel.code.ilike(f"%{filter_request.code}%"))
         
         if filter_request.local_id:
-            query = query.filter(BranchModel.local_id == filter_request.local_id)
+            query = query.where(BranchModel.local_id == filter_request.local_id)
         
         if filter_request.country_id:
-            query = query.filter(BranchModel.country_id == filter_request.country_id)
+            query = query.where(BranchModel.country_id == filter_request.country_id)
         
         if filter_request.state_id:
-            query = query.filter(BranchModel.state_id == filter_request.state_id)
+            query = query.where(BranchModel.state_id == filter_request.state_id)
         
         if filter_request.city_id:
-            query = query.filter(BranchModel.city_id == filter_request.city_id)
+            query = query.where(BranchModel.city_id == filter_request.city_id)
         
         if filter_request.is_active is not None:
-            query = query.filter(BranchModel.is_active == filter_request.is_active)
+            query = query.where(BranchModel.is_active == filter_request.is_active)
         
         # Contar total
-        total = query.count()
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await self.session.execute(count_query)
+        total = total_result.scalar()
         
-        # Aplicar paginación
-        query = query.offset(filter_request.offset).limit(filter_request.limit)
+        # Aplicar paginación y ordenamiento
+        query = query.offset(filter_request.offset).limit(filter_request.limit).order_by(BranchModel.name)
         
-        # Ordenar por nombre
-        query = query.order_by(BranchModel.name)
-        
-        branch_models = query.all()
+        result = await self.session.execute(query)
+        branch_models = result.scalars().all()
         
         branches = [
             Branch(
@@ -140,7 +145,7 @@ class BranchRepositoryImpl(BranchRepository):
                 state_id=branch_model.state_id,
                 city_id=branch_model.city_id,
                 address=branch_model.address,
-                ramps=branch_model.ramps,
+                ramps=0,  # Valor por defecto
                 is_active=branch_model.is_active,
                 created_at=branch_model.created_at,
                 updated_at=branch_model.updated_at
@@ -152,9 +157,12 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def list_by_local(self, local_id: int) -> List[Branch]:
         """Listar sucursales por local"""
-        branch_models = self.session.query(BranchModel).filter(
-            BranchModel.local_id == local_id
-        ).order_by(BranchModel.name).all()
+        result = await self.session.execute(
+            select(BranchModel)
+            .where(BranchModel.local_id == local_id)
+            .order_by(BranchModel.name)
+        )
+        branch_models = result.scalars().all()
         
         return [
             Branch(
@@ -166,7 +174,7 @@ class BranchRepositoryImpl(BranchRepository):
                 state_id=branch_model.state_id,
                 city_id=branch_model.city_id,
                 address=branch_model.address,
-                ramps=branch_model.ramps,
+                ramps=0,  # Valor por defecto
                 is_active=branch_model.is_active,
                 created_at=branch_model.created_at,
                 updated_at=branch_model.updated_at
@@ -176,7 +184,10 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def update(self, branch_id: int, branch: Branch) -> Optional[Branch]:
         """Actualizar una sucursal"""
-        branch_model = self.session.query(BranchModel).filter(BranchModel.id == branch_id).first()
+        result = await self.session.execute(
+            select(BranchModel).where(BranchModel.id == branch_id)
+        )
+        branch_model = result.scalar_one_or_none()
         
         if not branch_model:
             return None
@@ -196,13 +207,11 @@ class BranchRepositoryImpl(BranchRepository):
             branch_model.city_id = branch.city_id
         if branch.address is not None:
             branch_model.address = branch.address
-        if branch.ramps is not None:
-            branch_model.ramps = branch.ramps
         if branch.is_active is not None:
             branch_model.is_active = branch.is_active
         
-        self.session.commit()
-        self.session.refresh(branch_model)
+        await self.session.commit()
+        await self.session.refresh(branch_model)
         
         return Branch(
             id=branch_model.id,
@@ -213,7 +222,7 @@ class BranchRepositoryImpl(BranchRepository):
             state_id=branch_model.state_id,
             city_id=branch_model.city_id,
             address=branch_model.address,
-            ramps=branch_model.ramps,
+            ramps=0,  # Valor por defecto
             is_active=branch_model.is_active,
             created_at=branch_model.created_at,
             updated_at=branch_model.updated_at
@@ -221,21 +230,40 @@ class BranchRepositoryImpl(BranchRepository):
     
     async def delete(self, branch_id: int) -> bool:
         """Eliminar una sucursal"""
-        branch_model = self.session.query(BranchModel).filter(BranchModel.id == branch_id).first()
+        result = await self.session.execute(
+            select(BranchModel).where(BranchModel.id == branch_id)
+        )
+        branch_model = result.scalar_one_or_none()
         
         if not branch_model:
             return False
         
-        self.session.delete(branch_model)
-        self.session.commit()
+        await self.session.delete(branch_model)
+        await self.session.commit()
         
         return True
     
     async def exists_by_code(self, code: str, exclude_id: Optional[int] = None) -> bool:
         """Verificar si existe una sucursal con el código dado"""
-        query = self.session.query(BranchModel).filter(BranchModel.code == code)
+        query = select(BranchModel).where(BranchModel.code == code)
         
         if exclude_id:
-            query = query.filter(BranchModel.id != exclude_id)
+            query = query.where(BranchModel.id != exclude_id)
         
-        return query.first() is not None 
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none() is not None
+    
+    async def exists_by_id(self, branch_id: int) -> bool:
+        """Verificar si existe una sucursal con el ID dado"""
+        result = await self.session.execute(
+            select(BranchModel).where(BranchModel.id == branch_id)
+        )
+        return result.scalar_one_or_none() is not None
+    
+    async def exists_by_local_id(self, local_id: int) -> bool:
+        """Verificar si existe un local con el ID dado"""
+        from ..models.local import Local as LocalModel
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.id == local_id)
+        )
+        return result.scalar_one_or_none() is not None 

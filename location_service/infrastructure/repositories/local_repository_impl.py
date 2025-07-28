@@ -2,8 +2,8 @@
 Implementación del repositorio para locales
 """
 from typing import List, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import and_, or_, select, func
 from ...domain.interfaces.local_repository import LocalRepository
 from ...domain.entities.local import Local
 from ...domain.dto.requests.local_requests import LocalFilterRequest
@@ -13,7 +13,7 @@ from ..models.local import Local as LocalModel
 class LocalRepositoryImpl(LocalRepository):
     """Implementación del repositorio para locales"""
     
-    def __init__(self, session: Session):
+    def __init__(self, session: AsyncSession):
         self.session = session
     
     async def create(self, local: Local) -> Local:
@@ -28,8 +28,8 @@ class LocalRepositoryImpl(LocalRepository):
         )
         
         self.session.add(local_model)
-        self.session.commit()
-        self.session.refresh(local_model)
+        await self.session.commit()
+        await self.session.refresh(local_model)
         
         return Local(
             id=local_model.id,
@@ -45,7 +45,10 @@ class LocalRepositoryImpl(LocalRepository):
     
     async def get_by_id(self, local_id: int) -> Optional[Local]:
         """Obtener un local por ID"""
-        local_model = self.session.query(LocalModel).filter(LocalModel.id == local_id).first()
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.id == local_id)
+        )
+        local_model = result.scalar_one_or_none()
         
         if not local_model:
             return None
@@ -64,7 +67,10 @@ class LocalRepositoryImpl(LocalRepository):
     
     async def get_by_code(self, code: str) -> Optional[Local]:
         """Obtener un local por código"""
-        local_model = self.session.query(LocalModel).filter(LocalModel.code == code).first()
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.code == code)
+        )
+        local_model = result.scalar_one_or_none()
         
         if not local_model:
             return None
@@ -83,28 +89,28 @@ class LocalRepositoryImpl(LocalRepository):
     
     async def list_all(self, filter_request: LocalFilterRequest) -> Tuple[List[Local], int]:
         """Listar todos los locales con filtros"""
-        query = self.session.query(LocalModel)
+        query = select(LocalModel)
         
         # Aplicar filtros
         if filter_request.name:
-            query = query.filter(LocalModel.name.ilike(f"%{filter_request.name}%"))
+            query = query.where(LocalModel.name.ilike(f"%{filter_request.name}%"))
         
         if filter_request.code:
-            query = query.filter(LocalModel.code.ilike(f"%{filter_request.code}%"))
+            query = query.where(LocalModel.code.ilike(f"%{filter_request.code}%"))
         
         if filter_request.is_active is not None:
-            query = query.filter(LocalModel.is_active == filter_request.is_active)
+            query = query.where(LocalModel.is_active == filter_request.is_active)
         
         # Contar total
-        total = query.count()
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await self.session.execute(count_query)
+        total = total_result.scalar()
         
-        # Aplicar paginación
-        query = query.offset(filter_request.offset).limit(filter_request.limit)
+        # Aplicar paginación y ordenamiento
+        query = query.offset(filter_request.offset).limit(filter_request.limit).order_by(LocalModel.name)
         
-        # Ordenar por nombre
-        query = query.order_by(LocalModel.name)
-        
-        local_models = query.all()
+        result = await self.session.execute(query)
+        local_models = result.scalars().all()
         
         locals = [
             Local(
@@ -125,7 +131,10 @@ class LocalRepositoryImpl(LocalRepository):
     
     async def update(self, local_id: int, local: Local) -> Optional[Local]:
         """Actualizar un local"""
-        local_model = self.session.query(LocalModel).filter(LocalModel.id == local_id).first()
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.id == local_id)
+        )
+        local_model = result.scalar_one_or_none()
         
         if not local_model:
             return None
@@ -144,8 +153,8 @@ class LocalRepositoryImpl(LocalRepository):
         if local.is_active is not None:
             local_model.is_active = local.is_active
         
-        self.session.commit()
-        self.session.refresh(local_model)
+        await self.session.commit()
+        await self.session.refresh(local_model)
         
         return Local(
             id=local_model.id,
@@ -161,21 +170,32 @@ class LocalRepositoryImpl(LocalRepository):
     
     async def delete(self, local_id: int) -> bool:
         """Eliminar un local"""
-        local_model = self.session.query(LocalModel).filter(LocalModel.id == local_id).first()
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.id == local_id)
+        )
+        local_model = result.scalar_one_or_none()
         
         if not local_model:
             return False
         
-        self.session.delete(local_model)
-        self.session.commit()
+        await self.session.delete(local_model)
+        await self.session.commit()
         
         return True
     
     async def exists_by_code(self, code: str, exclude_id: Optional[int] = None) -> bool:
         """Verificar si existe un local con el código dado"""
-        query = self.session.query(LocalModel).filter(LocalModel.code == code)
+        query = select(LocalModel).where(LocalModel.code == code)
         
         if exclude_id:
-            query = query.filter(LocalModel.id != exclude_id)
+            query = query.where(LocalModel.id != exclude_id)
         
-        return query.first() is not None 
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none() is not None
+    
+    async def exists_by_id(self, local_id: int) -> bool:
+        """Verificar si existe un local con el ID dado"""
+        result = await self.session.execute(
+            select(LocalModel).where(LocalModel.id == local_id)
+        )
+        return result.scalar_one_or_none() is not None 
