@@ -16,7 +16,7 @@ from ...application.use_cases import (
 )
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/branches", tags=["Sucursales"])
+router = APIRouter(tags=["Branches"])
 
 
 def get_create_branch_use_case() -> CreateBranchUseCase:

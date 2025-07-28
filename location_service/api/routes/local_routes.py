@@ -16,7 +16,7 @@ from ...application.use_cases import (
 )
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/locals", tags=["Locales"])
+router = APIRouter(tags=["Locals"])
 
 
 def get_create_local_use_case() -> CreateLocalUseCase:
