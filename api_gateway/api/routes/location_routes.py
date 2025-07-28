@@ -13,13 +13,13 @@ from ...domain.location.dto.responses.location_responses import (
     LocalListResponse,
     BranchListResponse
 )
-from ...application.use_cases.location.list_countries_use_case import ListCountriesUseCase
-from ...application.use_cases.location.list_states_use_case import ListStatesUseCase
-from ...application.use_cases.location.list_cities_use_case import ListCitiesUseCase
-from ...application.use_cases.location.list_measurement_units_use_case import ListMeasurementUnitsUseCase
-from ...application.use_cases.location.list_sector_types_use_case import ListSectorTypesUseCase
-from ...application.use_cases.location.list_locals_use_case import ListLocalsUseCase
-from ...application.use_cases.location.list_branches_use_case import ListBranchesUseCase
+from ...application.location.use_cases.list_countries_use_case import ListCountriesUseCase
+from ...application.location.use_cases.list_states_use_case import ListStatesUseCase
+from ...application.location.use_cases.list_cities_use_case import ListCitiesUseCase
+from ...application.location.use_cases.list_measurement_units_use_case import ListMeasurementUnitsUseCase
+from ...application.location.use_cases.list_sector_types_use_case import ListSectorTypesUseCase
+from ...application.location.use_cases.list_locals_use_case import ListLocalsUseCase
+from ...application.location.use_cases.list_branches_use_case import ListBranchesUseCase
 
 router = APIRouter()
 

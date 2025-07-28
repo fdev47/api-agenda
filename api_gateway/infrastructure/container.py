@@ -2,10 +2,10 @@
 Container de dependencias para el API Gateway
 """
 from dependency_injector import containers, providers
-from ..application.use_cases.user import GetUserUseCase, ListUsersUseCase, CreateUserUseCase
-from ..application.use_cases.customer.create_customer_use_case import CreateCustomerUseCase
-from ..application.use_cases.customer.get_customer_use_case import GetCustomerUseCase
-from ..application.use_cases.customer.list_customers_use_case import ListCustomersUseCase
+from ..application.user.use_cases import GetUserUseCase, ListUsersUseCase, CreateUserUseCase
+from ..application.customer.use_cases.create_customer_use_case import CreateCustomerUseCase
+from ..application.customer.use_cases.get_customer_use_case import GetCustomerUseCase
+from ..application.customer.use_cases.list_customers_use_case import ListCustomersUseCase
 
 
 class Container(containers.DeclarativeContainer):
