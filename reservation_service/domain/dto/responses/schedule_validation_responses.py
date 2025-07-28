@@ -35,14 +35,6 @@ class ValidateScheduleDeletionResponse(BaseModel):
     impact_analysis: ImpactAnalysisResponse
 
 
-class ValidateScheduleUpdateResponse(BaseModel):
-    """Respuesta para validación de actualización de horario"""
-    message: str
-    schedule: Optional[Dict[str, Any]] = None
-    impact_analysis: Optional[Dict[str, Any]] = None
-    requires_confirmation: Optional[bool] = None
-
-
 class ValidateScheduleChangesResult(BaseModel):
     """Resultado del use case ValidateScheduleChangesUseCase"""
     branch_id: int

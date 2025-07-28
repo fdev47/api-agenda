@@ -9,7 +9,6 @@ from ...domain.dto.responses.schedule_responses import (
 )
 from ...domain.dto.responses.schedule_validation_responses import (
     ValidateScheduleDeletionResponse, 
-    ValidateScheduleUpdateResponse,
     DeleteScheduleWithValidationResult
 )
 from ...domain.exceptions.schedule_exceptions import (
@@ -31,48 +30,6 @@ router = APIRouter(prefix="/schedules", tags=["Schedule Validation"])
 def get_container() -> Container:
     """Obtener el container de dependencias"""
     return Container()
-
-
-@router.put("/{schedule_id}/validate", response_model=ValidateScheduleUpdateResponse, status_code=status.HTTP_200_OK)
-async def validate_schedule_update(
-    schedule_id: int,
-    request: UpdateBranchScheduleRequest,
-    container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"])
-):
-    """Validar el impacto de actualizar un horario sin aplicarlo"""
-    try:
-        use_case = container.update_branch_schedule_use_case()
-        result = await use_case.execute(schedule_id, request, auto_reschedule=False)
-        
-        if result["success"]:
-            return ValidateScheduleUpdateResponse(
-                message="Los cambios se pueden aplicar sin afectar reservas",
-                schedule=result["schedule"],
-                impact_analysis=result["impact_analysis"]
-            )
-        else:
-            return ValidateScheduleUpdateResponse(
-                message=result["message"],
-                requires_confirmation=True,
-                impact_analysis=result["impact_analysis"]
-            )
-            
-    except ScheduleNotFoundException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": e.message, "error_code": e.error_code}
-        )
-    except (InvalidScheduleTimeException, InvalidIntervalException) as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": e.message, "error_code": e.error_code}
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
-        )
 
 
 @router.put("/{schedule_id}", response_model=BranchScheduleResponse, status_code=status.HTTP_200_OK)
