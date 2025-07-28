@@ -31,6 +31,7 @@ from ..application.use_cases import (
     DeleteRoleUseCase,
     CreateCustomerUseCase,
     GetCustomerUseCase,
+    GetCurrentCustomerUseCase,
     ListCustomersUseCase,
     UpdateCustomerUseCase,
     DeleteCustomerUseCase,
@@ -244,6 +245,11 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     get_customer_use_case = providers.Factory(
         GetCustomerUseCase,
+        customer_repository=customer_repository
+    )
+    
+    get_current_customer_use_case = providers.Factory(
+        GetCurrentCustomerUseCase,
         customer_repository=customer_repository
     )
     

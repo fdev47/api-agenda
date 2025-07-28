@@ -33,6 +33,7 @@ from .update_address_use_case import UpdateAddressUseCase
 from .delete_address_use_case import DeleteAddressUseCase
 from .create_customer_use_case import CreateCustomerUseCase
 from .get_customer_use_case import GetCustomerUseCase
+from .get_current_customer_use_case import GetCurrentCustomerUseCase
 from .list_customers_use_case import ListCustomersUseCase
 from .update_customer_use_case import UpdateCustomerUseCase
 from .delete_customer_use_case import DeleteCustomerUseCase
@@ -70,5 +71,6 @@ __all__ = [
     "GetCustomerUseCase",
     "ListCustomersUseCase",
     "UpdateCustomerUseCase",
-    "DeleteCustomerUseCase"
+    "DeleteCustomerUseCase",
+    "GetCurrentCustomerUseCase"
 ] 
