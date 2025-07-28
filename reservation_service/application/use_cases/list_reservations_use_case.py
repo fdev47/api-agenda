@@ -3,8 +3,8 @@ Use case para listar reservas
 """
 from typing import List
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
-from ...domain.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
-from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
+from ...domain.dto.responses.reservation_list_response import ReservationListResponse
+from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
 
 
@@ -14,7 +14,7 @@ class ListReservationsUseCase:
     def __init__(self, reservation_repository: ReservationRepository):
         self.reservation_repository = reservation_repository
     
-    async def execute(self, request: ReservationFilterRequest) -> ReservationSummaryListResponse:
+    async def execute(self, request: ReservationFilterRequest) -> ReservationListResponse:
         """Ejecutar el caso de uso"""
         
         # Obtener reservas con filtros
@@ -26,7 +26,7 @@ class ListReservationsUseCase:
         # Calcular páginas
         pages = (total + request.limit - 1) // request.limit
         
-        return ReservationSummaryListResponse(
+        return ReservationListResponse(
             items=reservation_responses,
             total=total,
             page=request.page,
@@ -34,20 +34,77 @@ class ListReservationsUseCase:
             pages=pages
         )
     
-    def to_response(self, reservation) -> ReservationSummaryResponse:
-        """Convertir entidad a DTO de respuesta resumida"""
-        return ReservationSummaryResponse(
-            id=reservation.id,
-            customer_name=reservation.customer_data.company_name,
-            customer_email=reservation.customer_data.email,
+    def to_response(self, reservation) -> ReservationResponse:
+        """Convertir entidad a DTO de respuesta completa"""
+        from ...domain.dto.responses.customer_data_response import CustomerDataResponse
+        from ...domain.dto.responses.branch_data_response import BranchDataResponse
+        from ...domain.dto.responses.sector_data_response import SectorDataResponse
+        from ...domain.dto.responses.order_number_response import OrderNumberResponse
+        
+        # Convertir datos del cliente
+        customer_response = CustomerDataResponse(
+            customer_id=reservation.customer_data.customer_id,
+            id=reservation.customer_data.id,
+            auth_uid=reservation.customer_data.auth_uid,
+            ruc=reservation.customer_data.ruc,
+            company_name=reservation.customer_data.company_name,
+            email=reservation.customer_data.email,
+            username=reservation.customer_data.username,
+            phone=reservation.customer_data.phone,
+            cellphone_number=reservation.customer_data.cellphone_number,
+            cellphone_country_code=reservation.customer_data.cellphone_country_code,
+            address_id=reservation.customer_data.address_id,
+            is_active=reservation.customer_data.is_active
+        )
+        
+        # Convertir datos de la sucursal
+        branch_response = BranchDataResponse(
             branch_id=reservation.branch_data.branch_id,
-            branch_name=reservation.branch_data.name,
+            name=reservation.branch_data.name,
+            code=reservation.branch_data.code,
+            address=reservation.branch_data.address,
+            country_id=reservation.branch_data.country_id,
+            country_name=reservation.branch_data.country_name,
+            state_id=reservation.branch_data.state_id,
+            state_name=reservation.branch_data.state_name,
+            city_id=reservation.branch_data.city_id,
+            city_name=reservation.branch_data.city_name
+        )
+        
+        # Convertir datos del sector
+        sector_response = SectorDataResponse(
             sector_id=reservation.sector_data.sector_id,
-            sector_name=reservation.sector_data.name,
+            name=reservation.sector_data.name,
+            description=reservation.sector_data.description,
+            sector_type_id=reservation.sector_data.sector_type_id,
+            sector_type_name=reservation.sector_data.sector_type_name,
+            measurement_unit_id=reservation.sector_data.measurement_unit_id,
+            measurement_unit_name=reservation.sector_data.measurement_unit_name,
+            capacity=reservation.sector_data.capacity
+        )
+        
+        # Convertir números de pedido
+        order_responses = [
+            OrderNumberResponse(code=order.code, description=order.description)
+            for order in reservation.order_numbers
+        ]
+        
+        return ReservationResponse(
+            id=reservation.id,
+            user_id=reservation.user_id,
+            customer_id=reservation.customer_id,
+            branch_data=branch_response,
+            sector_data=sector_response,
+            customer_data=customer_response,
+            unloading_time_minutes=reservation.unloading_time_minutes,
+            unloading_time_hours=reservation.get_total_unloading_time_hours(),
+            reason=reservation.reason,
+            order_numbers=order_responses,
             reservation_date=reservation.reservation_date,
             start_time=reservation.start_time,
             end_time=reservation.end_time,
             status=reservation.status.value,
-            order_count=len(reservation.order_numbers),
-            unloading_time_hours=reservation.get_total_unloading_time_hours()
+            notes=reservation.notes,
+            created_at=reservation.created_at,
+            updated_at=reservation.updated_at
         ) 

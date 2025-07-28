@@ -104,7 +104,7 @@ async def get_reservation(
         )
 
 
-@router.get("/", response_model=ReservationSummaryListResponse)
+@router.get("/", response_model=ReservationListResponse)
 async def list_reservations(
     # Filtros por usuario/cliente
     user_id: Optional[int] = Query(None, description="ID del usuario"),
