@@ -1,3 +1,9 @@
+"""
+Excepciones específicas para horarios
+"""
+from commons.error_codes import ErrorCode
+
+
 class ScheduleNotFoundException(Exception):
     """Excepción cuando no se encuentra un horario"""
     
@@ -10,7 +16,7 @@ class ScheduleNotFoundException(Exception):
             message = "Horario no encontrado"
         
         self.message = message
-        self.error_code = "SCHEDULE_NOT_FOUND"
+        self.error_code = ErrorCode.SCHEDULE_NOT_FOUND.value
         super().__init__(self.message)
 
 
@@ -20,7 +26,7 @@ class ScheduleAlreadyExistsException(Exception):
     def __init__(self, branch_id: int, day_of_week: str):
         message = f"Ya existe un horario para la sucursal {branch_id} en {day_of_week}"
         self.message = message
-        self.error_code = "SCHEDULE_ALREADY_EXISTS"
+        self.error_code = ErrorCode.SCHEDULE_ALREADY_EXISTS.value
         super().__init__(self.message)
 
 
@@ -30,7 +36,7 @@ class ScheduleOverlapException(Exception):
     def __init__(self, branch_id: int, day_of_week: str, start_time: str, end_time: str):
         message = f"El horario {start_time}-{end_time} para {day_of_week} se solapa con un horario existente en la sucursal {branch_id}"
         self.message = message
-        self.error_code = "SCHEDULE_OVERLAP"
+        self.error_code = ErrorCode.SCHEDULE_OVERLAP.value
         super().__init__(self.message)
 
 
@@ -40,7 +46,7 @@ class InvalidScheduleTimeException(Exception):
     def __init__(self, start_time: str, end_time: str):
         message = f"Horario inválido: {start_time}-{end_time}. El tiempo de inicio debe ser anterior al de fin"
         self.message = message
-        self.error_code = "INVALID_SCHEDULE_TIME"
+        self.error_code = ErrorCode.INVALID_SCHEDULE_TIME.value
         super().__init__(self.message)
 
 
@@ -50,7 +56,7 @@ class InvalidIntervalException(Exception):
     def __init__(self, interval_minutes: int, duration_minutes: int):
         message = f"Intervalo inválido: {interval_minutes} minutos. No puede ser mayor que la duración total ({duration_minutes} minutos)"
         self.message = message
-        self.error_code = "INVALID_INTERVAL"
+        self.error_code = ErrorCode.INVALID_INTERVAL.value
         super().__init__(self.message)
 
 
@@ -60,7 +66,7 @@ class NoScheduleForDateException(Exception):
     def __init__(self, branch_id: int, date: str, day_of_week: str):
         message = f"No hay horario configurado para la sucursal {branch_id} en {day_of_week} ({date})"
         self.message = message
-        self.error_code = "NO_SCHEDULE_FOR_DATE"
+        self.error_code = ErrorCode.NO_SCHEDULE_FOR_DATE.value
         super().__init__(self.message)
 
 
@@ -70,7 +76,7 @@ class SlotNotAvailableException(Exception):
     def __init__(self, branch_id: int, date: str, start_time: str, end_time: str):
         message = f"El slot {start_time}-{end_time} del {date} no está disponible en la sucursal {branch_id}"
         self.message = message
-        self.error_code = "SLOT_NOT_AVAILABLE"
+        self.error_code = ErrorCode.SLOT_NOT_AVAILABLE.value
         super().__init__(self.message)
 
 
@@ -80,5 +86,5 @@ class PastDateException(Exception):
     def __init__(self, date: str):
         message = f"No se puede consultar disponibilidad para fechas pasadas: {date}"
         self.message = message
-        self.error_code = "PAST_DATE"
+        self.error_code = ErrorCode.PAST_DATE.value
         super().__init__(self.message) 

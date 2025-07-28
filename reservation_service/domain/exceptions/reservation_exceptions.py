@@ -1,6 +1,7 @@
 """
 Excepciones específicas para reservas
 """
+from commons.error_codes import ErrorCode
 
 
 class ReservationNotFoundException(Exception):
@@ -9,6 +10,7 @@ class ReservationNotFoundException(Exception):
     def __init__(self, message: str, reservation_id: int = None):
         self.message = message
         self.reservation_id = reservation_id
+        self.error_code = ErrorCode.RESERVATION_NOT_FOUND.value
         super().__init__(self.message)
 
 
@@ -21,6 +23,7 @@ class ReservationAlreadyExistsException(Exception):
         self.sector_id = sector_id
         self.start_time = start_time
         self.end_time = end_time
+        self.error_code = ErrorCode.RESERVATION_ALREADY_EXISTS.value
         super().__init__(self.message)
 
 
@@ -30,6 +33,7 @@ class ReservationValidationException(Exception):
     def __init__(self, message: str, field_errors: dict = None):
         self.message = message
         self.field_errors = field_errors or {}
+        self.error_code = ErrorCode.RESERVATION_VALIDATION_ERROR.value
         super().__init__(self.message)
 
 
@@ -41,6 +45,7 @@ class ReservationConflictException(Exception):
         self.conflicting_reservation_id = conflicting_reservation_id
         self.branch_id = branch_id
         self.sector_id = sector_id
+        self.error_code = ErrorCode.RESERVATION_CONFLICT.value
         super().__init__(self.message)
 
 
@@ -51,4 +56,5 @@ class ReservationStatusException(Exception):
         self.message = message
         self.current_status = current_status
         self.required_status = required_status
+        self.error_code = ErrorCode.RESERVATION_STATUS_ERROR.value
         super().__init__(self.message) 

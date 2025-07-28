@@ -5,6 +5,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from datetime import date
 from typing import Optional
+from pydantic import ValidationError
+from commons.error_codes import ErrorCode
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import (
     CreateBranchScheduleRequest,
@@ -62,6 +64,12 @@ async def create_branch_schedule(
         use_case = container.create_branch_schedule_use_case()
         result = await use_case.execute(request)
         return result
+    except ValidationError as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
+        )
     except ScheduleAlreadyExistsException as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -108,6 +116,18 @@ async def get_available_slots(
         logger.info(f"📊 Resultado: {len(result.slots)} slots totales, {result.available_slots} disponibles")
         
         return result
+    except ValidationError as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic: {str(e)}")
+        # Extraer el mensaje de error específico
+        error_message = str(e)
+        if "No se puede consultar disponibilidad para fechas pasadas" in error_message:
+            error_code = ErrorCode.PAST_DATE.value
+        else:
+            error_code = ErrorCode.VALIDATION_ERROR.value
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": error_message, "error_code": error_code}
+        )
     except (NoScheduleForDateException, PastDateException) as e:
         logger.warning(f"⚠️ Error de validación: {e.message}")
         raise HTTPException(
@@ -241,6 +261,12 @@ async def update_branch_schedule_with_validation(
                 }
             )
             
+    except ValidationError as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
+        )
     except ScheduleNotFoundException as e:
         logger.warning(f"⚠️ Horario no encontrado: {e.message}")
         raise HTTPException(
