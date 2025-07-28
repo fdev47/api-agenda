@@ -1,8 +1,8 @@
 """
 Rutas para gestión de tipos de sector
 """
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import List, Optional
 
 from ...domain.dto.requests import CreateSectorTypeRequest, UpdateSectorTypeRequest
 from ...domain.dto.responses import SectorTypeResponse, SectorTypeListResponse
@@ -45,11 +45,19 @@ def get_delete_sector_type_use_case() -> DeleteSectorTypeUseCase:
 
 @router.get("/", response_model=SectorTypeListResponse)
 async def get_sector_types(
-    skip: int = 0,
-    limit: int = 100,
+    name: Optional[str] = Query(None, description="Filtrar por nombre"),
+    code: Optional[str] = Query(None, description="Filtrar por código"),
+    limit: int = Query(100, ge=1, le=1000, description="Límite de resultados"),
+    offset: int = Query(0, ge=0, description="Offset para paginación"),
     use_case: ListSectorTypesUseCase = Depends(get_list_sector_types_use_case)
 ):
-    filter_request = SectorTypeFilterRequest(limit=limit, offset=skip)
+    """Listar tipos de sector con filtros"""
+    filter_request = SectorTypeFilterRequest(
+        name=name,
+        code=code,
+        limit=limit,
+        offset=offset
+    )
     return await use_case.execute(filter_request)
 
 
