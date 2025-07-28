@@ -10,7 +10,8 @@ from ...domain.dto.responses.location_responses import (
     CityListResponse,
     MeasurementUnitListResponse,
     SectorTypeListResponse,
-    LocalListResponse
+    LocalListResponse,
+    BranchListResponse
 )
 from ...application.use_cases.location.list_countries_use_case import ListCountriesUseCase
 from ...application.use_cases.location.list_states_use_case import ListStatesUseCase
@@ -18,6 +19,7 @@ from ...application.use_cases.location.list_cities_use_case import ListCitiesUse
 from ...application.use_cases.location.list_measurement_units_use_case import ListMeasurementUnitsUseCase
 from ...application.use_cases.location.list_sector_types_use_case import ListSectorTypesUseCase
 from ...application.use_cases.location.list_locals_use_case import ListLocalsUseCase
+from ...application.use_cases.location.list_branches_use_case import ListBranchesUseCase
 
 router = APIRouter()
 
@@ -140,6 +142,35 @@ async def list_locals(
     return LocalListResponse(
         locals=locals,
         total=len(locals),
+        limit=limit,
+        offset=skip
+    )
+
+
+@router.get("/branches", response_model=BranchListResponse)
+async def list_branches(
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    name: Optional[str] = Query(None, description="Filtrar por nombre"),
+    code: Optional[str] = Query(None, description="Filtrar por código"),
+    local_id: Optional[int] = Query(None, description="Filtrar por local"),
+    country_id: Optional[int] = Query(None, description="Filtrar por país"),
+    state_id: Optional[int] = Query(None, description="Filtrar por estado"),
+    city_id: Optional[int] = Query(None, description="Filtrar por ciudad"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Listar sucursales disponibles (requiere autenticación)
+    """
+    access_token = authorization.replace("Bearer ", "") if authorization else ""
+    use_case = ListBranchesUseCase()
+    branches = await use_case.execute(skip=skip, limit=limit, name=name, code=code, local_id=local_id, country_id=country_id, state_id=state_id, city_id=city_id, is_active=is_active, access_token=access_token)
+    
+    return BranchListResponse(
+        branches=branches,
+        total=len(branches),
         limit=limit,
         offset=skip
     ) 

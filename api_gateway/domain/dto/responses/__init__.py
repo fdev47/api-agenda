@@ -22,7 +22,11 @@ from .location_responses import (
     MeasurementUnitListResponse,
     SectorTypeListResponse,
     LocalResponse,
-    LocalListResponse
+    LocalListResponse,
+    BranchResponse,
+    BranchListResponse,
+    RampSummaryResponse,
+    SectorSummaryResponse
 )
 
 __all__ = [
@@ -44,5 +48,9 @@ __all__ = [
     "MeasurementUnitListResponse",
     "SectorTypeListResponse",
     "LocalResponse",
-    "LocalListResponse"
+    "LocalListResponse",
+    "BranchResponse",
+    "BranchListResponse",
+    "RampSummaryResponse",
+    "SectorSummaryResponse"
 ] 
