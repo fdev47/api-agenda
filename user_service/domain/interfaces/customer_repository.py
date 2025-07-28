@@ -26,12 +26,12 @@ class CustomerRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self) -> List[Customer]:
+    async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
         """Obtener todos los customers"""
         pass
 
     @abstractmethod
-    async def update(self, customer_id: UUID, customer: Customer) -> Optional[Customer]:
+    async def update(self, customer_id: UUID, update_data: dict) -> Optional[Customer]:
         """Actualizar un customer"""
         pass
 

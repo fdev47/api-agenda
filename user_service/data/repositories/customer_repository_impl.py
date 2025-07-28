@@ -97,9 +97,13 @@ class CustomerRepositoryImpl(CustomerRepository):
             is_active=customer_db.is_active
         )
 
-    async def get_all(self) -> List[Customer]:
+    async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
         """Obtener todos los customers"""
-        result = await self.session.execute(select(CustomerDB))
+        result = await self.session.execute(
+            select(CustomerDB)
+            .offset(skip)
+            .limit(limit)
+        )
         customers_db = result.scalars().all()
 
         return [
@@ -119,23 +123,26 @@ class CustomerRepositoryImpl(CustomerRepository):
             for customer_db in customers_db
         ]
 
-    async def update(self, customer_id: UUID, customer: Customer) -> Optional[Customer]:
+    async def update(self, customer_id: UUID, update_data: dict) -> Optional[Customer]:
         """Actualizar un customer"""
+        # Primero obtener el customer existente
+        existing_customer = await self.get_by_id(customer_id)
+        if not existing_customer:
+            return None
+        
+        # Actualizar solo los campos proporcionados
+        update_values = {}
+        for field, value in update_data.items():
+            if hasattr(existing_customer, field) and value is not None:
+                update_values[field] = value
+        
+        if not update_values:
+            return existing_customer  # No hay cambios
+        
         result = await self.session.execute(
             update(CustomerDB)
             .where(CustomerDB.id == customer_id)
-            .values(
-                auth_uid=customer.auth_uid,
-                ruc=customer.ruc,
-                company_name=customer.company_name,
-                email=customer.email,
-                username=customer.username,
-                phone=customer.phone,
-                cellphone_number=customer.cellphone_number,
-                cellphone_country_code=customer.cellphone_country_code,
-                address_id=customer.address_id,
-                is_active=customer.is_active
-            )
+            .values(**update_values)
         )
         await self.session.commit()
 

@@ -30,7 +30,10 @@ from ..application.use_cases import (
     UpdateRoleUseCase,
     DeleteRoleUseCase,
     CreateCustomerUseCase,
-    GetCustomerByIdUseCase,
+    GetCustomerUseCase,
+    ListCustomersUseCase,
+    UpdateCustomerUseCase,
+    DeleteCustomerUseCase,
     GetUserByAuthUidUseCase,
     GetCustomerByAuthUidUseCase,
     AssignRoleUseCase,
@@ -235,6 +238,28 @@ class UserServiceContainer(containers.DeclarativeContainer):
     # Casos de uso de Customer
     create_customer_use_case = providers.Factory(
         CreateCustomerUseCase,
+        customer_repository=customer_repository,
+        address_repository=address_repository
+    )
+    
+    get_customer_use_case = providers.Factory(
+        GetCustomerUseCase,
+        customer_repository=customer_repository
+    )
+    
+    list_customers_use_case = providers.Factory(
+        ListCustomersUseCase,
+        customer_repository=customer_repository
+    )
+    
+    update_customer_use_case = providers.Factory(
+        UpdateCustomerUseCase,
+        customer_repository=customer_repository,
+        address_repository=address_repository
+    )
+    
+    delete_customer_use_case = providers.Factory(
+        DeleteCustomerUseCase,
         customer_repository=customer_repository,
         address_repository=address_repository
     )
