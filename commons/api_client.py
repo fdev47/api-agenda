@@ -82,9 +82,9 @@ class APIClient:
             print(f"❌ Error de conexión: {e}")
             raise ConnectionError(f"Error de conexión a {url}: {e}")
     
-    async def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def get(self, endpoint: str, params: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud GET"""
-        return await self._make_request('GET', endpoint, params=params)
+        return await self._make_request('GET', endpoint, params=params, additional_headers=headers)
     
     async def post(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Realizar solicitud POST"""
