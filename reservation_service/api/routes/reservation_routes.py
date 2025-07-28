@@ -1,6 +1,7 @@
 """
 Rutas para reservas
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
 
@@ -21,6 +22,8 @@ from ...domain.exceptions.reservation_exceptions import (
 from ...infrastructure.container import container
 from ..middleware import auth_middleware
 from ...application.use_cases.list_reservations_use_case import ListReservationsUseCase
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
@@ -45,26 +48,33 @@ async def create_reservation(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Crear una nueva reserva"""
+    logger.info("🚀 Endpoint create_reservation llamado")
+    
     try:
         use_case = container.create_reservation_use_case()
         result = await use_case.execute(request)
+        logger.info("✅ Reserva creada exitosamente")
         return result
     except ReservationAlreadyExistsException as e:
+        logger.warning(f"⚠️ Conflicto de reserva: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": e.message, "error_code": "RESERVATION_ALREADY_EXISTS"}
         )
     except ReservationConflictException as e:
+        logger.warning(f"⚠️ Conflicto de reserva: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail={"message": e.message, "error_code": "RESERVATION_CONFLICT"}
         )
     except ReservationValidationException as e:
+        logger.error(f"❌ Error de validación: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "field_errors": e.field_errors, "error_code": "VALIDATION_ERROR"}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en create_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

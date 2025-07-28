@@ -1,13 +1,7 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from .config import DATABASE_URL
+"""
+Conexión a base de datos para reservation_service
+"""
+from commons.database import get_db_session
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close() 
+# Re-exportar para uso en reservation_service
+__all__ = ["get_db_session"] 

@@ -36,8 +36,7 @@ class Container(containers.DeclarativeContainer):
     
     # Repositorios
     reservation_repository = providers.Factory(
-        ReservationRepositoryImpl,
-        session=db_session
+        ReservationRepositoryImpl
     )
     
     schedule_repository = providers.Factory(

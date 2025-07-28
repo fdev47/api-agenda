@@ -1,5 +1,6 @@
 import os
 from typing import List
+from commons.config import config
 
 
 class Settings:
@@ -13,8 +14,8 @@ class Settings:
     # CORS
     ALLOWED_ORIGINS: List[str] = os.getenv("RESERVATION_CORS_ORIGINS", "http://localhost:3000,http://localhost:8080,*").split(",")
     
-    # Base de datos
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/reservation_db")
+    # Base de datos - usar la configuración del módulo común
+    DATABASE_URL: str = config.DATABASE_URL or os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/reservation_db")
     
     # Servicios externos
     AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")

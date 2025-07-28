@@ -2,8 +2,15 @@
 API principal del Reservation Service usando factory común
 """
 import os
+import logging
 from dotenv import load_dotenv
 from datetime import datetime
+
+# Configurar logging básico
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # ⭐ CARGAR .env AL INICIO
 load_dotenv()
@@ -40,6 +47,9 @@ def create_reservation_app():
         "reservation_service.api.routes.schedule_routes",
         "reservation_service.api.routes.schedule_validation_routes"
     ])
+    
+    # Inicializar el container
+    container.init_resources()
     
     # Configuración del servicio
     service_config = create_reservation_service()

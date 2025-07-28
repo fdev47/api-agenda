@@ -1,6 +1,7 @@
 """
 Use case para crear una reserva
 """
+import logging
 from typing import Optional
 from datetime import datetime
 from typing import List
@@ -20,6 +21,7 @@ from ...domain.exceptions.reservation_exceptions import (
     ReservationValidationException
 )
 
+logger = logging.getLogger(__name__)
 
 class CreateReservationUseCase:
     """Caso de uso para crear una nueva reserva"""
@@ -29,98 +31,115 @@ class CreateReservationUseCase:
     
     async def execute(self, request: CreateReservationRequest) -> ReservationResponse:
         """Ejecutar el caso de uso"""
+        logger.info(f"🚀 CreateReservationUseCase.execute() iniciado")
         
-        # Convertir DTOs de request a entidades de dominio
-        customer_data = CustomerData(
-            customer_id=request.customer_data.customer_id,
-            id=request.customer_data.id,
-            auth_uid=request.customer_data.auth_uid,
-            ruc=request.customer_data.ruc,
-            company_name=request.customer_data.company_name,
-            email=request.customer_data.email,
-            username=request.customer_data.username,
-            phone=request.customer_data.phone,
-            cellphone_number=request.customer_data.cellphone_number,
-            cellphone_country_code=request.customer_data.cellphone_country_code,
-            address_id=request.customer_data.address_id,
-            is_active=request.customer_data.is_active
-        )
-        
-        branch_data = BranchData(
-            branch_id=request.branch_data.branch_id,
-            name=request.branch_data.name,
-            code=request.branch_data.code,
-            address=request.branch_data.address,
-            country_id=request.branch_data.country_id,
-            country_name=request.branch_data.country_name,
-            state_id=request.branch_data.state_id,
-            state_name=request.branch_data.state_name,
-            city_id=request.branch_data.city_id,
-            city_name=request.branch_data.city_name
-        )
-        
-        sector_data = SectorData(
-            sector_id=request.sector_data.sector_id,
-            name=request.sector_data.name,
-            description=request.sector_data.description,
-            sector_type_id=request.sector_data.sector_type_id,
-            sector_type_name=request.sector_data.sector_type_name,
-            measurement_unit=request.sector_data.measurement_unit
-        )
-        
-        # Convertir números de pedido
-        order_numbers = [
-            OrderNumber(code=order.code, description=order.description)
-            for order in request.order_numbers
-        ]
-        
-        # Crear la entidad de reserva
-        reservation = Reservation(
-            user_id=request.user_id,
-            customer_id=request.customer_id,
-            branch_data=branch_data,
-            sector_data=sector_data,
-            customer_data=customer_data,
-            unloading_time_minutes=request.unloading_time_minutes,
-            reason=request.reason,
-            order_numbers=order_numbers,
-            reservation_date=request.reservation_date,
-            start_time=request.start_time,
-            end_time=request.end_time,
-            notes=request.notes,
-            status=ReservationStatus.PENDING
-        )
-        
-        # Verificar conflictos de horario
-        conflicts = await self.reservation_repository.check_conflicts(
-            branch_id=reservation.get_branch_id(),
-            sector_id=reservation.get_sector_id(),
-            start_time=reservation.start_time,
-            end_time=reservation.end_time,
-            exclude_reservation_id=None
-        )
-        
-        if conflicts:
-            raise ReservationAlreadyExistsException(
-                f"Ya existe una reserva en el horario {reservation.start_time.strftime('%H:%M')}-{reservation.end_time.strftime('%H:%M')} "
-                f"para la sucursal {reservation.get_branch_id()} y sector {reservation.get_sector_id()}",
+        try:
+            # Convertir DTOs de request a entidades de dominio
+            logger.info("🔄 Convirtiendo DTOs a entidades...")
+            customer_data = CustomerData(
+                customer_id=request.customer_data.customer_id,
+                id=request.customer_data.id,
+                auth_uid=request.customer_data.auth_uid,
+                ruc=request.customer_data.ruc,
+                company_name=request.customer_data.company_name,
+                email=request.customer_data.email,
+                username=request.customer_data.username,
+                phone=request.customer_data.phone,
+                cellphone_number=request.customer_data.cellphone_number,
+                cellphone_country_code=request.customer_data.cellphone_country_code,
+                address_id=request.customer_data.address_id,
+                is_active=request.customer_data.is_active
+            )
+            
+            branch_data = BranchData(
+                branch_id=request.branch_data.branch_id,
+                name=request.branch_data.name,
+                code=request.branch_data.code,
+                address=request.branch_data.address,
+                country_id=request.branch_data.country_id,
+                country_name=request.branch_data.country_name,
+                state_id=request.branch_data.state_id,
+                state_name=request.branch_data.state_name,
+                city_id=request.branch_data.city_id,
+                city_name=request.branch_data.city_name
+            )
+            
+            sector_data = SectorData(
+                sector_id=request.sector_data.sector_id,
+                name=request.sector_data.name,
+                description=request.sector_data.description,
+                sector_type_id=request.sector_data.sector_type_id,
+                sector_type_name=request.sector_data.sector_type_name,
+                measurement_unit_id=request.sector_data.measurement_unit_id,
+                measurement_unit_name=request.sector_data.measurement_unit_name,
+                capacity=request.sector_data.capacity
+            )
+            
+            # Convertir números de pedido
+            order_numbers = [
+                OrderNumber(code=order.code, description=order.description)
+                for order in request.order_numbers
+            ]
+            
+            # Crear la entidad de reserva
+            logger.info("🏗️ Creando entidad Reservation...")
+            reservation = Reservation(
+                user_id=request.user_id,
+                customer_id=request.customer_id,
+                branch_data=branch_data,
+                sector_data=sector_data,
+                customer_data=customer_data,
+                unloading_time_minutes=request.unloading_time_minutes,
+                reason=request.reason,
+                order_numbers=order_numbers,
+                reservation_date=request.reservation_date,
+                start_time=request.start_time,
+                end_time=request.end_time,
+                notes=request.notes,
+                status=ReservationStatus.PENDING
+            )
+            
+            # Verificar conflictos de horario
+            logger.info("🔍 Verificando conflictos...")
+            conflicts = await self.reservation_repository.check_conflicts(
                 branch_id=reservation.get_branch_id(),
                 sector_id=reservation.get_sector_id(),
                 start_time=reservation.start_time,
-                end_time=reservation.end_time
+                end_time=reservation.end_time,
+                exclude_reservation_id=None
             )
-        
-        # Guardar la reserva
-        saved_reservation = await self.reservation_repository.create(reservation)
-        
-        # Convertir a DTO de respuesta
-        return self.to_response(saved_reservation)
+            
+            if conflicts:
+                raise ReservationAlreadyExistsException(
+                    f"Ya existe una reserva en el horario {reservation.start_time.strftime('%H:%M')}-{reservation.end_time.strftime('%H:%M')} "
+                    f"para la sucursal {reservation.get_branch_id()} y sector {reservation.get_sector_id()}",
+                    branch_id=reservation.get_branch_id(),
+                    sector_id=reservation.get_sector_id(),
+                    start_time=reservation.start_time,
+                    end_time=reservation.end_time
+                )
+            
+            # Guardar la reserva
+            logger.info("💾 Guardando en BD...")
+            saved_reservation = await self.reservation_repository.create(reservation)
+            logger.info(f"✅ Reserva guardada con ID: {saved_reservation.id}")
+            
+            # Convertir a DTO de respuesta
+            response = self.to_response(saved_reservation)
+            logger.info("🎉 CreateReservationUseCase completado exitosamente")
+            return response
+            
+        except Exception as e:
+            logger.error(f"❌ Error en CreateReservationUseCase: {str(e)}", exc_info=True)
+            raise
     
     def to_response(self, reservation: Reservation) -> ReservationResponse:
         """Convertir entidad a DTO de respuesta"""
-        from ...domain.dto.responses.reservation_responses import (
-            CustomerDataResponse, BranchDataResponse, SectorDataResponse, OrderNumberResponse
-        )
+        from ...domain.dto.responses.customer_data_response import CustomerDataResponse
+        from ...domain.dto.responses.branch_data_response import BranchDataResponse
+        from ...domain.dto.responses.sector_data_response import SectorDataResponse
+        from ...domain.dto.responses.order_number_response import OrderNumberResponse
+        from ...domain.dto.responses.reservation_response import ReservationResponse
         
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
@@ -159,7 +178,9 @@ class CreateReservationUseCase:
             description=reservation.sector_data.description,
             sector_type_id=reservation.sector_data.sector_type_id,
             sector_type_name=reservation.sector_data.sector_type_name,
-            measurement_unit=reservation.sector_data.measurement_unit
+            measurement_unit_id=reservation.sector_data.measurement_unit_id,
+            measurement_unit_name=reservation.sector_data.measurement_unit_name,
+            capacity=reservation.sector_data.capacity
         )
         
         # Convertir números de pedido
