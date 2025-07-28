@@ -3,7 +3,7 @@ DTOs de responses para customers en el API Gateway
 """
 from pydantic import BaseModel, Field
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 
 
 class CustomerResponse(BaseModel):
@@ -18,4 +18,12 @@ class CustomerResponse(BaseModel):
     cellphone_number: Optional[str] = Field(None, description="Número de celular")
     cellphone_country_code: Optional[str] = Field(None, description="Código de país del celular")
     address_id: Optional[UUID] = Field(None, description="ID de la dirección")
-    is_active: bool = Field(..., description="Estado activo del customer") 
+    is_active: bool = Field(..., description="Estado activo del customer")
+
+
+class CustomerListResponse(BaseModel):
+    """Response para lista de customers"""
+    customers: List[CustomerResponse] = Field(..., description="Lista de customers")
+    total: int = Field(..., description="Total de customers")
+    skip: int = Field(..., description="Número de elementos omitidos")
+    limit: int = Field(..., description="Límite de elementos por página") 
