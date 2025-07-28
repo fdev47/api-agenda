@@ -32,7 +32,10 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
         # Crear el modelo
         sector_type_model = SectorTypeModel(
             name=sector_type.name,
-            code=sector_type.code
+            code=sector_type.code,
+            description=sector_type.description,
+            measurement_unit=sector_type.measurement_unit,
+            is_active=sector_type.is_active
         )
         
         self.session.add(sector_type_model)
@@ -44,6 +47,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
             id=sector_type_model.id,
             name=sector_type_model.name,
             code=sector_type_model.code,
+            description=sector_type_model.description,
+            measurement_unit=sector_type_model.measurement_unit,
+            is_active=sector_type_model.is_active,
             created_at=sector_type_model.created_at,
             updated_at=sector_type_model.updated_at
         )
@@ -62,6 +68,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
             id=sector_type_model.id,
             name=sector_type_model.name,
             code=sector_type_model.code,
+            description=sector_type_model.description,
+            measurement_unit=sector_type_model.measurement_unit,
+            is_active=sector_type_model.is_active,
             created_at=sector_type_model.created_at,
             updated_at=sector_type_model.updated_at
         )
@@ -80,6 +89,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
             id=sector_type_model.id,
             name=sector_type_model.name,
             code=sector_type_model.code,
+            description=sector_type_model.description,
+            measurement_unit=sector_type_model.measurement_unit,
+            is_active=sector_type_model.is_active,
             created_at=sector_type_model.created_at,
             updated_at=sector_type_model.updated_at
         )
@@ -113,6 +125,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 id=model.id,
                 name=model.name,
                 code=model.code,
+                description=model.description,
+                measurement_unit=model.measurement_unit,
+                is_active=model.is_active,
                 created_at=model.created_at,
                 updated_at=model.updated_at
             )
@@ -142,6 +157,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
         # Actualizar campos
         existing_model.name = sector_type.name
         existing_model.code = sector_type.code
+        existing_model.description = sector_type.description
+        existing_model.measurement_unit = sector_type.measurement_unit
+        existing_model.is_active = sector_type.is_active
         
         await self.session.commit()
         await self.session.refresh(existing_model)
@@ -150,6 +168,9 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
             id=existing_model.id,
             name=existing_model.name,
             code=existing_model.code,
+            description=existing_model.description,
+            measurement_unit=existing_model.measurement_unit,
+            is_active=existing_model.is_active,
             created_at=existing_model.created_at,
             updated_at=existing_model.updated_at
         )
