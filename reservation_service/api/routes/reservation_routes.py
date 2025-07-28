@@ -165,12 +165,32 @@ async def list_reservations(
         date_to = None
         if reservation_date_from and reservation_date_from.strip():
             print(f"🔍 DEBUG: Procesando reservation_date_from: '{reservation_date_from}'")
-            date_from = datetime.fromisoformat(reservation_date_from)
-            print(f"🔍 DEBUG: date_from convertido: {date_from}")
+            try:
+                # Intentar diferentes formatos de fecha
+                if len(reservation_date_from) == 10:  # YYYY-MM-DD
+                    date_from = datetime.strptime(reservation_date_from, "%Y-%m-%d")
+                elif len(reservation_date_from) == 19:  # YYYY-MM-DD HH:MM:SS
+                    date_from = datetime.strptime(reservation_date_from, "%Y-%m-%d %H:%M:%S")
+                else:
+                    date_from = datetime.fromisoformat(reservation_date_from)
+                print(f"🔍 DEBUG: date_from convertido: {date_from}")
+            except ValueError as e:
+                print(f"❌ ERROR: Formato de fecha inválido para reservation_date_from: {reservation_date_from}")
+                raise ValueError(f"Formato de fecha inválido para reservation_date_from: {reservation_date_from}")
         if reservation_date_to and reservation_date_to.strip():
             print(f"🔍 DEBUG: Procesando reservation_date_to: '{reservation_date_to}'")
-            date_to = datetime.fromisoformat(reservation_date_to)
-            print(f"🔍 DEBUG: date_to convertido: {date_to}")
+            try:
+                # Intentar diferentes formatos de fecha
+                if len(reservation_date_to) == 10:  # YYYY-MM-DD
+                    date_to = datetime.strptime(reservation_date_to, "%Y-%m-%d")
+                elif len(reservation_date_to) == 19:  # YYYY-MM-DD HH:MM:SS
+                    date_to = datetime.strptime(reservation_date_to, "%Y-%m-%d %H:%M:%S")
+                else:
+                    date_to = datetime.fromisoformat(reservation_date_to)
+                print(f"🔍 DEBUG: date_to convertido: {date_to}")
+            except ValueError as e:
+                print(f"❌ ERROR: Formato de fecha inválido para reservation_date_to: {reservation_date_to}")
+                raise ValueError(f"Formato de fecha inválido para reservation_date_to: {reservation_date_to}")
         
         print(f"🔍 DEBUG: Creando ReservationFilterRequest")
         request = ReservationFilterRequest(

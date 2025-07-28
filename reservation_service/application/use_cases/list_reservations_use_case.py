@@ -3,7 +3,7 @@ Use case para listar reservas
 """
 from typing import List
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
-from ...domain.dto.responses.reservation_list_response import ReservationListResponse
+from ...domain.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
 from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
 
@@ -14,7 +14,7 @@ class ListReservationsUseCase:
     def __init__(self, reservation_repository: ReservationRepository):
         self.reservation_repository = reservation_repository
     
-    async def execute(self, request: ReservationFilterRequest) -> ReservationListResponse:
+    async def execute(self, request: ReservationFilterRequest) -> ReservationSummaryListResponse:
         """Ejecutar el caso de uso"""
         
         # Obtener reservas con filtros
@@ -26,7 +26,7 @@ class ListReservationsUseCase:
         # Calcular páginas
         pages = (total + request.limit - 1) // request.limit
         
-        return ReservationListResponse(
+        return ReservationSummaryListResponse(
             items=reservation_responses,
             total=total,
             page=request.page,
@@ -38,7 +38,8 @@ class ListReservationsUseCase:
         """Convertir entidad a DTO de respuesta resumida"""
         return ReservationSummaryResponse(
             id=reservation.id,
-            customer_company_name=reservation.customer_data.company_name,
+            customer_name=reservation.customer_data.company_name,
+            customer_email=reservation.customer_data.email,
             branch_id=reservation.branch_data.branch_id,
             branch_name=reservation.branch_data.name,
             sector_id=reservation.sector_data.sector_id,
