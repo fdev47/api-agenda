@@ -10,6 +10,7 @@ from .ramp import Ramp
 from .sector import Sector
 from .sector_type import SectorType
 from .measurement_unit import MeasurementUnit
+from .measurement_unit_entity import MeasurementUnit as MeasurementUnitEntity
 
 __all__ = [
     "Country",
@@ -20,5 +21,6 @@ __all__ = [
     "Ramp",
     "Sector",
     "SectorType",
-    "MeasurementUnit"
+    "MeasurementUnit",
+    "MeasurementUnitEntity"
 ] 

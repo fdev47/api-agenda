@@ -41,6 +41,11 @@ from .sector_type_requests import (
     UpdateSectorTypeRequest,
     SectorTypeFilterRequest
 )
+from .measurement_unit_requests import (
+    CreateMeasurementUnitRequest,
+    UpdateMeasurementUnitRequest,
+    MeasurementUnitFilterRequest
+)
 
 __all__ = [
     # Country requests
@@ -74,5 +79,9 @@ __all__ = [
     # SectorType requests
     "CreateSectorTypeRequest",
     "UpdateSectorTypeRequest",
-    "SectorTypeFilterRequest"
+    "SectorTypeFilterRequest",
+    # MeasurementUnit requests
+    "CreateMeasurementUnitRequest",
+    "UpdateMeasurementUnitRequest",
+    "MeasurementUnitFilterRequest"
 ] 

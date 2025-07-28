@@ -12,7 +12,7 @@ from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from ..domain.exceptions import LocationDomainException
 from ..domain.dto.responses import ErrorResponse
-from .routes import country_router, state_router, city_router, local_router, branch_router, sector_type_router
+from .routes import country_router, state_router, city_router, local_router, branch_router, sector_type_router, measurement_unit_router
 from ..infrastructure.models.base import Base
 
 
@@ -27,8 +27,8 @@ def create_location_service() -> ServiceConfig:
         api_version=config.API_VERSION,
         api_prefix=config.API_PREFIX,
         title="Location Service API",
-        description="API para gestión de ubicaciones, países, estados, ciudades, locales, sucursales y tipos de sector",
-        tags=["Locations", "Countries", "States", "Cities", "Locals", "Branches", "Sector Types"]
+        description="API para gestión de ubicaciones, países, estados, ciudades, locales, sucursales, tipos de sector y unidades de medida",
+        tags=["Locations", "Countries", "States", "Cities", "Locals", "Branches", "Sector Types", "Measurement Units"]
     )
 
 
@@ -55,7 +55,8 @@ def create_location_app():
         RouterConfig(city_router, prefix="/cities", tags=["Cities"]),
         RouterConfig(local_router, prefix="/locals", tags=["Locals"]),
         RouterConfig(branch_router, prefix="/branches", tags=["Branches"]),
-        RouterConfig(sector_type_router, prefix="/sector-types", tags=["Sector Types"])
+        RouterConfig(sector_type_router, prefix="/sector-types", tags=["Sector Types"]),
+        RouterConfig(measurement_unit_router, prefix="/measurement-units", tags=["Measurement Units"])
     ]
     
     # Crear aplicación usando factory común

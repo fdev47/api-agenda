@@ -13,6 +13,7 @@ from .repositories.branch_repository_impl import BranchRepositoryImpl
 from .repositories.ramp_repository_impl import RampRepositoryImpl
 from .repositories.sector_repository_impl import SectorRepositoryImpl
 from .repositories.sector_type_repository_impl import SectorTypeRepositoryImpl
+from .repositories.measurement_unit_repository_impl import MeasurementUnitRepositoryImpl
 
 # Casos de uso
 from ..application.use_cases.create_country_use_case import CreateCountryUseCase
@@ -62,6 +63,12 @@ from ..application.use_cases.get_sector_type_use_case import GetSectorTypeUseCas
 from ..application.use_cases.list_sector_types_use_case import ListSectorTypesUseCase
 from ..application.use_cases.update_sector_type_use_case import UpdateSectorTypeUseCase
 from ..application.use_cases.delete_sector_type_use_case import DeleteSectorTypeUseCase
+
+from ..application.use_cases.create_measurement_unit_use_case import CreateMeasurementUnitUseCase
+from ..application.use_cases.get_measurement_unit_use_case import GetMeasurementUnitUseCase
+from ..application.use_cases.list_measurement_units_use_case import ListMeasurementUnitsUseCase
+from ..application.use_cases.update_measurement_unit_use_case import UpdateMeasurementUnitUseCase
+from ..application.use_cases.delete_measurement_unit_use_case import DeleteMeasurementUnitUseCase
 
 
 class Container(containers.DeclarativeContainer):
@@ -113,6 +120,11 @@ class Container(containers.DeclarativeContainer):
     
     sector_type_repository = providers.Factory(
         SectorTypeRepositoryImpl,
+        session=db_session
+    )
+    
+    measurement_unit_repository = providers.Factory(
+        MeasurementUnitRepositoryImpl,
         session=db_session
     )
     
@@ -349,6 +361,32 @@ class Container(containers.DeclarativeContainer):
     delete_sector_type_use_case = providers.Factory(
         DeleteSectorTypeUseCase,
         sector_type_repository=sector_type_repository
+    )
+
+    # Casos de uso para unidades de medida
+    create_measurement_unit_use_case = providers.Factory(
+        CreateMeasurementUnitUseCase,
+        measurement_unit_repository=measurement_unit_repository
+    )
+    
+    get_measurement_unit_use_case = providers.Factory(
+        GetMeasurementUnitUseCase,
+        measurement_unit_repository=measurement_unit_repository
+    )
+    
+    list_measurement_units_use_case = providers.Factory(
+        ListMeasurementUnitsUseCase,
+        measurement_unit_repository=measurement_unit_repository
+    )
+    
+    update_measurement_unit_use_case = providers.Factory(
+        UpdateMeasurementUnitUseCase,
+        measurement_unit_repository=measurement_unit_repository
+    )
+    
+    delete_measurement_unit_use_case = providers.Factory(
+        DeleteMeasurementUnitUseCase,
+        measurement_unit_repository=measurement_unit_repository
     )
 
 
