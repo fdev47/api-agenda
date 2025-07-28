@@ -82,7 +82,7 @@ class ReservationRepositoryImpl(ReservationRepository):
                 conditions.append(ReservationModel.sector_data['name'].astext.ilike(f"%{filter_request.sector_name}%"))
             
             if filter_request.customer_name:
-                conditions.append(ReservationModel.customer_data['name'].astext.ilike(f"%{filter_request.customer_name}%"))
+                conditions.append(ReservationModel.customer_data['company_name'].astext.ilike(f"%{filter_request.customer_name}%"))
             
             if filter_request.customer_email:
                 conditions.append(ReservationModel.customer_data['email'].astext.ilike(f"%{filter_request.customer_email}%"))
@@ -172,9 +172,17 @@ class ReservationRepositoryImpl(ReservationRepository):
         
         reservation_model.customer_data = {
             "customer_id": reservation.customer_data.customer_id,
+            "id": reservation.customer_data.id,
+            "auth_uid": reservation.customer_data.auth_uid,
             "ruc": reservation.customer_data.ruc,
             "company_name": reservation.customer_data.company_name,
-            "phone_number": reservation.customer_data.phone_number
+            "email": reservation.customer_data.email,
+            "username": reservation.customer_data.username,
+            "phone": reservation.customer_data.phone,
+            "cellphone_number": reservation.customer_data.cellphone_number,
+            "cellphone_country_code": reservation.customer_data.cellphone_country_code,
+            "address_id": reservation.customer_data.address_id,
+            "is_active": reservation.customer_data.is_active
         }
         
         # Actualizar números de pedido (eliminar existentes y agregar nuevos)

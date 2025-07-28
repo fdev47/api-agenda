@@ -120,9 +120,17 @@ class ReservationModel(Base):
         
         customer_data = {
             "customer_id": reservation.customer_data.customer_id,
-            "name": reservation.customer_data.name,
+            "id": reservation.customer_data.id,
+            "auth_uid": reservation.customer_data.auth_uid,
+            "ruc": reservation.customer_data.ruc,
+            "company_name": reservation.customer_data.company_name,
             "email": reservation.customer_data.email,
-            "phone": reservation.customer_data.phone
+            "username": reservation.customer_data.username,
+            "phone": reservation.customer_data.phone,
+            "cellphone_number": reservation.customer_data.cellphone_number,
+            "cellphone_country_code": reservation.customer_data.cellphone_country_code,
+            "address_id": reservation.customer_data.address_id,
+            "is_active": reservation.customer_data.is_active
         }
         
         return cls(

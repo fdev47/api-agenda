@@ -33,9 +33,17 @@ class CreateReservationUseCase:
         # Convertir DTOs de request a entidades de dominio
         customer_data = CustomerData(
             customer_id=request.customer_data.customer_id,
+            id=request.customer_data.id,
+            auth_uid=request.customer_data.auth_uid,
             ruc=request.customer_data.ruc,
             company_name=request.customer_data.company_name,
-            phone_number=request.customer_data.phone_number
+            email=request.customer_data.email,
+            username=request.customer_data.username,
+            phone=request.customer_data.phone,
+            cellphone_number=request.customer_data.cellphone_number,
+            cellphone_country_code=request.customer_data.cellphone_country_code,
+            address_id=request.customer_data.address_id,
+            is_active=request.customer_data.is_active
         )
         
         branch_data = BranchData(
@@ -117,9 +125,17 @@ class CreateReservationUseCase:
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
             customer_id=reservation.customer_data.customer_id,
+            id=reservation.customer_data.id,
+            auth_uid=reservation.customer_data.auth_uid,
             ruc=reservation.customer_data.ruc,
             company_name=reservation.customer_data.company_name,
-            phone_number=reservation.customer_data.phone_number
+            email=reservation.customer_data.email,
+            username=reservation.customer_data.username,
+            phone=reservation.customer_data.phone,
+            cellphone_number=reservation.customer_data.cellphone_number,
+            cellphone_country_code=reservation.customer_data.cellphone_country_code,
+            address_id=reservation.customer_data.address_id,
+            is_active=reservation.customer_data.is_active
         )
         
         # Convertir datos de la sucursal

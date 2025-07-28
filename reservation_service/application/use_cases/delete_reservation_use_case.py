@@ -49,9 +49,7 @@ class DeleteReservationUseCase:
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
             customer_id=reservation.customer_data.customer_id,
-            ruc=reservation.customer_data.ruc,
-            company_name=reservation.customer_data.company_name,
-            phone_number=reservation.customer_data.phone_number
+            phone=reservation.customer_data.phone
         )
         
         # Convertir datos de la sucursal
