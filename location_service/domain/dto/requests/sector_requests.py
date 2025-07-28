@@ -55,5 +55,6 @@ class SectorFilterRequest(BaseModel):
     branch_id: Optional[int] = Field(None, gt=0, description="Filtrar por sucursal")
     sector_type_id: Optional[int] = Field(None, gt=0, description="Filtrar por tipo de sector")
     measurement_unit: Optional[MeasurementUnit] = Field(None, description="Filtrar por unidad de medida")
+    is_active: Optional[bool] = Field(None, description="Filtrar por estado activo")
     limit: int = Field(100, ge=1, le=1000, description="Límite de resultados")
     offset: int = Field(0, ge=0, description="Offset para paginación") 

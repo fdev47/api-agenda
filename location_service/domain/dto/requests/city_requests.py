@@ -17,6 +17,7 @@ class UpdateCityRequest(BaseModel):
 class CityFilterRequest(BaseModel):
     """Request para filtrar ciudades"""
     name: Optional[str] = Field(None, description="Filtrar por nombre")
+    code: Optional[str] = Field(None, description="Filtrar por código")
     state_id: Optional[int] = Field(None, description="Filtrar por estado")
     country_id: Optional[int] = Field(None, description="Filtrar por país")
     is_active: Optional[bool] = Field(None, description="Filtrar por estado activo")

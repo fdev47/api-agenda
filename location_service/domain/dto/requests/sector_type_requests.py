@@ -49,5 +49,6 @@ class SectorTypeFilterRequest(BaseModel):
     """DTO para filtrar tipos de sector"""
     name: Optional[str] = Field(None, description="Filtrar por nombre")
     code: Optional[str] = Field(None, description="Filtrar por código")
+    is_active: Optional[bool] = Field(None, description="Filtrar por estado activo")
     limit: int = Field(100, ge=1, le=1000, description="Límite de resultados")
     offset: int = Field(0, ge=0, description="Offset para paginación") 

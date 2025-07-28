@@ -77,55 +77,41 @@ class Container(containers.DeclarativeContainer):
     # Configuración
     config = providers.Configuration()
     
-    # Base de datos
-    db_session = providers.Factory(
-        lambda: db_manager.AsyncSessionLocal()
-    )
-    
-    # Repositorios
+    # Repositorios - sin argumentos ya que manejan sesiones internamente
     country_repository = providers.Factory(
-        CountryRepositoryImpl,
-        session=db_session
+        CountryRepositoryImpl
     )
     
     state_repository = providers.Factory(
-        StateRepositoryImpl,
-        session=db_session
+        StateRepositoryImpl
     )
     
     city_repository = providers.Factory(
-        CityRepositoryImpl,
-        session=db_session
+        CityRepositoryImpl
     )
     
     local_repository = providers.Factory(
-        LocalRepositoryImpl,
-        session=db_session
+        LocalRepositoryImpl
     )
     
     branch_repository = providers.Factory(
-        BranchRepositoryImpl,
-        session=db_session
+        BranchRepositoryImpl
     )
     
     ramp_repository = providers.Factory(
-        RampRepositoryImpl,
-        session=db_session
+        RampRepositoryImpl
     )
     
     sector_repository = providers.Factory(
-        SectorRepositoryImpl,
-        session=db_session
+        SectorRepositoryImpl
     )
     
     sector_type_repository = providers.Factory(
-        SectorTypeRepositoryImpl,
-        session=db_session
+        SectorTypeRepositoryImpl
     )
     
     measurement_unit_repository = providers.Factory(
-        MeasurementUnitRepositoryImpl,
-        session=db_session
+        MeasurementUnitRepositoryImpl
     )
     
     # Casos de uso para países
