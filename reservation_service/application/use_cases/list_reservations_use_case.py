@@ -18,20 +18,7 @@ class ListReservationsUseCase:
         """Ejecutar el caso de uso"""
         
         # Obtener reservas con filtros
-        reservations, total = await self.reservation_repository.list_with_filters(
-            user_id=request.user_id,
-            customer_id=request.customer_id,
-            branch_id=request.branch_id,
-            sector_id=request.sector_id,
-            customer_ruc=request.customer_ruc,
-            company_name=request.company_name,
-            reservation_date_from=request.reservation_date_from,
-            reservation_date_to=request.reservation_date_to,
-            status=request.status,
-            order_code=request.order_code,
-            offset=request.offset,
-            limit=request.limit
-        )
+        reservations, total = await self.reservation_repository.list(request)
         
         # Convertir a DTOs de respuesta
         reservation_responses = [self.to_response(reservation) for reservation in reservations]

@@ -18,21 +18,30 @@ from ...domain.exceptions.reservation_exceptions import (
     ReservationConflictException,
     ReservationStatusException
 )
-from ...infrastructure.container import Container
+from ...infrastructure.container import container
 from ..middleware import auth_middleware
+from ...application.use_cases.list_reservations_use_case import ListReservationsUseCase
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
 
-def get_container() -> Container:
+def get_container():
     """Obtener el container de dependencias"""
-    return Container()
+    return container
+
+
+def get_list_reservations_use_case():
+    """Obtener el use case para listar reservas"""
+    from ...infrastructure.repositories.reservation_repository_impl import ReservationRepositoryImpl
+    return ListReservationsUseCase(
+        reservation_repository=ReservationRepositoryImpl()
+    )
 
 
 @router.post("/", response_model=ReservationResponse, status_code=status.HTTP_201_CREATED)
 async def create_reservation(
     request: CreateReservationRequest,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Crear una nueva reserva"""
@@ -65,7 +74,7 @@ async def create_reservation(
 @router.get("/{reservation_id}", response_model=ReservationResponse)
 async def get_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Obtener una reserva por ID"""
@@ -117,21 +126,43 @@ async def list_reservations(
     page: int = Query(1, ge=1, description="Número de página"),
     limit: int = Query(10, ge=1, le=100, description="Elementos por página"),
     
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Listar reservas con filtros y paginación"""
     try:
+        print(f"🔍 DEBUG: Iniciando list_reservations")
+        print(f"🔍 DEBUG: Parámetros recibidos:")
+        print(f"  - user_id: {user_id}")
+        print(f"  - customer_id: {customer_id}")
+        print(f"  - branch_id: {branch_id}")
+        print(f"  - branch_name: {branch_name}")
+        print(f"  - sector_id: {sector_id}")
+        print(f"  - sector_name: {sector_name}")
+        print(f"  - customer_ruc: {customer_ruc}")
+        print(f"  - company_name: {company_name}")
+        print(f"  - reservation_date_from: {reservation_date_from}")
+        print(f"  - reservation_date_to: {reservation_date_to}")
+        print(f"  - reservation_status: {reservation_status}")
+        print(f"  - order_code: {order_code}")
+        print(f"  - page: {page}")
+        print(f"  - limit: {limit}")
+        
         from datetime import datetime
         
-        # Convertir fechas si están presentes
+        # Convertir fechas si están presentes y no vacías
         date_from = None
         date_to = None
-        if reservation_date_from:
+        if reservation_date_from and reservation_date_from.strip():
+            print(f"🔍 DEBUG: Procesando reservation_date_from: '{reservation_date_from}'")
             date_from = datetime.fromisoformat(reservation_date_from)
-        if reservation_date_to:
+            print(f"🔍 DEBUG: date_from convertido: {date_from}")
+        if reservation_date_to and reservation_date_to.strip():
+            print(f"🔍 DEBUG: Procesando reservation_date_to: '{reservation_date_to}'")
             date_to = datetime.fromisoformat(reservation_date_to)
+            print(f"🔍 DEBUG: date_to convertido: {date_to}")
         
+        print(f"🔍 DEBUG: Creando ReservationFilterRequest")
         request = ReservationFilterRequest(
             user_id=user_id,
             customer_id=customer_id,
@@ -143,21 +174,34 @@ async def list_reservations(
             company_name=company_name,
             reservation_date_from=date_from,
             reservation_date_to=date_to,
-            status=status,
+            status=reservation_status,
             order_code=order_code,
             page=page,
             limit=limit
         )
+        print(f"🔍 DEBUG: ReservationFilterRequest creado exitosamente")
         
-        use_case = container.list_reservations_use_case()
+        print(f"🔍 DEBUG: Obteniendo use case")
+        use_case = get_list_reservations_use_case()
+        print(f"🔍 DEBUG: Use case obtenido: {use_case}")
+        print(f"🔍 DEBUG: Tipo del use case: {type(use_case)}")
+        print(f"🔍 DEBUG: Atributos del use case: {dir(use_case)}")
+        print(f"🔍 DEBUG: Use case ejecutando...")
         result = await use_case.execute(request)
+        print(f"🔍 DEBUG: Use case ejecutado exitosamente, resultado: {result}")
         return result
     except ValueError as e:
+        print(f"❌ ERROR: ValueError en list_reservations: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": "Formato de fecha inválido", "error_code": "INVALID_DATE_FORMAT"}
         )
     except Exception as e:
+        print(f"❌ ERROR: Excepción no manejada en list_reservations: {e}")
+        print(f"❌ ERROR: Tipo de excepción: {type(e).__name__}")
+        import traceback
+        print(f"❌ ERROR: Traceback completo:")
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -168,7 +212,7 @@ async def list_reservations(
 async def update_reservation(
     reservation_id: int,
     request: UpdateReservationRequest,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar una reserva existente"""
@@ -206,7 +250,7 @@ async def update_reservation(
 @router.delete("/{reservation_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar una reserva"""
@@ -229,7 +273,7 @@ async def delete_reservation(
 @router.post("/{reservation_id}/confirm", response_model=ReservationResponse)
 async def confirm_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Confirmar una reserva"""
@@ -257,7 +301,7 @@ async def confirm_reservation(
 @router.post("/{reservation_id}/cancel", response_model=ReservationResponse)
 async def cancel_reservation(
     reservation_id: int,
-    container: Container = Depends(get_container),
+    container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Cancelar una reserva"""

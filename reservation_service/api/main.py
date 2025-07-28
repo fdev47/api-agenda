@@ -12,6 +12,7 @@ from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from .routes import schedule_routes, schedule_validation_routes, reservation_routes
 from ..infrastructure.models.base import Base
+from ..infrastructure.container import container
 
 
 def create_reservation_service() -> ServiceConfig:
@@ -32,6 +33,13 @@ def create_reservation_service() -> ServiceConfig:
 
 def create_reservation_app():
     """Crear aplicación Reservation Service usando factory común"""
+    
+    # ⭐ INICIALIZAR EL CONTAINER
+    container.wire(modules=[
+        "reservation_service.api.routes.reservation_routes",
+        "reservation_service.api.routes.schedule_routes",
+        "reservation_service.api.routes.schedule_validation_routes"
+    ])
     
     # Configuración del servicio
     service_config = create_reservation_service()

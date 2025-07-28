@@ -126,4 +126,8 @@ class Container(containers.DeclarativeContainer):
         reservation_repository=reservation_repository
     )
 
+
+# Instancia global del contenedor
+container = Container()
+
 __all__ = ["get_db_session"] 

@@ -11,102 +11,116 @@ from ...domain.dto.requests.reservation_filter_request import ReservationFilterR
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...infrastructure.models.reservation import ReservationModel, ReservationOrderNumberModel
 from ...domain.exceptions import ReservationNotFoundException
+from commons.database import get_db_session
 
 
 class ReservationRepositoryImpl(ReservationRepository):
     """Implementación del repositorio para reservas"""
     
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self):
+        pass
     
     async def create(self, reservation: Reservation) -> Reservation:
         """Crear una nueva reserva"""
-        # Convertir entidad de dominio a modelo de BD
-        reservation_model = ReservationModel.from_domain(reservation)
-        
-        # Agregar números de pedido
-        for order in reservation.order_numbers:
-            order_model = ReservationOrderNumberModel(
-                code=order.code,
-                description=order.description
-            )
-            reservation_model.order_numbers.append(order_model)
-        
-        await self.session.add(reservation_model)
-        await self.session.commit()
-        await self.session.refresh(reservation_model)
-        
-        # Retornar entidad de dominio
-        return reservation_model.to_domain()
+        async for session in get_db_session():
+            # Convertir entidad de dominio a modelo de BD
+            reservation_model = ReservationModel.from_domain(reservation)
+            
+            # Agregar números de pedido
+            for order in reservation.order_numbers:
+                order_model = ReservationOrderNumberModel(
+                    code=order.code,
+                    description=order.description
+                )
+                reservation_model.order_numbers.append(order_model)
+            
+            await session.add(reservation_model)
+            await session.commit()
+            await session.refresh(reservation_model)
+            
+            # Retornar entidad de dominio
+            return reservation_model.to_domain()
     
     async def get_by_id(self, reservation_id: int) -> Optional[Reservation]:
         """Obtener una reserva por ID"""
-        reservation_model = await self.session.query(ReservationModel).filter(
-            ReservationModel.id == reservation_id
-        ).first()
-        
-        if not reservation_model:
-            return None
-        
-        return reservation_model.to_domain()
+        async for session in get_db_session():
+            result = await session.execute(
+                select(ReservationModel).where(ReservationModel.id == reservation_id)
+            )
+            reservation_model = result.scalar_one_or_none()
+            
+            if not reservation_model:
+                return None
+            
+            return reservation_model.to_domain()
     
     async def list(self, filter_request: ReservationFilterRequest) -> Tuple[List[Reservation], int]:
         """Listar reservas con filtros y paginación"""
-        query = self.session.query(ReservationModel)
-        
-        # Aplicar filtros
-        if filter_request.user_id:
-            query = query.filter(ReservationModel.user_id == filter_request.user_id)
-        
-        if filter_request.customer_id:
-            query = query.filter(ReservationModel.customer_id == filter_request.customer_id)
-        
-        if filter_request.branch_id:
-            query = query.filter(ReservationModel.branch_id == filter_request.branch_id)
-        
-        if filter_request.sector_id:
-            query = query.filter(ReservationModel.sector_id == filter_request.sector_id)
-        
-        if filter_request.branch_name:
-            query = query.filter(ReservationModel.branch_data['name'].astext.ilike(f"%{filter_request.branch_name}%"))
-        
-        if filter_request.sector_name:
-            query = query.filter(ReservationModel.sector_data['name'].astext.ilike(f"%{filter_request.sector_name}%"))
-        
-        if filter_request.customer_ruc:
-            query = query.filter(ReservationModel.customer_data['ruc'].astext.ilike(f"%{filter_request.customer_ruc}%"))
-        
-        if filter_request.company_name:
-            query = query.filter(ReservationModel.customer_data['company_name'].astext.ilike(f"%{filter_request.company_name}%"))
-        
-        if filter_request.reservation_date_from:
-            query = query.filter(ReservationModel.reservation_date >= filter_request.reservation_date_from)
-        
-        if filter_request.reservation_date_to:
-            query = query.filter(ReservationModel.reservation_date <= filter_request.reservation_date_to)
-        
-        if filter_request.status:
-            query = query.filter(ReservationModel.status == ReservationStatus(filter_request.status))
-        
-        if filter_request.order_code:
-            query = query.join(ReservationOrderNumberModel).filter(
-                ReservationOrderNumberModel.code.ilike(f"%{filter_request.order_code}%")
-            )
-        
-        # Contar total
-        total = query.count()
-        
-        # Aplicar paginación
-        query = query.offset(filter_request.offset).limit(filter_request.limit)
-        
-        # Ordenar por fecha de reserva (más recientes primero)
-        query = query.order_by(ReservationModel.reservation_date.desc(), ReservationModel.start_time.desc())
-        
-        reservation_models = query.all()
-        
-        reservations = [model.to_domain() for model in reservation_models]
-        
-        return reservations, total
+        async for session in get_db_session():
+            # Construir la consulta base
+            query = select(ReservationModel)
+            
+            # Aplicar filtros
+            conditions = []
+            
+            if filter_request.user_id:
+                conditions.append(ReservationModel.user_id == filter_request.user_id)
+            
+            if filter_request.customer_id:
+                conditions.append(ReservationModel.customer_id == filter_request.customer_id)
+            
+            if filter_request.branch_id:
+                conditions.append(ReservationModel.branch_id == filter_request.branch_id)
+            
+            if filter_request.sector_id:
+                conditions.append(ReservationModel.sector_id == filter_request.sector_id)
+            
+            if filter_request.branch_name:
+                conditions.append(ReservationModel.branch_data['name'].astext.ilike(f"%{filter_request.branch_name}%"))
+            
+            if filter_request.sector_name:
+                conditions.append(ReservationModel.sector_data['name'].astext.ilike(f"%{filter_request.sector_name}%"))
+            
+            if filter_request.customer_name:
+                conditions.append(ReservationModel.customer_data['name'].astext.ilike(f"%{filter_request.customer_name}%"))
+            
+            if filter_request.customer_email:
+                conditions.append(ReservationModel.customer_data['email'].astext.ilike(f"%{filter_request.customer_email}%"))
+            
+            if filter_request.reservation_date_from:
+                conditions.append(ReservationModel.reservation_date >= filter_request.reservation_date_from)
+            
+            if filter_request.reservation_date_to:
+                conditions.append(ReservationModel.reservation_date <= filter_request.reservation_date_to)
+            
+            if filter_request.status:
+                conditions.append(ReservationModel.status == ReservationStatus(filter_request.status))
+            
+            if filter_request.order_code:
+                # Para el filtro de order_code necesitamos hacer un join
+                query = query.join(ReservationOrderNumberModel)
+                conditions.append(ReservationOrderNumberModel.code.ilike(f"%{filter_request.order_code}%"))
+            
+            # Aplicar condiciones si existen
+            if conditions:
+                query = query.where(and_(*conditions))
+            
+            # Contar total
+            count_query = select(func.count()).select_from(query.subquery())
+            result = await session.execute(count_query)
+            total = result.scalar()
+            
+            # Aplicar paginación y ordenamiento
+            query = query.offset(filter_request.offset).limit(filter_request.limit)
+            query = query.order_by(ReservationModel.reservation_date.desc(), ReservationModel.start_time.desc())
+            
+            # Ejecutar consulta
+            result = await session.execute(query)
+            reservation_models = result.scalars().all()
+            
+            reservations = [model.to_domain() for model in reservation_models]
+            
+            return reservations, total
     
     async def update(self, reservation: Reservation) -> Reservation:
         """Actualizar una reserva"""
