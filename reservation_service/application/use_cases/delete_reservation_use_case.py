@@ -1,12 +1,16 @@
 """
 Use case para eliminar una reserva
 """
+import logging
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationStatusException
 )
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 
 class DeleteReservationUseCase:
@@ -17,39 +21,76 @@ class DeleteReservationUseCase:
     
     async def execute(self, reservation_id: int) -> ReservationResponse:
         """Ejecutar el caso de uso"""
+        logger.info(f"🚀 DeleteReservationUseCase.execute() iniciado para reservation_id: {reservation_id}")
         
-        # Obtener la reserva existente
-        reservation = await self.reservation_repository.get_by_id(reservation_id)
-        
-        if not reservation:
-            raise ReservationNotFoundException(
-                f"Reserva con ID {reservation_id} no encontrada",
-                reservation_id=reservation_id
-            )
-        
-        # Verificar que la reserva se pueda eliminar
-        if reservation.is_completed():
-            raise ReservationStatusException(
-                f"No se puede eliminar una reserva completada",
-                current_status=reservation.status.value
-            )
-        
-        # Eliminar la reserva
-        await self.reservation_repository.delete(reservation_id)
-        
-        # Convertir a DTO de respuesta antes de eliminar
-        return self.to_response(reservation)
+        try:
+            # Obtener la reserva existente
+            logger.info("📝 Obteniendo reserva existente...")
+            reservation = await self.reservation_repository.get_by_id(reservation_id)
+            
+            if not reservation:
+                logger.warning(f"⚠️ Reserva con ID {reservation_id} no encontrada")
+                raise ReservationNotFoundException(
+                    f"Reserva con ID {reservation_id} no encontrada",
+                    reservation_id=reservation_id
+                )
+            
+            logger.info(f"✅ Reserva encontrada: ID={reservation.id}, status={reservation.status.value}")
+            
+            # Verificar que la reserva se pueda eliminar
+            if reservation.is_completed():
+                logger.warning(f"⚠️ No se puede eliminar reserva completada: ID={reservation.id}, status={reservation.status.value}")
+                raise ReservationStatusException(
+                    f"No se puede eliminar una reserva completada",
+                    current_status=reservation.status.value
+                )
+            
+            logger.info("✅ Reserva puede ser eliminada")
+            
+            # Convertir a DTO de respuesta antes de eliminar
+            logger.info("📝 Convirtiendo a DTO de respuesta...")
+            response = self.to_response(reservation)
+            logger.info("✅ DTO de respuesta creado")
+            
+            # Eliminar la reserva
+            logger.info("🗑️ Eliminando reserva de la base de datos...")
+            success = await self.reservation_repository.delete(reservation_id)
+            
+            if not success:
+                logger.error(f"❌ Error al eliminar reserva {reservation_id} de la base de datos")
+                raise Exception(f"No se pudo eliminar la reserva {reservation_id}")
+            
+            logger.info("✅ Reserva eliminada exitosamente")
+            return response
+            
+        except (ReservationNotFoundException, ReservationStatusException) as e:
+            logger.warning(f"⚠️ Error de validación en delete_reservation: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"❌ Error inesperado en delete_reservation: {str(e)}", exc_info=True)
+            raise
     
     def to_response(self, reservation) -> ReservationResponse:
         """Convertir entidad a DTO de respuesta"""
-        from ...domain.dto.responses.reservation_responses import (
-            CustomerDataResponse, BranchDataResponse, SectorDataResponse, OrderNumberResponse
-        )
+        from ...domain.dto.responses.customer_data_response import CustomerDataResponse
+        from ...domain.dto.responses.branch_data_response import BranchDataResponse
+        from ...domain.dto.responses.sector_data_response import SectorDataResponse
+        from ...domain.dto.responses.order_number_response import OrderNumberResponse
         
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
             customer_id=reservation.customer_data.customer_id,
-            phone=reservation.customer_data.phone
+            id=reservation.customer_data.id,
+            auth_uid=reservation.customer_data.auth_uid,
+            ruc=reservation.customer_data.ruc,
+            company_name=reservation.customer_data.company_name,
+            email=reservation.customer_data.email,
+            username=reservation.customer_data.username,
+            phone=reservation.customer_data.phone,
+            cellphone_number=reservation.customer_data.cellphone_number,
+            cellphone_country_code=reservation.customer_data.cellphone_country_code,
+            address_id=reservation.customer_data.address_id,
+            is_active=reservation.customer_data.is_active
         )
         
         # Convertir datos de la sucursal
@@ -73,7 +114,9 @@ class DeleteReservationUseCase:
             description=reservation.sector_data.description,
             sector_type_id=reservation.sector_data.sector_type_id,
             sector_type_name=reservation.sector_data.sector_type_name,
-            measurement_unit=reservation.sector_data.measurement_unit
+            capacity=reservation.sector_data.capacity,
+            measurement_unit_id=reservation.sector_data.measurement_unit_id,
+            measurement_unit_name=reservation.sector_data.measurement_unit_name
         )
         
         # Convertir números de pedido

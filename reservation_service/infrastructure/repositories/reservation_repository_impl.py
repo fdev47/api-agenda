@@ -265,19 +265,50 @@ class ReservationRepositoryImpl(ReservationRepository):
             return reservation_model.to_domain()
     
     async def delete(self, reservation_id: int) -> bool:
-        """Eliminar una reserva"""
+        """Eliminar una reserva y todos sus datos relacionados"""
+        logger.info(f"🗑️ Eliminando reserva con ID: {reservation_id}")
+        
         async for session in get_db_session():
-            query = select(ReservationModel).where(ReservationModel.id == reservation_id)
-            result = await session.execute(query)
-            reservation_model = result.scalar_one_or_none()
-            
-            if not reservation_model:
-                return False
-            
-            await session.delete(reservation_model)
-            await session.commit()
-            
-            return True
+            try:
+                # Obtener la reserva
+                query = select(ReservationModel).where(ReservationModel.id == reservation_id)
+                result = await session.execute(query)
+                reservation_model = result.scalar_one_or_none()
+                
+                if not reservation_model:
+                    logger.warning(f"⚠️ Reserva con ID {reservation_id} no encontrada")
+                    return False
+                
+                logger.info(f"✅ Reserva encontrada: ID={reservation_model.id}, status={reservation_model.status}")
+                
+                # Eliminar números de pedido relacionados primero
+                logger.info("🗑️ Eliminando números de pedido relacionados...")
+                order_numbers_query = select(ReservationOrderNumberModel).where(
+                    ReservationOrderNumberModel.reservation_id == reservation_id
+                )
+                order_numbers_result = await session.execute(order_numbers_query)
+                order_numbers_to_delete = order_numbers_result.scalars().all()
+                
+                logger.info(f"📊 Encontrados {len(order_numbers_to_delete)} números de pedido para eliminar")
+                
+                for order_number in order_numbers_to_delete:
+                    await session.delete(order_number)
+                    logger.debug(f"🗑️ Eliminado número de pedido: {order_number.code}")
+                
+                # Eliminar la reserva
+                logger.info("🗑️ Eliminando la reserva...")
+                await session.delete(reservation_model)
+                
+                # Commit de todos los cambios
+                await session.commit()
+                logger.info("✅ Reserva y datos relacionados eliminados exitosamente")
+                
+                return True
+                
+            except Exception as e:
+                logger.error(f"❌ Error al eliminar reserva {reservation_id}: {str(e)}", exc_info=True)
+                await session.rollback()
+                raise
     
     async def exists_conflict(self, branch_id: int, sector_id: int, start_time: datetime, end_time: datetime, exclude_id: Optional[int] = None) -> bool:
         """Verificar si existe un conflicto de horario"""
