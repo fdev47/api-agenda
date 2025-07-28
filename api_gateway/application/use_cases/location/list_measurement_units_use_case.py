@@ -4,7 +4,7 @@ Use case para listar unidades de medida desde el API Gateway
 from typing import List, Optional
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.dto.responses.location_responses import MeasurementUnitResponse
+from ....domain.location.dto.responses.location_responses import MeasurementUnitResponse
 
 class ListMeasurementUnitsUseCase:
     """Use case para listar unidades de medida usando location_service"""

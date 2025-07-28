@@ -4,7 +4,7 @@ Use case para listar ciudades desde el API Gateway
 from typing import List, Optional
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.dto.responses.location_responses import CityResponse
+from ....domain.location.dto.responses.location_responses import CityResponse
 
 class ListCitiesUseCase:
     """Use case para listar ciudades usando location_service"""

@@ -4,7 +4,7 @@ Use case para listar tipos de sector desde el API Gateway
 from typing import List, Optional
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.dto.responses.location_responses import SectorTypeResponse
+from ....domain.location.dto.responses.location_responses import SectorTypeResponse
 
 class ListSectorTypesUseCase:
     """Use case para listar tipos de sector usando location_service"""

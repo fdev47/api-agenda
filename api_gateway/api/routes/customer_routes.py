@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
 from typing import Optional
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
-from ...domain.dto.responses.customer.customer_responses import CustomerResponse, CustomerListResponse
-from ...domain.dto.requests.customer.customer_requests import CreateCustomerRequest
+from ...domain.customer.dto.responses.customer_responses import CustomerResponse, CustomerListResponse
+from ...domain.customer.dto.requests.customer_requests import CreateCustomerRequest
 
 router = APIRouter()
 

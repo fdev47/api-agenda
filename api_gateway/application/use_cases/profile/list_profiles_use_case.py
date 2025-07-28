@@ -4,7 +4,7 @@ Use case para listar perfiles desde el API Gateway
 from typing import List
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.dto.responses.profile_responses import ProfileResponse
+from ....domain.profile.dto.responses.profile_responses import ProfileResponse
 
 class ListProfilesUseCase:
     """Use case para listar perfiles usando user_service"""

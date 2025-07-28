@@ -6,8 +6,8 @@ from commons.api_client import APIClient
 from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error, raise_conflict_error
-from ....domain.dto.requests.customer.customer_requests import CreateCustomerRequest
-from ....domain.dto.responses.customer.customer_responses import CustomerResponse
+from ....domain.customer.dto.requests.customer_requests import CreateCustomerRequest
+from ....domain.customer.dto.responses.customer_responses import CustomerResponse
 
 
 class CreateCustomerUseCase:

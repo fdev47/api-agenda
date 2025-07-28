@@ -4,7 +4,7 @@ Rutas de location en el API Gateway
 from fastapi import APIRouter, Query, Depends, Header
 from typing import List, Optional
 from ..middleware import auth_middleware
-from ...domain.dto.responses.location_responses import (
+from ...domain.location.dto.responses.location_responses import (
     CountryListResponse, 
     StateListResponse, 
     CityListResponse,

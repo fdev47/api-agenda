@@ -6,7 +6,7 @@ from commons.api_client import APIClient
 from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_not_found_error, raise_internal_error
-from ....domain.dto.responses.customer.customer_responses import CustomerResponse
+from ....domain.customer.dto.responses.customer_responses import CustomerResponse
 
 
 class GetCustomerUseCase:

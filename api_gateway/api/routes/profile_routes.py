@@ -3,7 +3,7 @@ Rutas de perfiles en el API Gateway
 """
 from fastapi import APIRouter, Depends, Query, Header
 from typing import List, Optional
-from ...domain.dto.responses.profile_responses import ProfileListResponse
+from ...domain.profile.dto.responses.profile_responses import ProfileListResponse
 from ...application.use_cases.profile.list_profiles_use_case import ListProfilesUseCase
 from ..middleware import auth_middleware
 

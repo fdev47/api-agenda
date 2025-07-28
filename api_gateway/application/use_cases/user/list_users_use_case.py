@@ -6,7 +6,7 @@ from commons.api_client import APIClient
 from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error
-from ....domain.dto.responses.user import UserListResponse
+from ....domain.user.dto.responses.user_responses import UserListResponse
 
 
 class ListUsersUseCase:

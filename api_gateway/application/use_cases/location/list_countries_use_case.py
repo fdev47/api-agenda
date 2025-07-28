@@ -4,7 +4,7 @@ Use case para listar países desde el API Gateway
 from typing import List
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.dto.responses.location_responses import CountryResponse
+from ....domain.location.dto.responses.location_responses import CountryResponse
 
 class ListCountriesUseCase:
     """Use case para listar países usando location_service"""

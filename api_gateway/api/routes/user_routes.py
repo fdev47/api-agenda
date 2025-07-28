@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
 from typing import Optional
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
-from ...domain.dto.responses.user import UserResponse, UserListResponse
-from ...domain.dto.requests.user_requests import CreateUserRequest
+from ...domain.user.dto.responses.user_responses import UserResponse, UserListResponse
+from ...domain.user.dto.requests.user_requests import CreateUserRequest
 
 router = APIRouter()
 
