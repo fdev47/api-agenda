@@ -15,6 +15,7 @@ from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...infrastructure.models.schedule import BranchScheduleModel
 from ...infrastructure.models.reservation import ReservationModel
 from commons.database import get_db_session
+from ...domain.entities.reservation_status import ReservationStatus
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -145,6 +146,8 @@ class ScheduleRepositoryImpl(ScheduleRepository):
     
     async def get_available_slots(self, branch_id: int, target_date: date) -> List[TimeSlot]:
         """Obtener slots disponibles para una fecha específica"""
+        logger.info(f"🔍 Obteniendo slots disponibles para branch_id: {branch_id}, fecha: {target_date}")
+        
         # Obtener el día de la semana
         day_of_week_number = target_date.isoweekday()
         day_of_week = DayOfWeek(day_of_week_number)
@@ -152,25 +155,37 @@ class ScheduleRepositoryImpl(ScheduleRepository):
         # Obtener el horario configurado
         schedule = await self.get_by_branch_and_day(branch_id, day_of_week)
         if not schedule or not schedule.is_active:
+            logger.warning(f"⚠️ No hay horario activo para branch_id: {branch_id}, día: {day_of_week}")
             return []
+        
+        logger.info(f"✅ Horario encontrado: id={schedule.id}, start_time={schedule.start_time}, end_time={schedule.end_time}")
         
         # Generar slots base
         base_slots = schedule.generate_time_slots()
+        logger.info(f"📊 Generados {len(base_slots)} slots base")
         
         # Obtener reservas existentes para esa fecha
         existing_reservations = await self.get_reservations_for_date(branch_id, target_date)
+        logger.info(f"📊 Encontradas {len(existing_reservations)} reservas existentes")
         
         # Marcar slots ocupados
         for slot in base_slots:
             for reservation in existing_reservations:
-                reservation_start = datetime.strptime(reservation.schedule_start_time, "%H:%M").time()
-                reservation_end = datetime.strptime(reservation.schedule_end_time, "%H:%M").time()
+                # Usar start_time y end_time directamente (son datetime)
+                reservation_start = reservation.start_time.time()
+                reservation_end = reservation.end_time.time()
+                
+                logger.debug(f"🔍 Comparando slot {slot.start_time}-{slot.end_time} con reserva {reservation_start}-{reservation_end}")
                 
                 # Verificar si hay solapamiento
                 if (slot.start_time < reservation_end and slot.end_time > reservation_start):
                     slot.is_available = False
                     slot.reservation_id = reservation.id
+                    logger.debug(f"❌ Slot {slot.start_time}-{slot.end_time} marcado como ocupado por reserva {reservation.id}")
                     break
+        
+        available_count = len([slot for slot in base_slots if slot.is_available])
+        logger.info(f"✅ Slots disponibles: {available_count}/{len(base_slots)}")
         
         return base_slots
     
@@ -193,14 +208,26 @@ class ScheduleRepositoryImpl(ScheduleRepository):
     
     async def get_reservations_for_date(self, branch_id: int, target_date: date) -> List[Reservation]:
         """Obtener reservas existentes para una fecha específica"""
-        stmt = select(ReservationModel).where(
-            and_(
-                ReservationModel.branch_data.contains({"id": branch_id}),
-                ReservationModel.schedule_date == target_date,
-                ReservationModel.status.in_(["CONFIRMED", "PENDING"])
+        async for session in get_db_session():
+            logger.info(f"🔍 Buscando reservas para branch_id: {branch_id}, fecha: {target_date}")
+            
+            # Convertir target_date a datetime para comparar con reservation_date
+            target_datetime = datetime.combine(target_date, datetime.min.time())
+            next_day_datetime = datetime.combine(target_date.replace(day=target_date.day + 1), datetime.min.time())
+            
+            stmt = select(ReservationModel).where(
+                and_(
+                    ReservationModel.branch_id == branch_id,
+                    ReservationModel.reservation_date >= target_datetime,
+                    ReservationModel.reservation_date < next_day_datetime,
+                    ReservationModel.status.in_([ReservationStatus.CONFIRMED, ReservationStatus.PENDING])
+                )
             )
-        )
-        result = await self.session.execute(stmt)
-        reservation_models = result.scalars().all()
-        
-        return [model.to_domain() for model in reservation_models] 
+            
+            logger.info(f"📝 Ejecutando query: {stmt}")
+            result = await session.execute(stmt)
+            reservation_models = result.scalars().all()
+            
+            logger.info(f"✅ Encontradas {len(reservation_models)} reservas para la fecha")
+            
+            return [model.to_domain() for model in reservation_models] 

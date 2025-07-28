@@ -45,7 +45,7 @@ class GetAvailableSlotsUseCase:
             raise NoScheduleForDateException(
                 request.branch_id,
                 str(request.schedule_date),
-                day_of_week.get_name()
+                DayOfWeek.get_name(day_of_week_number)
             )
         
         # Generar slots disponibles
@@ -65,7 +65,7 @@ class GetAvailableSlotsUseCase:
             branch_name=branch_name,
             date=datetime.combine(request.schedule_date, datetime.min.time()),
             day_of_week=day_of_week_number,
-            day_name=day_of_week.get_name(),
+            day_name=DayOfWeek.get_name(day_of_week_number),
             slots=slot_responses,
             total_slots=len(slot_responses),
             available_slots=len([slot for slot in slot_responses if slot.is_available])

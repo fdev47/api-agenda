@@ -1,7 +1,8 @@
 """
 Rutas para horarios
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from datetime import date
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import (
@@ -35,6 +36,9 @@ from ...domain.exceptions.schedule_exceptions import (
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
 
+# Configurar logging
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/schedules", tags=["Schedules"])
 
 
@@ -65,6 +69,49 @@ async def create_branch_schedule(
             detail={"message": e.message, "error_code": e.error_code}
         )
     except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/available-slots", response_model=AvailableSlotsResponse)
+async def get_available_slots(
+    branch_id: int = Query(..., gt=0, description="ID de la sucursal"),
+    schedule_date: date = Query(..., description="Fecha para consultar disponibilidad"),
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
+):
+    """Obtener slots disponibles para una fecha específica"""
+    logger.info(f"🚀 Endpoint get_available_slots llamado con branch_id: {branch_id}, schedule_date: {schedule_date}")
+    
+    try:
+        logger.info("📝 Creando GetAvailableSlotsRequest...")
+        # Crear el request object
+        request = GetAvailableSlotsRequest(
+            branch_id=branch_id,
+            schedule_date=schedule_date
+        )
+        logger.info("✅ GetAvailableSlotsRequest creado correctamente")
+        
+        logger.info("📝 Obteniendo use case...")
+        use_case = container.get_available_slots_use_case()
+        logger.info("✅ Use case obtenido correctamente")
+        
+        logger.info("🔄 Ejecutando use case...")
+        result = await use_case.execute(request)
+        logger.info("✅ Use case ejecutado exitosamente")
+        logger.info(f"📊 Resultado: {len(result.slots)} slots totales, {result.available_slots} disponibles")
+        
+        return result
+    except (NoScheduleForDateException, PastDateException) as e:
+        logger.warning(f"⚠️ Error de validación: {e.message}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": e.message, "error_code": e.error_code}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en get_available_slots: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -142,29 +189,6 @@ async def delete_branch_schedule(
     except ScheduleNotFoundException as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": e.message, "error_code": e.error_code}
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
-        )
-
-
-@router.post("/available-slots", response_model=AvailableSlotsResponse)
-async def get_available_slots(
-    request: GetAvailableSlotsRequest,
-    container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"])
-):
-    """Obtener slots disponibles para una fecha específica"""
-    try:
-        use_case = container.get_available_slots_use_case()
-        result = await use_case.execute(request)
-        return result
-    except (NoScheduleForDateException, PastDateException) as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": e.message, "error_code": e.error_code}
         )
     except Exception as e:

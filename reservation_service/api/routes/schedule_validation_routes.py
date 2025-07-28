@@ -4,12 +4,10 @@ import logging
 
 from ...domain.dto.requests.schedule_requests import UpdateBranchScheduleRequest
 from ...domain.dto.responses.schedule_responses import (
-    BranchScheduleResponse,
-    DeleteBranchScheduleResponse
+    BranchScheduleResponse
 )
 from ...domain.dto.responses.schedule_validation_responses import (
-    ValidateScheduleDeletionResponse, 
-    DeleteScheduleWithValidationResult
+    ValidateScheduleDeletionResponse
 )
 from ...domain.exceptions.schedule_exceptions import (
     ScheduleNotFoundException,
@@ -118,45 +116,6 @@ async def validate_schedule_deletion(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en validate_schedule_deletion: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
-        )
-
-
-@router.delete("/{schedule_id}/with-validation", response_model=DeleteBranchScheduleResponse, status_code=status.HTTP_200_OK)
-async def delete_branch_schedule_with_validation(
-    schedule_id: int,
-    auto_reschedule: bool = Query(False, description="Eliminar automáticamente y reagendar reservas afectadas"),
-    container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"])
-):
-    """Eliminar un horario de sucursal con validación de reservas"""
-    try:
-        use_case = container.delete_branch_schedule_with_validation_use_case()
-        result = await use_case.execute(schedule_id, auto_reschedule=auto_reschedule)
-        
-        if result.success:
-            return DeleteBranchScheduleResponse(
-                id=result.schedule_id,
-                message=result.message
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail={
-                    "message": result.message,
-                    "impact_analysis": result.impact_analysis.dict() if result.impact_analysis else None,
-                    "requires_confirmation": result.requires_confirmation
-                }
-            )
-            
-    except ScheduleNotFoundException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": e.message, "error_code": e.error_code}
-        )
-    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
