@@ -5,6 +5,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
+from .schedule_responses import BranchScheduleResponse
+
 
 class ScheduleInfoResponse(BaseModel):
     """Información del horario"""
@@ -58,6 +60,16 @@ class DeleteScheduleWithValidationResult(BaseModel):
     success: bool
     message: str
     schedule_id: Optional[int] = None
+    impact_analysis: Optional[ValidateScheduleChangesResult] = None
+    reservations_updated: Optional[int] = None
+    requires_confirmation: Optional[bool] = None
+
+
+class UpdateScheduleResult(BaseModel):
+    """Resultado del use case UpdateBranchScheduleUseCase"""
+    success: bool
+    message: str
+    schedule: Optional[BranchScheduleResponse] = None
     impact_analysis: Optional[ValidateScheduleChangesResult] = None
     reservations_updated: Optional[int] = None
     requires_confirmation: Optional[bool] = None 

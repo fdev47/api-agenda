@@ -96,19 +96,19 @@ async def update_branch_schedule(
         logger.info(f"🔄 Ejecutando actualización para schedule_id: {schedule_id}")
         result = await use_case.execute(schedule_id, request, auto_reschedule=auto_reschedule)
         logger.info("✅ Actualización completada exitosamente")
-        logger.info(f"📊 Resultado: success={result.get('success')}, message={result.get('message', 'N/A')}")
+        logger.info(f"📊 Resultado: success={result.success}, message={result.message}")
         
-        if result["success"]:
+        if result.success:
             logger.info("✅ Actualización exitosa, retornando horario actualizado")
-            return result["schedule"]
+            return result.schedule
         else:
-            logger.warning(f"⚠️ Actualización requiere confirmación: {result.get('message')}")
+            logger.warning(f"⚠️ Actualización requiere confirmación: {result.message}")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
-                    "message": result["message"],
-                    "impact_analysis": result["impact_analysis"],
-                    "requires_confirmation": True
+                    "message": result.message,
+                    "impact_analysis": result.impact_analysis.dict() if result.impact_analysis else None,
+                    "requires_confirmation": result.requires_confirmation
                 }
             )
             

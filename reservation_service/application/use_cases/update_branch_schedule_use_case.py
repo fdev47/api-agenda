@@ -1,13 +1,14 @@
 """
 Use case para actualizar horario de sucursal
 """
-from typing import Optional, Dict, Any
+from typing import Optional
 from datetime import datetime
 import logging
 
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.requests.schedule_requests import UpdateBranchScheduleRequest
 from ...domain.dto.responses.schedule_responses import UpdateBranchScheduleResponse, BranchScheduleResponse
+from ...domain.dto.responses.schedule_validation_responses import UpdateScheduleResult, ValidateScheduleChangesResult
 from ...domain.exceptions.schedule_exceptions import (
     ScheduleNotFoundException,
     ScheduleOverlapException,
@@ -29,7 +30,7 @@ class UpdateBranchScheduleUseCase:
         self.validate_changes_use_case = validate_changes_use_case
     
     async def execute(self, schedule_id: int, request: UpdateBranchScheduleRequest, 
-                     auto_reschedule: bool = False) -> Dict[str, Any]:
+                     auto_reschedule: bool = False) -> UpdateScheduleResult:
         """Ejecutar el caso de uso"""
         logger.info(f"🔄 Iniciando actualización de horario para schedule_id: {schedule_id}")
         logger.info(f"📝 Datos de actualización: {request}")
@@ -61,12 +62,12 @@ class UpdateBranchScheduleUseCase:
             # Si hay reservas afectadas y no se permite auto-reschedule, retornar análisis
             if impact_analysis.requires_rescheduling and not auto_reschedule:
                 logger.warning("⚠️ Cambios requieren confirmación debido a reservas afectadas")
-                return {
-                    "success": False,
-                    "message": "Los cambios afectarían reservas existentes",
-                    "impact_analysis": impact_analysis.dict(),
-                    "requires_confirmation": True
-                }
+                return UpdateScheduleResult(
+                    success=False,
+                    message="Los cambios afectarían reservas existentes",
+                    impact_analysis=impact_analysis,
+                    requires_confirmation=True
+                )
             
             logger.info("📝 Preparando datos de actualización...")
             # Preparar datos de actualización
@@ -119,16 +120,16 @@ class UpdateBranchScheduleUseCase:
             
             logger.info("✅ Horario actualizado exitosamente en base de datos")
             
-            # Preparar respuesta
-            response = {
-                "success": True,
-                "message": "Horario actualizado exitosamente",
-                "schedule": self.to_response(updated_schedule),
-                "impact_analysis": impact_analysis.dict(),
-                "reservations_updated": impact_analysis.impact_analysis.impacted_reservations if auto_reschedule else 0
-            }
+            # Crear respuesta usando el DTO
+            response = UpdateScheduleResult(
+                success=True,
+                message="Horario actualizado exitosamente",
+                schedule=self.to_response(updated_schedule),
+                impact_analysis=impact_analysis,
+                reservations_updated=impact_analysis.impact_analysis.impacted_reservations if auto_reschedule else 0
+            )
             
-            logger.info(f"✅ Actualización completada: reservations_updated={response['reservations_updated']}")
+            logger.info(f"✅ Actualización completada: reservations_updated={response.reservations_updated}")
             return response
             
         except ScheduleNotFoundException as e:
