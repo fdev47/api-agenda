@@ -3,6 +3,7 @@ Use case para validar cambios en horarios
 """
 from typing import List, Dict, Any
 from datetime import datetime
+import logging
 
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.entities.reservation import Reservation
@@ -11,6 +12,9 @@ from ...domain.dto.requests.reservation_filter_request import ReservationFilterR
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 
 class ValidateScheduleChangesUseCase:
@@ -24,54 +28,76 @@ class ValidateScheduleChangesUseCase:
                      new_start_time: str = None, new_end_time: str = None,
                      new_interval_minutes: int = None, is_active: bool = None) -> Dict[str, Any]:
         """Ejecutar validación de cambios de horario"""
+        logger.info(f"🔄 Iniciando validación de cambios para branch_id: {branch_id}, day_of_week: {day_of_week}")
+        logger.info(f"📝 Parámetros: new_start_time={new_start_time}, new_end_time={new_end_time}, is_active={is_active}")
         
-        # Obtener el horario actual
-        current_schedule = await self.schedule_repository.get_by_branch_and_day(branch_id, day_of_week)
-        if not current_schedule:
-            raise ScheduleNotFoundException(branch_id=branch_id, day_of_week=day_of_week.get_name())
-        
-        # Obtener todas las reservas activas para esta sucursal y día
-        affected_reservations = await self._get_affected_reservations(branch_id, day_of_week)
-        
-        # Validar qué reservas se verían afectadas
-        impacted_reservations = []
-        safe_reservations = []
-        
-        for reservation in affected_reservations:
-            if self._is_reservation_impacted(reservation, new_start_time, new_end_time):
-                impacted_reservations.append(reservation)
-            else:
-                safe_reservations.append(reservation)
-        
-        # Preparar respuesta
-        result = {
-            "branch_id": branch_id,
-            "day_of_week": day_of_week.value,
-            "day_name": day_of_week.get_name(),
-            "current_schedule": {
-                "start_time": current_schedule.start_time.strftime("%H:%M"),
-                "end_time": current_schedule.end_time.strftime("%H:%M"),
-                "interval_minutes": current_schedule.interval_minutes,
-                "is_active": current_schedule.is_active
-            },
-            "proposed_changes": {
-                "start_time": new_start_time,
-                "end_time": new_end_time,
-                "interval_minutes": new_interval_minutes,
-                "is_active": is_active
-            },
-            "impact_analysis": {
-                "total_reservations": len(affected_reservations),
-                "impacted_reservations": len(impacted_reservations),
-                "safe_reservations": len(safe_reservations),
-                "impacted_reservation_ids": [r.id for r in impacted_reservations],
-                "safe_reservation_ids": [r.id for r in safe_reservations]
-            },
-            "can_proceed": len(impacted_reservations) == 0,
-            "requires_rescheduling": len(impacted_reservations) > 0
-        }
-        
-        return result
+        try:
+            logger.info("📝 Obteniendo horario actual...")
+            # Obtener el horario actual
+            current_schedule = await self.schedule_repository.get_by_branch_and_day(branch_id, day_of_week)
+            if not current_schedule:
+                logger.warning(f"⚠️ Horario no encontrado para branch_id: {branch_id}, day_of_week: {day_of_week}")
+                raise ScheduleNotFoundException(branch_id=branch_id, day_of_week=day_of_week.get_name())
+            
+            logger.info(f"✅ Horario actual encontrado: start_time={current_schedule.start_time}, end_time={current_schedule.end_time}")
+            
+            logger.info("📝 Obteniendo reservas afectadas...")
+            # Obtener todas las reservas activas para esta sucursal y día
+            affected_reservations = await self._get_affected_reservations(branch_id, day_of_week)
+            logger.info(f"✅ Reservas afectadas encontradas: {len(affected_reservations)}")
+            
+            # Validar qué reservas se verían afectadas
+            impacted_reservations = []
+            safe_reservations = []
+            
+            logger.info("🔄 Analizando impacto en reservas...")
+            for reservation in affected_reservations:
+                if self._is_reservation_impacted(reservation, new_start_time, new_end_time):
+                    impacted_reservations.append(reservation)
+                    logger.info(f"⚠️ Reserva {reservation.id} será impactada")
+                else:
+                    safe_reservations.append(reservation)
+                    logger.info(f"✅ Reserva {reservation.id} está segura")
+            
+            logger.info(f"📊 Análisis completado: {len(impacted_reservations)} impactadas, {len(safe_reservations)} seguras")
+            
+            # Preparar respuesta
+            result = {
+                "branch_id": branch_id,
+                "day_of_week": day_of_week.value,
+                "day_name": DayOfWeek.get_name(day_of_week.value),
+                "current_schedule": {
+                    "start_time": current_schedule.start_time.strftime("%H:%M"),
+                    "end_time": current_schedule.end_time.strftime("%H:%M"),
+                    "interval_minutes": current_schedule.interval_minutes,
+                    "is_active": current_schedule.is_active
+                },
+                "proposed_changes": {
+                    "start_time": new_start_time,
+                    "end_time": new_end_time,
+                    "interval_minutes": new_interval_minutes,
+                    "is_active": is_active
+                },
+                "impact_analysis": {
+                    "total_reservations": len(affected_reservations),
+                    "impacted_reservations": len(impacted_reservations),
+                    "safe_reservations": len(safe_reservations),
+                    "impacted_reservation_ids": [r.id for r in impacted_reservations],
+                    "safe_reservation_ids": [r.id for r in safe_reservations]
+                },
+                "can_proceed": len(impacted_reservations) == 0,
+                "requires_rescheduling": len(impacted_reservations) > 0
+            }
+            
+            logger.info(f"✅ Resultado preparado: can_proceed={result['can_proceed']}, requires_rescheduling={result['requires_rescheduling']}")
+            return result
+            
+        except ScheduleNotFoundException as e:
+            logger.warning(f"⚠️ Horario no encontrado en execute: {e.message}")
+            raise
+        except Exception as e:
+            logger.error(f"❌ Error inesperado en execute: {str(e)}", exc_info=True)
+            raise
     
     async def apply_schedule_changes(self, branch_id: int, day_of_week: DayOfWeek,
                                    new_start_time: str = None, new_end_time: str = None,
@@ -114,22 +140,52 @@ class ValidateScheduleChangesUseCase:
     
     async def _get_affected_reservations(self, branch_id: int, day_of_week: DayOfWeek) -> List[Reservation]:
         """Obtener reservas activas que podrían verse afectadas"""
-        # Crear filtro para obtener reservas activas de esta sucursal
-        filter_request = ReservationFilterRequest(
-            branch_id=branch_id,
-            status="PENDING,CONFIRMED",  # Solo reservas activas
-            limit=1000  # Obtener todas las reservas activas
-        )
+        logger.info(f"🔄 Obteniendo reservas afectadas para branch_id: {branch_id}, day_of_week: {day_of_week}")
         
-        # Obtener reservas
-        reservations, _ = await self.reservation_repository.list(filter_request)
+        all_reservations = []
+        page = 1
+        limit = 100  # Usar el límite máximo permitido
+        
+        while True:
+            logger.info(f"📝 Obteniendo página {page} de reservas...")
+            
+            # Crear filtro para obtener reservas activas de esta sucursal
+            filter_request = ReservationFilterRequest(
+                branch_id=branch_id,
+                status="PENDING,CONFIRMED",  # Solo reservas activas
+                page=page,
+                limit=limit
+            )
+            
+            # Obtener reservas de esta página
+            reservations, total = await self.reservation_repository.list(filter_request)
+            logger.info(f"📊 Página {page}: {len(reservations)} reservas de {total} total")
+            
+            # Si no hay más reservas, terminar
+            if not reservations:
+                logger.info("✅ No hay más reservas para obtener")
+                break
+            
+            # Agregar reservas de esta página
+            all_reservations.extend(reservations)
+            
+            # Si ya obtuvimos todas las reservas, terminar
+            if len(all_reservations) >= total:
+                logger.info(f"✅ Todas las reservas obtenidas: {len(all_reservations)}")
+                break
+            
+            # Ir a la siguiente página
+            page += 1
         
         # Filtrar por día de la semana
+        logger.info("🔄 Filtrando reservas por día de la semana...")
         affected_reservations = []
-        for reservation in reservations:
+        for reservation in all_reservations:
             if reservation.reservation_date.isoweekday() == day_of_week.value:
                 affected_reservations.append(reservation)
+                logger.info(f"✅ Reserva {reservation.id} afectada (día {reservation.reservation_date.isoweekday()})")
         
+        logger.info(f"📊 Reservas afectadas encontradas: {len(affected_reservations)} de {len(all_reservations)} total")
         return affected_reservations
     
     def _is_reservation_impacted(self, reservation: Reservation, new_start_time: str, new_end_time: str) -> bool:

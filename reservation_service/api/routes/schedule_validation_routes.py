@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional
+import logging
 
 from ...domain.dto.requests.schedule_requests import UpdateBranchScheduleRequest
 from ...domain.dto.responses.schedule_responses import (
@@ -15,6 +16,9 @@ from ...domain.exceptions.schedule_exceptions import (
 )
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/schedules", tags=["Schedule Validation"])
 
@@ -115,11 +119,18 @@ async def validate_schedule_deletion(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Validar el impacto de eliminar un horario sin eliminarlo"""
+    logger.info(f"🚀 Endpoint validate_schedule_deletion llamado con schedule_id: {schedule_id}")
     try:
+        logger.info("📝 Obteniendo use case...")
         use_case = container.delete_branch_schedule_with_validation_use_case()
-        result = await use_case.validate_deletion(schedule_id)
+        logger.info("✅ Use case obtenido correctamente")
         
-        return {
+        logger.info(f"🔄 Ejecutando validación de eliminación para schedule_id: {schedule_id}")
+        result = await use_case.validate_deletion(schedule_id)
+        logger.info("✅ Validación de eliminación completada exitosamente")
+        logger.info(f"📊 Resultado: can_delete={result.get('can_delete')}, requires_rescheduling={result.get('requires_rescheduling')}")
+        
+        response = {
             "message": "Análisis de impacto completado",
             "can_delete": result["can_delete"],
             "requires_rescheduling": result["requires_rescheduling"],
@@ -132,13 +143,17 @@ async def validate_schedule_deletion(
             },
             "impact_analysis": result["impact_analysis"]
         }
+        logger.info("✅ Respuesta preparada exitosamente")
+        return response
         
     except ScheduleNotFoundException as e:
+        logger.warning(f"⚠️ Horario no encontrado: {e.message}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": e.message, "error_code": e.error_code}
         )
     except Exception as e:
+        logger.error(f"❌ Error inesperado en validate_schedule_deletion: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

@@ -5,6 +5,8 @@ from typing import List, Optional
 from datetime import date, datetime, time
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
+import logging
+
 from ...domain.entities.branch_schedule import BranchSchedule
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.entities.time_slot import TimeSlot
@@ -13,6 +15,9 @@ from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...infrastructure.models.schedule import BranchScheduleModel
 from ...infrastructure.models.reservation import ReservationModel
 from commons.database import get_db_session
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 
 class ScheduleRepositoryImpl(ScheduleRepository):
@@ -43,17 +48,32 @@ class ScheduleRepositoryImpl(ScheduleRepository):
     
     async def get_by_branch_and_day(self, branch_id: int, day_of_week: DayOfWeek) -> Optional[BranchSchedule]:
         """Obtener horario de una sucursal para un día específico"""
-        async for session in get_db_session():
-            stmt = select(BranchScheduleModel).where(
-                and_(
-                    BranchScheduleModel.branch_id == branch_id,
-                    BranchScheduleModel.day_of_week == day_of_week
+        logger.info(f"🔄 Buscando horario para branch_id: {branch_id}, day_of_week: {day_of_week}")
+        
+        try:
+            async for session in get_db_session():
+                logger.info("📝 Ejecutando consulta en base de datos...")
+                stmt = select(BranchScheduleModel).where(
+                    and_(
+                        BranchScheduleModel.branch_id == branch_id,
+                        BranchScheduleModel.day_of_week == day_of_week
+                    )
                 )
-            )
-            result = await session.execute(stmt)
-            schedule_model = result.scalar_one_or_none()
-            
-            return schedule_model.to_domain() if schedule_model else None
+                logger.info(f"📝 Query: {stmt}")
+                
+                result = await session.execute(stmt)
+                schedule_model = result.scalar_one_or_none()
+                
+                if schedule_model:
+                    logger.info(f"✅ Horario encontrado: id={schedule_model.id}, start_time={schedule_model.start_time}, end_time={schedule_model.end_time}")
+                    return schedule_model.to_domain()
+                else:
+                    logger.warning(f"⚠️ No se encontró horario para branch_id: {branch_id}, day_of_week: {day_of_week}")
+                    return None
+                    
+        except Exception as e:
+            logger.error(f"❌ Error en get_by_branch_and_day: {str(e)}", exc_info=True)
+            raise
     
     async def list_by_branch(self, branch_id: int, day_of_week: Optional[DayOfWeek] = None, 
                            is_active: Optional[bool] = None) -> List[BranchSchedule]:

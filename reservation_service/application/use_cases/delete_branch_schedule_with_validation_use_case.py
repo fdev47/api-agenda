@@ -3,6 +3,7 @@ Use case para eliminar horario de sucursal con validación
 """
 from typing import Dict, Any, List
 from datetime import datetime
+import logging
 
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.responses.schedule_responses import DeleteBranchScheduleResponse
@@ -10,6 +11,9 @@ from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
 from .validate_schedule_changes_use_case import ValidateScheduleChangesUseCase
 from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.interfaces.reservation_repository import ReservationRepository
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 
 class DeleteBranchScheduleWithValidationUseCase:
@@ -72,33 +76,53 @@ class DeleteBranchScheduleWithValidationUseCase:
     
     async def validate_deletion(self, schedule_id: int) -> Dict[str, Any]:
         """Solo validar el impacto sin eliminar"""
+        logger.info(f"🔄 Iniciando validación de eliminación para schedule_id: {schedule_id}")
         
-        # Obtener el horario actual
-        current_schedule = await self.schedule_repository.get_by_id(schedule_id)
-        if not current_schedule:
-            raise ScheduleNotFoundException(schedule_id=schedule_id)
-        
-        # Validar el impacto de eliminar el horario
-        impact_analysis = await self.validate_changes_use_case.execute(
-            branch_id=current_schedule.branch_id,
-            day_of_week=current_schedule.day_of_week,
-            new_start_time=None,
-            new_end_time=None,
-            is_active=False
-        )
-        
-        return {
-            "schedule_id": schedule_id,
-            "branch_id": current_schedule.branch_id,
-            "day_of_week": current_schedule.day_of_week.value,
-            "day_name": current_schedule.day_of_week.get_name(),
-            "current_schedule": {
-                "start_time": current_schedule.start_time.strftime("%H:%M"),
-                "end_time": current_schedule.end_time.strftime("%H:%M"),
-                "interval_minutes": current_schedule.interval_minutes,
-                "is_active": current_schedule.is_active
-            },
-            "impact_analysis": impact_analysis,
-            "can_delete": len(impact_analysis["impacted_reservation_ids"]) == 0,
-            "requires_rescheduling": impact_analysis["requires_rescheduling"]
-        } 
+        try:
+            logger.info("📝 Obteniendo horario actual...")
+            # Obtener el horario actual
+            current_schedule = await self.schedule_repository.get_by_id(schedule_id)
+            if not current_schedule:
+                logger.warning(f"⚠️ Horario no encontrado: {schedule_id}")
+                raise ScheduleNotFoundException(schedule_id=schedule_id)
+            
+            logger.info(f"✅ Horario encontrado: branch_id={current_schedule.branch_id}, day_of_week={current_schedule.day_of_week}")
+            
+            logger.info("🔄 Ejecutando validación de cambios...")
+            # Validar el impacto de eliminar el horario
+            impact_analysis = await self.validate_changes_use_case.execute(
+                branch_id=current_schedule.branch_id,
+                day_of_week=current_schedule.day_of_week,
+                new_start_time=None,
+                new_end_time=None,
+                is_active=False
+            )
+            logger.info("✅ Validación de cambios completada")
+            logger.info(f"📊 Análisis de impacto: requires_rescheduling={impact_analysis.get('requires_rescheduling')}, impacted_reservations={len(impact_analysis.get('impacted_reservation_ids', []))}")
+            
+            # Preparar respuesta
+            result = {
+                "schedule_id": schedule_id,
+                "branch_id": current_schedule.branch_id,
+                "day_of_week": current_schedule.day_of_week.value,
+                "day_name": DayOfWeek.get_name(current_schedule.day_of_week.value),
+                "current_schedule": {
+                    "start_time": current_schedule.start_time.strftime("%H:%M"),
+                    "end_time": current_schedule.end_time.strftime("%H:%M"),
+                    "interval_minutes": current_schedule.interval_minutes,
+                    "is_active": current_schedule.is_active
+                },
+                "impact_analysis": impact_analysis,
+                "can_delete": len(impact_analysis["impact_analysis"]["impacted_reservation_ids"]) == 0,
+                "requires_rescheduling": impact_analysis["requires_rescheduling"]
+            }
+            
+            logger.info(f"✅ Resultado preparado: can_delete={result['can_delete']}, requires_rescheduling={result['requires_rescheduling']}")
+            return result
+            
+        except ScheduleNotFoundException as e:
+            logger.warning(f"⚠️ Horario no encontrado en validate_deletion: {e.message}")
+            raise
+        except Exception as e:
+            logger.error(f"❌ Error inesperado en validate_deletion: {str(e)}", exc_info=True)
+            raise 

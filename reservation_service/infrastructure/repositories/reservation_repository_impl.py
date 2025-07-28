@@ -1,21 +1,21 @@
 """
 Implementación del repositorio de reservas
 """
-import logging
 from typing import List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func
-from sqlalchemy.orm import Session
+import logging
 
 from ...domain.entities.reservation import Reservation
 from ...domain.entities.reservation_status import ReservationStatus
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
 from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.exceptions.reservation_exceptions import ReservationNotFoundException
 from ...infrastructure.models.reservation import ReservationModel, ReservationOrderNumberModel
-from ...domain.exceptions import ReservationNotFoundException
 from commons.database import get_db_session
 
+# Configurar logging
 logger = logging.getLogger(__name__)
 
 class ReservationRepositoryImpl(ReservationRepository):
@@ -122,7 +122,26 @@ class ReservationRepositoryImpl(ReservationRepository):
                 conditions.append(ReservationModel.reservation_date <= filter_request.reservation_date_to)
             
             if filter_request.status:
-                conditions.append(ReservationModel.status == ReservationStatus(filter_request.status))
+                # Manejar múltiples estados separados por comas
+                if "," in filter_request.status:
+                    status_list = [status.strip() for status in filter_request.status.split(",")]
+                    status_conditions = []
+                    for status_str in status_list:
+                        try:
+                            status_enum = ReservationStatus(status_str)
+                            status_conditions.append(ReservationModel.status == status_enum)
+                        except ValueError:
+                            logger.warning(f"⚠️ Estado inválido ignorado: {status_str}")
+                    
+                    if status_conditions:
+                        conditions.append(or_(*status_conditions))
+                else:
+                    # Estado único
+                    try:
+                        status_enum = ReservationStatus(filter_request.status)
+                        conditions.append(ReservationModel.status == status_enum)
+                    except ValueError:
+                        logger.warning(f"⚠️ Estado inválido ignorado: {filter_request.status}")
             
             if filter_request.order_code:
                 # Para el filtro de order_code necesitamos hacer un join
