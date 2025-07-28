@@ -25,9 +25,7 @@ async def get_branches(api_client: APIClient) -> List[Dict[str, Any]]:
     Obtener sucursales disponibles desde api_gateway
     """
     try:
-        print(f"🔍 Intentando obtener sucursales desde: {config.API_PREFIX}/location/branches/")
         response = await api_client.get(f"{config.API_PREFIX}/location/branches/")
-        print(f"📡 Respuesta del API Gateway: {response}")
         
         if response:
             # La respuesta tiene 'branches' no 'items'
@@ -61,8 +59,6 @@ async def create_branch_schedule(
     Crear un horario para una sucursal
     """
     try:
-        print(f"      🔧 Creando horario para sucursal {branch_id}, día {day_of_week.name}")
-        
         # Crear la entidad de dominio
         schedule = BranchSchedule(
             branch_id=branch_id,
@@ -73,12 +69,8 @@ async def create_branch_schedule(
             is_active=True
         )
         
-        print(f"      📝 Entidad creada: {schedule}")
-        
         # Guardar en la base de datos
-        created_schedule = await schedule_repository.create(schedule)
-        
-        print(f"      ✅ Horario creado con ID: {created_schedule.id}")
+        await schedule_repository.create(schedule)
         
         return True
     except Exception as e:
@@ -95,13 +87,6 @@ async def populate_branch_schedule_data(dry_run: bool = False):
     # Configuración del API Gateway
     api_gateway_url = config.API_GATEWAY_URL
     access_token = os.getenv("ACCESS_TOKEN")
-    
-    print(f"🔧 Configuración:")
-    print(f"   - API Gateway URL: {api_gateway_url}")
-    print(f"   - API Prefix: {config.API_PREFIX}")
-    print(f"   - ACCESS_TOKEN configurado: {'Sí' if access_token else 'No'}")
-    if access_token:
-        print(f"   - Token (primeros 10 chars): {access_token[:10]}...")
     
     if not access_token:
         print("❌ ERROR: ACCESS_TOKEN no configurado en variables de entorno")

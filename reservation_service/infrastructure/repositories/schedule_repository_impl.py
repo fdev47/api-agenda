@@ -24,27 +24,13 @@ class ScheduleRepositoryImpl(ScheduleRepository):
     async def create(self, schedule: BranchSchedule) -> BranchSchedule:
         """Crear un nuevo horario de sucursal"""
         async for session in get_db_session():
-            print(f"        🔄 Iniciando transacción para horario de sucursal {schedule.branch_id}")
-            
             schedule_model = BranchScheduleModel.from_domain(schedule)
-            print(f"        📋 Modelo creado: {schedule_model}")
-            
             session.add(schedule_model)
-            print(f"        ➕ Modelo agregado a la sesión")
-            
             await session.flush()
-            print(f"        💾 Flush ejecutado")
-            
             await session.commit()
-            print(f"        ✅ Commit ejecutado")
-            
             await session.refresh(schedule_model)
-            print(f"        🔄 Modelo refrescado con ID: {schedule_model.id}")
             
-            result = schedule_model.to_domain()
-            print(f"        ✅ Entidad de dominio creada: {result}")
-            
-            return result
+            return schedule_model.to_domain()
     
     async def get_by_id(self, schedule_id: int) -> Optional[BranchSchedule]:
         """Obtener un horario por ID"""

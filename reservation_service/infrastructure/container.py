@@ -41,8 +41,7 @@ class Container(containers.DeclarativeContainer):
     )
     
     schedule_repository = providers.Factory(
-        ScheduleRepositoryImpl,
-        session=db_session
+        ScheduleRepositoryImpl
     )
     
     # Casos de uso de horarios

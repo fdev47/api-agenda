@@ -104,7 +104,7 @@ async def list_branch_schedules(
 ):
     """Listar horarios de una sucursal"""
     try:
-        from ...domain.entities.schedule import DayOfWeek
+        from ...domain.entities.day_of_week import DayOfWeek
         
         request = GetBranchSchedulesRequest(
             branch_id=branch_id,
@@ -114,6 +114,7 @@ async def list_branch_schedules(
         
         use_case = container.list_branch_schedules_use_case()
         result = await use_case.execute(request)
+        
         return result
     except ValueError as e:
         raise HTTPException(
