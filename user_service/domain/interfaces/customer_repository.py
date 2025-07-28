@@ -1,61 +1,41 @@
 """
-Interfaz del repositorio de clientes
+Interfaz del repositorio de Customer
 """
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from uuid import UUID
-from ..entities.customer import Customer
-from ..dto.requests.customer_requests import CreateCustomerRequest, UpdateCustomerRequest
+from ...domain.entities.customer import Customer
+
 
 class CustomerRepository(ABC):
-    """Interfaz del repositorio de clientes"""
-    
+    """Interfaz del repositorio de Customer"""
+
     @abstractmethod
-    async def create(self, customer_data: CreateCustomerRequest) -> Customer:
-        """Crear un nuevo cliente"""
+    async def create(self, customer: Customer) -> Customer:
+        """Crear un nuevo customer"""
         pass
-    
+
     @abstractmethod
-    async def get_by_id(self, customer_id: UUID) -> Customer | None:
-        """Obtener cliente por ID"""
+    async def get_by_id(self, customer_id: UUID) -> Optional[Customer]:
+        """Obtener un customer por ID"""
         pass
-    
+
     @abstractmethod
-    async def get_by_auth_uid(self, auth_uid: str) -> Customer | None:
-        """Obtener cliente por auth_uid"""
+    async def get_by_auth_uid(self, auth_uid: str) -> Optional[Customer]:
+        """Obtener un customer por auth_uid"""
         pass
-    
+
     @abstractmethod
-    async def get_by_email(self, email: str) -> Customer | None:
-        """Obtener cliente por email"""
+    async def get_all(self) -> List[Customer]:
+        """Obtener todos los customers"""
         pass
-    
+
     @abstractmethod
-    async def get_by_ruc(self, ruc: str) -> Customer | None:
-        """Obtener cliente por RUC"""
+    async def update(self, customer_id: UUID, customer: Customer) -> Optional[Customer]:
+        """Actualizar un customer"""
         pass
-    
-    @abstractmethod
-    async def list_customers(self, skip: int = 0, limit: int = 100) -> List[Customer]:
-        """Listar clientes con paginación"""
-        pass
-    
-    @abstractmethod
-    async def update(self, customer_id: UUID, customer_data: UpdateCustomerRequest) -> Customer | None:
-        """Actualizar cliente"""
-        pass
-    
+
     @abstractmethod
     async def delete(self, customer_id: UUID) -> bool:
-        """Eliminar cliente"""
-        pass
-    
-    @abstractmethod
-    async def activate(self, customer_id: UUID) -> Customer | None:
-        """Activar cliente"""
-        pass
-    
-    @abstractmethod
-    async def deactivate(self, customer_id: UUID) -> Customer | None:
-        """Desactivar cliente"""
+        """Eliminar un customer"""
         pass 

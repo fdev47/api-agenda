@@ -9,6 +9,7 @@ from ..data.repositories.profile_repository_impl import ProfileRepositoryImpl
 from ..data.repositories.role_repository_impl import RoleRepositoryImpl
 from ..data.repositories.user_repository_impl import UserRepositoryImpl
 from ..data.repositories.address_repository_impl import AddressRepositoryImpl
+from ..data.repositories.customer_repository_impl import CustomerRepositoryImpl
 from ..application.use_cases import (
     CreateUserUseCase,
     GetUserByIdUseCase,
@@ -78,6 +79,11 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     address_repository = providers.Factory(
         AddressRepositoryImpl,
+        session=db_session
+    )
+    
+    customer_repository = providers.Factory(
+        CustomerRepositoryImpl,
         session=db_session
     )
     
@@ -223,6 +229,13 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     delete_address_use_case = providers.Factory(
         DeleteAddressUseCase,
+        address_repository=address_repository
+    )
+    
+    # Casos de uso de Customer
+    create_customer_use_case = providers.Factory(
+        CreateCustomerUseCase,
+        customer_repository=customer_repository,
         address_repository=address_repository
     )
 
