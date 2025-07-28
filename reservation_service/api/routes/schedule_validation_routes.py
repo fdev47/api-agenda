@@ -7,6 +7,11 @@ from ...domain.dto.responses.schedule_responses import (
     BranchScheduleResponse,
     DeleteBranchScheduleResponse
 )
+from ...domain.dto.responses.schedule_validation_responses import (
+    ValidateScheduleDeletionResponse, 
+    ValidateScheduleUpdateResponse,
+    DeleteScheduleWithValidationResult
+)
 from ...domain.exceptions.schedule_exceptions import (
     ScheduleNotFoundException,
     ScheduleAlreadyExistsException,
@@ -28,7 +33,7 @@ def get_container() -> Container:
     return Container()
 
 
-@router.put("/{schedule_id}/validate", status_code=status.HTTP_200_OK)
+@router.put("/{schedule_id}/validate", response_model=ValidateScheduleUpdateResponse, status_code=status.HTTP_200_OK)
 async def validate_schedule_update(
     schedule_id: int,
     request: UpdateBranchScheduleRequest,
@@ -41,17 +46,17 @@ async def validate_schedule_update(
         result = await use_case.execute(schedule_id, request, auto_reschedule=False)
         
         if result["success"]:
-            return {
-                "message": "Los cambios se pueden aplicar sin afectar reservas",
-                "schedule": result["schedule"],
-                "impact_analysis": result["impact_analysis"]
-            }
+            return ValidateScheduleUpdateResponse(
+                message="Los cambios se pueden aplicar sin afectar reservas",
+                schedule=result["schedule"],
+                impact_analysis=result["impact_analysis"]
+            )
         else:
-            return {
-                "message": result["message"],
-                "requires_confirmation": True,
-                "impact_analysis": result["impact_analysis"]
-            }
+            return ValidateScheduleUpdateResponse(
+                message=result["message"],
+                requires_confirmation=True,
+                impact_analysis=result["impact_analysis"]
+            )
             
     except ScheduleNotFoundException as e:
         raise HTTPException(
@@ -112,7 +117,7 @@ async def update_branch_schedule(
         )
 
 
-@router.get("/{schedule_id}/validate-deletion", status_code=status.HTTP_200_OK)
+@router.get("/{schedule_id}/validate-deletion", response_model=ValidateScheduleDeletionResponse, status_code=status.HTTP_200_OK)
 async def validate_schedule_deletion(
     schedule_id: int,
     container: Container = Depends(get_container),
@@ -128,23 +133,10 @@ async def validate_schedule_deletion(
         logger.info(f"🔄 Ejecutando validación de eliminación para schedule_id: {schedule_id}")
         result = await use_case.validate_deletion(schedule_id)
         logger.info("✅ Validación de eliminación completada exitosamente")
-        logger.info(f"📊 Resultado: can_delete={result.get('can_delete')}, requires_rescheduling={result.get('requires_rescheduling')}")
+        logger.info(f"📊 Resultado: can_delete={result.can_delete}, requires_rescheduling={result.requires_rescheduling}")
         
-        response = {
-            "message": "Análisis de impacto completado",
-            "can_delete": result["can_delete"],
-            "requires_rescheduling": result["requires_rescheduling"],
-            "schedule_info": {
-                "id": result["schedule_id"],
-                "branch_id": result["branch_id"],
-                "day_of_week": result["day_of_week"],
-                "day_name": result["day_name"],
-                "current_schedule": result["current_schedule"]
-            },
-            "impact_analysis": result["impact_analysis"]
-        }
         logger.info("✅ Respuesta preparada exitosamente")
-        return response
+        return result
         
     except ScheduleNotFoundException as e:
         logger.warning(f"⚠️ Horario no encontrado: {e.message}")
@@ -172,18 +164,18 @@ async def delete_branch_schedule_with_validation(
         use_case = container.delete_branch_schedule_with_validation_use_case()
         result = await use_case.execute(schedule_id, auto_reschedule=auto_reschedule)
         
-        if result["success"]:
+        if result.success:
             return DeleteBranchScheduleResponse(
-                id=result["schedule_id"],
-                message=result["message"]
+                id=result.schedule_id,
+                message=result.message
             )
         else:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
-                    "message": result["message"],
-                    "impact_analysis": result["impact_analysis"],
-                    "requires_confirmation": True
+                    "message": result.message,
+                    "impact_analysis": result.impact_analysis.dict() if result.impact_analysis else None,
+                    "requires_confirmation": result.requires_confirmation
                 }
             )
             

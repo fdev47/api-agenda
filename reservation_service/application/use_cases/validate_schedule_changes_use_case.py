@@ -9,6 +9,7 @@ from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.entities.reservation import Reservation
 from ...domain.entities.reservation_status import ReservationStatus
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
+from ...domain.dto.responses.schedule_validation_responses import ImpactAnalysisResponse, ValidateScheduleChangesResult
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.interfaces.schedule_repository import ScheduleRepository
 from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
@@ -26,7 +27,7 @@ class ValidateScheduleChangesUseCase:
     
     async def execute(self, branch_id: int, day_of_week: DayOfWeek, 
                      new_start_time: str = None, new_end_time: str = None,
-                     new_interval_minutes: int = None, is_active: bool = None) -> Dict[str, Any]:
+                     new_interval_minutes: int = None, is_active: bool = None) -> ValidateScheduleChangesResult:
         """Ejecutar validación de cambios de horario"""
         logger.info(f"🔄 Iniciando validación de cambios para branch_id: {branch_id}, day_of_week: {day_of_week}")
         logger.info(f"📝 Parámetros: new_start_time={new_start_time}, new_end_time={new_end_time}, is_active={is_active}")
@@ -61,35 +62,38 @@ class ValidateScheduleChangesUseCase:
             
             logger.info(f"📊 Análisis completado: {len(impacted_reservations)} impactadas, {len(safe_reservations)} seguras")
             
-            # Preparar respuesta
-            result = {
-                "branch_id": branch_id,
-                "day_of_week": day_of_week.value,
-                "day_name": DayOfWeek.get_name(day_of_week.value),
-                "current_schedule": {
+            # Crear DTO de análisis de impacto
+            impact_analysis = ImpactAnalysisResponse(
+                total_reservations=len(affected_reservations),
+                impacted_reservations=len(impacted_reservations),
+                safe_reservations=len(safe_reservations),
+                impacted_reservation_ids=[r.id for r in impacted_reservations],
+                safe_reservation_ids=[r.id for r in safe_reservations]
+            )
+            
+            # Crear resultado usando el DTO
+            result = ValidateScheduleChangesResult(
+                branch_id=branch_id,
+                day_of_week=day_of_week.value,
+                day_name=DayOfWeek.get_name(day_of_week.value),
+                current_schedule={
                     "start_time": current_schedule.start_time.strftime("%H:%M"),
                     "end_time": current_schedule.end_time.strftime("%H:%M"),
                     "interval_minutes": current_schedule.interval_minutes,
                     "is_active": current_schedule.is_active
                 },
-                "proposed_changes": {
+                proposed_changes={
                     "start_time": new_start_time,
                     "end_time": new_end_time,
                     "interval_minutes": new_interval_minutes,
                     "is_active": is_active
                 },
-                "impact_analysis": {
-                    "total_reservations": len(affected_reservations),
-                    "impacted_reservations": len(impacted_reservations),
-                    "safe_reservations": len(safe_reservations),
-                    "impacted_reservation_ids": [r.id for r in impacted_reservations],
-                    "safe_reservation_ids": [r.id for r in safe_reservations]
-                },
-                "can_proceed": len(impacted_reservations) == 0,
-                "requires_rescheduling": len(impacted_reservations) > 0
-            }
+                impact_analysis=impact_analysis,
+                can_proceed=len(impacted_reservations) == 0,
+                requires_rescheduling=len(impacted_reservations) > 0
+            )
             
-            logger.info(f"✅ Resultado preparado: can_proceed={result['can_proceed']}, requires_rescheduling={result['requires_rescheduling']}")
+            logger.info(f"✅ Resultado preparado: can_proceed={result.can_proceed}, requires_rescheduling={result.requires_rescheduling}")
             return result
             
         except ScheduleNotFoundException as e:
@@ -108,11 +112,11 @@ class ValidateScheduleChangesUseCase:
         # Primero validar el impacto
         impact_analysis = await self.execute(branch_id, day_of_week, new_start_time, new_end_time, new_interval_minutes, is_active)
         
-        if not impact_analysis["can_proceed"] and not auto_reschedule:
+        if not impact_analysis.can_proceed and not auto_reschedule:
             return {
                 "success": False,
                 "message": "No se pueden aplicar los cambios sin reagendar las reservas afectadas",
-                "impact_analysis": impact_analysis
+                "impact_analysis": impact_analysis.dict()
             }
         
         # Obtener reservas afectadas
@@ -134,7 +138,7 @@ class ValidateScheduleChangesUseCase:
         return {
             "success": True,
             "message": f"Cambios aplicados. {len(updated_reservations)} reservas marcadas para reagendamiento",
-            "impact_analysis": impact_analysis,
+            "impact_analysis": impact_analysis.dict(),
             "updated_reservations": len(updated_reservations)
         }
     

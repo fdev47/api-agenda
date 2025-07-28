@@ -7,6 +7,11 @@ import logging
 
 from ...domain.entities.day_of_week import DayOfWeek
 from ...domain.dto.responses.schedule_responses import DeleteBranchScheduleResponse
+from ...domain.dto.responses.schedule_validation_responses import (
+    ValidateScheduleDeletionResponse, 
+    ScheduleInfoResponse,
+    DeleteScheduleWithValidationResult
+)
 from ...domain.exceptions.schedule_exceptions import ScheduleNotFoundException
 from .validate_schedule_changes_use_case import ValidateScheduleChangesUseCase
 from ...domain.interfaces.schedule_repository import ScheduleRepository
@@ -23,7 +28,7 @@ class DeleteBranchScheduleWithValidationUseCase:
         self.schedule_repository = schedule_repository
         self.validate_changes_use_case = validate_changes_use_case
     
-    async def execute(self, schedule_id: int, auto_reschedule: bool = False) -> Dict[str, Any]:
+    async def execute(self, schedule_id: int, auto_reschedule: bool = False) -> DeleteScheduleWithValidationResult:
         """Ejecutar el caso de uso"""
         
         # Obtener el horario actual
@@ -41,16 +46,16 @@ class DeleteBranchScheduleWithValidationUseCase:
         )
         
         # Si hay reservas afectadas y no se permite auto-reschedule, retornar análisis
-        if impact_analysis["requires_rescheduling"] and not auto_reschedule:
-            return {
-                "success": False,
-                "message": "No se puede eliminar el horario porque afectaría reservas existentes",
-                "impact_analysis": impact_analysis,
-                "requires_confirmation": True
-            }
+        if impact_analysis.requires_rescheduling and not auto_reschedule:
+            return DeleteScheduleWithValidationResult(
+                success=False,
+                message="No se puede eliminar el horario porque afectaría reservas existentes",
+                impact_analysis=impact_analysis,
+                requires_confirmation=True
+            )
         
         # Aplicar cambios y actualizar reservas afectadas si es necesario
-        if impact_analysis["requires_rescheduling"] and auto_reschedule:
+        if impact_analysis.requires_rescheduling and auto_reschedule:
             schedule_changes_result = await self.validate_changes_use_case.apply_schedule_changes(
                 branch_id=current_schedule.branch_id,
                 day_of_week=current_schedule.day_of_week,
@@ -66,15 +71,15 @@ class DeleteBranchScheduleWithValidationUseCase:
         if not deleted:
             raise ScheduleNotFoundException(schedule_id=schedule_id)
         
-        return {
-            "success": True,
-            "message": "Horario eliminado exitosamente",
-            "schedule_id": schedule_id,
-            "impact_analysis": impact_analysis,
-            "reservations_updated": impact_analysis["impacted_reservations"] if auto_reschedule else 0
-        }
+        return DeleteScheduleWithValidationResult(
+            success=True,
+            message="Horario eliminado exitosamente",
+            schedule_id=schedule_id,
+            impact_analysis=impact_analysis,
+            reservations_updated=impact_analysis.impact_analysis.impacted_reservations if auto_reschedule else 0
+        )
     
-    async def validate_deletion(self, schedule_id: int) -> Dict[str, Any]:
+    async def validate_deletion(self, schedule_id: int) -> ValidateScheduleDeletionResponse:
         """Solo validar el impacto sin eliminar"""
         logger.info(f"🔄 Iniciando validación de eliminación para schedule_id: {schedule_id}")
         
@@ -98,26 +103,32 @@ class DeleteBranchScheduleWithValidationUseCase:
                 is_active=False
             )
             logger.info("✅ Validación de cambios completada")
-            logger.info(f"📊 Análisis de impacto: requires_rescheduling={impact_analysis.get('requires_rescheduling')}, impacted_reservations={len(impact_analysis.get('impacted_reservation_ids', []))}")
+            logger.info(f"📊 Análisis de impacto: requires_rescheduling={impact_analysis.requires_rescheduling}, impacted_reservations={len(impact_analysis.impact_analysis.impacted_reservation_ids)}")
             
-            # Preparar respuesta
-            result = {
-                "schedule_id": schedule_id,
-                "branch_id": current_schedule.branch_id,
-                "day_of_week": current_schedule.day_of_week.value,
-                "day_name": DayOfWeek.get_name(current_schedule.day_of_week.value),
-                "current_schedule": {
+            # Crear DTO de información del horario
+            schedule_info = ScheduleInfoResponse(
+                id=schedule_id,
+                branch_id=current_schedule.branch_id,
+                day_of_week=current_schedule.day_of_week.value,
+                day_name=DayOfWeek.get_name(current_schedule.day_of_week.value),
+                current_schedule={
                     "start_time": current_schedule.start_time.strftime("%H:%M"),
                     "end_time": current_schedule.end_time.strftime("%H:%M"),
                     "interval_minutes": current_schedule.interval_minutes,
                     "is_active": current_schedule.is_active
-                },
-                "impact_analysis": impact_analysis,
-                "can_delete": len(impact_analysis["impact_analysis"]["impacted_reservation_ids"]) == 0,
-                "requires_rescheduling": impact_analysis["requires_rescheduling"]
-            }
+                }
+            )
             
-            logger.info(f"✅ Resultado preparado: can_delete={result['can_delete']}, requires_rescheduling={result['requires_rescheduling']}")
+            # Crear respuesta usando el DTO
+            result = ValidateScheduleDeletionResponse(
+                message="Análisis de impacto completado",
+                can_delete=len(impact_analysis.impact_analysis.impacted_reservation_ids) == 0,
+                requires_rescheduling=impact_analysis.requires_rescheduling,
+                schedule_info=schedule_info,
+                impact_analysis=impact_analysis.impact_analysis
+            )
+            
+            logger.info(f"✅ Resultado preparado: can_delete={result.can_delete}, requires_rescheduling={result.requires_rescheduling}")
             return result
             
         except ScheduleNotFoundException as e:
