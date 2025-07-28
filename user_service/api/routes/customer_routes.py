@@ -22,7 +22,7 @@ from ..middleware import auth_middleware
 from commons.error_utils import raise_not_found_error, raise_internal_error
 from commons.error_codes import ErrorCode
 
-router = APIRouter(prefix="/customers", tags=["Customers"])
+router = APIRouter(tags=["Customers"])
 
 @router.get("/me", response_model=CustomerResponse)
 async def get_current_customer_info(current_user=Depends(auth_middleware["require_auth"])):

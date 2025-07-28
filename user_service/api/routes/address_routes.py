@@ -19,7 +19,7 @@ from ...application.use_cases.delete_address_use_case import DeleteAddressUseCas
 from ...infrastructure.container import container
 from ...domain.exceptions.user_exceptions import UserException, UserNotFoundException
 
-router = APIRouter(prefix="/addresses", tags=["Addresses"])
+router = APIRouter(tags=["Addresses"])
 
 @router.post("/", response_model=AddressCreatedResponse)
 async def create_address(request: CreateAddressRequest):
