@@ -9,7 +9,7 @@ load_dotenv()
 
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
-from .routes import user_router, profile_router, location_router, customer_router
+from . import user_router, profile_router, location_router, customer_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
