@@ -97,12 +97,14 @@ class APIConfig:
     AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
     USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8002")
     LOCATION_SERVICE_URL = os.getenv("LOCATION_SERVICE_URL", "http://localhost:8003")
+    RESERVATION_SERVICE_URL = os.getenv("RESERVATION_SERVICE_URL", "http://localhost:8004")
     
     # Puertos de servicios
     API_GATEWAY_PORT = int(os.getenv("API_GATEWAY_PORT", "8000"))
     AUTH_SERVICE_PORT = int(os.getenv("AUTH_SERVICE_PORT", "8001"))
     USER_SERVICE_PORT = int(os.getenv("USER_SERVICE_PORT", "8002"))
     LOCATION_SERVICE_PORT = int(os.getenv("LOCATION_SERVICE_PORT", "8003"))
+    RESERVATION_SERVICE_PORT = int(os.getenv("RESERVATION_SERVICE_PORT", "8004"))
     
     # Configuración global
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
@@ -114,6 +116,7 @@ class APIConfig:
     AUTH_CORS_ORIGINS = os.getenv("AUTH_CORS_ORIGINS", "*").split(",")
     USER_CORS_ORIGINS = os.getenv("USER_CORS_ORIGINS", "*").split(",")
     LOCATION_CORS_ORIGINS = os.getenv("LOCATION_CORS_ORIGINS", "*").split(",")
+    RESERVATION_CORS_ORIGINS = os.getenv("RESERVATION_CORS_ORIGINS", "*").split(",")
     
     # Firebase
     FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID")
@@ -139,7 +142,8 @@ class APIConfig:
             "gateway": cls.API_GATEWAY_URL,
             "auth": cls.AUTH_SERVICE_URL,
             "user": cls.USER_SERVICE_URL,
-            "location": cls.LOCATION_SERVICE_URL
+            "location": cls.LOCATION_SERVICE_URL,
+            "reservation": cls.RESERVATION_SERVICE_URL
         }
     
     @classmethod
@@ -149,7 +153,8 @@ class APIConfig:
             "gateway": cls.API_GATEWAY_PORT,
             "auth": cls.AUTH_SERVICE_PORT,
             "user": cls.USER_SERVICE_PORT,
-            "location": cls.LOCATION_SERVICE_PORT
+            "location": cls.LOCATION_SERVICE_PORT,
+            "reservation": cls.RESERVATION_SERVICE_PORT
         }
 
 # Instancia global de configuración

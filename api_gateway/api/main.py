@@ -10,6 +10,7 @@ load_dotenv()
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from . import user_router, profile_router, location_router, customer_router
+from .schedule.schedule_routes import router as schedule_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -39,7 +40,8 @@ def create_api_gateway_app():
         RouterConfig(user_router, prefix="/users", tags=["Users"]),
         RouterConfig(profile_router, prefix="/profiles", tags=["Profiles"]),
         RouterConfig(location_router, prefix="/location", tags=["Location"]),
-        RouterConfig(customer_router, prefix="/customers", tags=["Customers"])
+        RouterConfig(customer_router, prefix="/customers", tags=["Customers"]),
+        RouterConfig(schedule_router, prefix="/schedules", tags=["Schedules"])
     ]
     
     # Crear aplicación usando factory común
