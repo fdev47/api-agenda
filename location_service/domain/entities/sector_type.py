@@ -42,4 +42,9 @@ class SectorType:
             raise ValueError("El código del tipo de sector no puede estar vacío")
         
         self.code = new_code.strip()
+        self.updated_at = datetime.utcnow()
+    
+    def update_measurement_unit(self, new_measurement_unit: MeasurementUnit) -> None:
+        """Actualizar la unidad de medida del tipo de sector"""
+        self.measurement_unit = new_measurement_unit
         self.updated_at = datetime.utcnow() 

@@ -33,6 +33,9 @@ class UpdateSectorTypeUseCase:
         if request.code is not None:
             existing_sector_type.update_code(request.code)
         
+        if request.measurement_unit is not None:
+            existing_sector_type.update_measurement_unit(request.measurement_unit)
+        
         # Guardar cambios en el repositorio
         updated_sector_type = await self.sector_type_repository.update(existing_sector_type)
         
@@ -41,6 +44,9 @@ class UpdateSectorTypeUseCase:
             id=updated_sector_type.id,
             name=updated_sector_type.name,
             code=updated_sector_type.code,
+            description=updated_sector_type.description,
+            measurement_unit=updated_sector_type.measurement_unit.value,
+            is_active=updated_sector_type.is_active,
             created_at=updated_sector_type.created_at,
             updated_at=updated_sector_type.updated_at
         ) 

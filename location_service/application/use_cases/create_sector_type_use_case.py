@@ -22,6 +22,7 @@ class CreateSectorTypeUseCase:
             id=0,  # Se asignará automáticamente
             name=request.name,
             code=request.code,
+            measurement_unit=request.measurement_unit,
             created_at=datetime.utcnow()
         )
         
@@ -33,6 +34,9 @@ class CreateSectorTypeUseCase:
             id=created_sector_type.id,
             name=created_sector_type.name,
             code=created_sector_type.code,
+            description=created_sector_type.description,
+            measurement_unit=created_sector_type.measurement_unit.value,
+            is_active=created_sector_type.is_active,
             created_at=created_sector_type.created_at,
             updated_at=created_sector_type.updated_at
         ) 

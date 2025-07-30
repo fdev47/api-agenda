@@ -3,12 +3,14 @@ DTOs de requests para tipos de sector
 """
 from pydantic import BaseModel, Field, validator
 from typing import Optional
+from ...entities.measurement_unit import MeasurementUnit
 
 
 class CreateSectorTypeRequest(BaseModel):
     """DTO para crear un tipo de sector"""
     name: str = Field(..., min_length=1, max_length=100, description="Nombre del tipo de sector")
     code: str = Field(..., min_length=1, max_length=20, description="Código único del tipo de sector")
+    measurement_unit: MeasurementUnit = Field(..., description="Unidad de medida del tipo de sector")
     
     @validator('name')
     def validate_name(cls, v):
@@ -27,6 +29,7 @@ class UpdateSectorTypeRequest(BaseModel):
     """DTO para actualizar un tipo de sector"""
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="Nombre del tipo de sector")
     code: Optional[str] = Field(None, min_length=1, max_length=20, description="Código único del tipo de sector")
+    measurement_unit: Optional[MeasurementUnit] = Field(None, description="Unidad de medida del tipo de sector")
     
     @validator('name')
     def validate_name(cls, v):
