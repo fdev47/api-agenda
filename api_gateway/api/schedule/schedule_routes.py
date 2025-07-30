@@ -7,6 +7,7 @@ from datetime import date
 from typing import Optional
 from pydantic import ValidationError
 from commons.error_codes import ErrorCode
+from commons.api_client import HTTPError
 from ...domain.schedule.dto.requests.schedule_requests import (
     CreateBranchScheduleRequest,
     UpdateBranchScheduleRequest,
@@ -56,7 +57,27 @@ async def create_branch_schedule(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
         )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP creando horario: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
+        logger.error(f"❌ Error inesperado creando horario: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -104,6 +125,25 @@ async def get_available_slots(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": error_message, "error_code": error_code}
         )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP obteniendo slots disponibles: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
         logger.error(f"❌ Error inesperado en get_available_slots: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -139,7 +179,27 @@ async def list_branch_schedules(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": "Día de la semana inválido", "error_code": "INVALID_DAY_OF_WEEK"}
         )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP listando horarios: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
+        logger.error(f"❌ Error inesperado listando horarios: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -158,7 +218,27 @@ async def delete_branch_schedule(
         use_case = DeleteBranchScheduleWithValidationUseCase()
         result = await use_case.execute(schedule_id, access_token)
         return result
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP eliminando horario {schedule_id}: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
+        logger.error(f"❌ Error inesperado eliminando horario {schedule_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -212,6 +292,25 @@ async def update_branch_schedule_with_validation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
         )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP actualizando horario {schedule_id}: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
         logger.error(f"❌ Error inesperado en update_branch_schedule_with_validation: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -243,6 +342,25 @@ async def validate_schedule_deletion(
         logger.info("✅ Respuesta preparada exitosamente")
         return result
         
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP validando eliminación de horario {schedule_id}: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
     except Exception as e:
         logger.error(f"❌ Error inesperado en validate_schedule_deletion: {str(e)}", exc_info=True)
         raise HTTPException(

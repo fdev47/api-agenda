@@ -11,6 +11,11 @@ from ..application.schedule.use_cases.get_available_slots_use_case import GetAva
 from ..application.schedule.use_cases.list_branch_schedules_use_case import ListBranchSchedulesUseCase
 from ..application.schedule.use_cases.update_branch_schedule_use_case import UpdateBranchScheduleUseCase
 from ..application.schedule.use_cases.delete_branch_schedule_with_validation_use_case import DeleteBranchScheduleWithValidationUseCase
+from ..application.reservation.use_cases.create_reservation_use_case import CreateReservationUseCase
+from ..application.reservation.use_cases.get_reservation_use_case import GetReservationUseCase
+from ..application.reservation.use_cases.list_reservations_use_case import ListReservationsUseCase
+from ..application.reservation.use_cases.update_reservation_use_case import UpdateReservationUseCase
+from ..application.reservation.use_cases.cancel_reservation_use_case import CancelReservationUseCase
 
 
 class Container(containers.DeclarativeContainer):
@@ -30,4 +35,9 @@ class Container(containers.DeclarativeContainer):
     get_available_slots_use_case = providers.Factory(GetAvailableSlotsUseCase)
     list_branch_schedules_use_case = providers.Factory(ListBranchSchedulesUseCase)
     update_branch_schedule_use_case = providers.Factory(UpdateBranchScheduleUseCase)
-    delete_branch_schedule_use_case = providers.Factory(DeleteBranchScheduleWithValidationUseCase) 
+    delete_branch_schedule_use_case = providers.Factory(DeleteBranchScheduleWithValidationUseCase)
+    create_reservation_use_case = providers.Factory(CreateReservationUseCase)
+    get_reservation_use_case = providers.Factory(GetReservationUseCase)
+    list_reservations_use_case = providers.Factory(ListReservationsUseCase)
+    update_reservation_use_case = providers.Factory(UpdateReservationUseCase)
+    cancel_reservation_use_case = providers.Factory(CancelReservationUseCase) 

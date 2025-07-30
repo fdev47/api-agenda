@@ -2,7 +2,7 @@
 Use case para eliminar horarios de sucursal con validación desde el API Gateway
 """
 from typing import Optional
-from commons.api_client import APIClient
+from commons.api_client import APIClient, HTTPError
 from commons.config import config
 from ....domain.schedule.dto.responses.schedule_responses import DeleteBranchScheduleResponse
 from ....domain.schedule.dto.responses.schedule_validation_responses import ValidateScheduleDeletionResponse
@@ -49,8 +49,12 @@ class DeleteBranchScheduleWithValidationUseCase:
                     schedule_id=schedule_id
                 )
                 
+        except HTTPError as e:
+            # Propagar errores HTTP directamente
+            print(f"Error HTTP eliminando horario: {e}")
+            raise e
         except Exception as e:
-            print(f"Error eliminando horario: {e}")
+            print(f"Error inesperado eliminando horario: {e}")
             return DeleteBranchScheduleResponse(
                 success=False,
                 message=f"Error eliminando horario: {str(e)}",
@@ -98,8 +102,12 @@ class DeleteBranchScheduleWithValidationUseCase:
                     impact_analysis=None
                 )
                 
+        except HTTPError as e:
+            # Propagar errores HTTP directamente
+            print(f"Error HTTP validando eliminación: {e}")
+            raise e
         except Exception as e:
-            print(f"Error validando eliminación: {e}")
+            print(f"Error inesperado validando eliminación: {e}")
             return ValidateScheduleDeletionResponse(
                 can_delete=False,
                 requires_rescheduling=False,

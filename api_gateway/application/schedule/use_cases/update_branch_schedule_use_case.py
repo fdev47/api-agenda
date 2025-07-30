@@ -2,7 +2,7 @@
 Use case para actualizar horarios de sucursal desde el API Gateway
 """
 from typing import Optional
-from commons.api_client import APIClient
+from commons.api_client import APIClient, HTTPError
 from commons.config import config
 from ....domain.schedule.dto.requests.schedule_requests import UpdateBranchScheduleRequest
 from ....domain.schedule.dto.responses.schedule_responses import UpdateBranchScheduleResponse, BranchScheduleResponse
@@ -61,8 +61,12 @@ class UpdateBranchScheduleUseCase:
                     schedule=None
                 )
                 
+        except HTTPError as e:
+            # Propagar errores HTTP directamente
+            print(f"Error HTTP actualizando horario: {e}")
+            raise e
         except Exception as e:
-            print(f"Error actualizando horario: {e}")
+            print(f"Error inesperado actualizando horario: {e}")
             return UpdateBranchScheduleResponse(
                 success=False,
                 message=f"Error actualizando horario: {str(e)}",

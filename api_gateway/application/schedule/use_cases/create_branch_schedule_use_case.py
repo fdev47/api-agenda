@@ -2,7 +2,7 @@
 Use case para crear horarios de sucursal desde el API Gateway
 """
 from typing import Optional
-from commons.api_client import APIClient
+from commons.api_client import APIClient, HTTPError
 from commons.config import config
 from ....domain.schedule.dto.requests.schedule_requests import CreateBranchScheduleRequest
 from ....domain.schedule.dto.responses.schedule_responses import CreateBranchScheduleResponse, BranchScheduleResponse
@@ -51,8 +51,12 @@ class CreateBranchScheduleUseCase:
                     schedule=None
                 )
                 
+        except HTTPError as e:
+            # Propagar errores HTTP directamente
+            print(f"Error HTTP creando horario: {e}")
+            raise e
         except Exception as e:
-            print(f"Error creando horario: {e}")
+            print(f"Error inesperado creando horario: {e}")
             return CreateBranchScheduleResponse(
                 success=False,
                 message=f"Error creando horario: {str(e)}",

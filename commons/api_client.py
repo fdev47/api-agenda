@@ -86,17 +86,17 @@ class APIClient:
         """Realizar solicitud GET"""
         return await self._make_request('GET', endpoint, params=params, additional_headers=headers)
     
-    async def post(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def post(self, endpoint: str, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud POST"""
-        return await self._make_request('POST', endpoint, data=data)
+        return await self._make_request('POST', endpoint, data=data, additional_headers=headers)
     
-    async def put(self, endpoint: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def put(self, endpoint: str, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud PUT"""
-        return await self._make_request('PUT', endpoint, data=data)
+        return await self._make_request('PUT', endpoint, data=data, additional_headers=headers)
     
-    async def delete(self, endpoint: str) -> Dict[str, Any]:
+    async def delete(self, endpoint: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud DELETE"""
-        return await self._make_request('DELETE', endpoint)
+        return await self._make_request('DELETE', endpoint, additional_headers=headers)
 
 
 class HTTPError(Exception):

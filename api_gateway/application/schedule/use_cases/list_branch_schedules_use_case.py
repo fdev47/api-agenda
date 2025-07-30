@@ -2,7 +2,7 @@
 Use case para listar horarios de sucursal desde el API Gateway
 """
 from typing import List, Optional
-from commons.api_client import APIClient
+from commons.api_client import APIClient, HTTPError
 from commons.config import config
 from ....domain.schedule.dto.requests.schedule_requests import GetBranchSchedulesRequest
 from ....domain.schedule.dto.responses.schedule_responses import BranchScheduleListResponse, BranchScheduleResponse
@@ -57,8 +57,12 @@ class ListBranchSchedulesUseCase:
                     total=0
                 )
                 
+        except HTTPError as e:
+            # Propagar errores HTTP directamente
+            print(f"Error HTTP obteniendo horarios: {e}")
+            raise e
         except Exception as e:
-            print(f"Error obteniendo horarios: {e}")
+            print(f"Error inesperado obteniendo horarios: {e}")
             return BranchScheduleListResponse(
                 branch_id=request.branch_id,
                 schedules=[],
