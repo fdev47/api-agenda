@@ -76,6 +76,7 @@ class SectorTypeResponse(BaseModel):
     name: str = Field(..., description="Nombre del tipo de sector")
     code: str = Field(..., description="Código del tipo de sector")
     description: Optional[str] = Field(None, description="Descripción del tipo de sector")
+    measurement_unit: str = Field(..., description="Unidad de medida del tipo de sector")
     is_active: bool = Field(..., description="Estado activo del tipo de sector")
     created_at: datetime = Field(..., description="Fecha de creación")
     updated_at: Optional[datetime] = Field(None, description="Fecha de última actualización")
