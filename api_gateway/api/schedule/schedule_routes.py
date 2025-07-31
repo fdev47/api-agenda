@@ -36,7 +36,7 @@ from ..middleware import auth_middleware
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/schedules", tags=["Schedules"])
+router = APIRouter()
 
 
 @router.post("/", response_model=CreateBranchScheduleResponse, status_code=status.HTTP_201_CREATED)

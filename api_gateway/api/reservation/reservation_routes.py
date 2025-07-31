@@ -25,8 +25,7 @@ from ..middleware import auth_middleware
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/reservations", tags=["Reservations"])
-
+router = APIRouter()
 
 @router.post("/", response_model=ReservationResponse, status_code=status.HTTP_201_CREATED)
 async def create_reservation(
