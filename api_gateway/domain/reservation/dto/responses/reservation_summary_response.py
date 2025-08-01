@@ -22,4 +22,5 @@ class ReservationSummaryResponse(BaseModel):
     order_count: int = Field(..., description="Número de pedidos")
     order_codes: List[str] = Field(..., description="Códigos de pedidos")
     reason: str = Field(..., description="Motivo de la reserva")
+    cargo_type: Optional[str] = Field(None, description="Tipo de carga")
     created_at: datetime = Field(..., description="Fecha de creación") 

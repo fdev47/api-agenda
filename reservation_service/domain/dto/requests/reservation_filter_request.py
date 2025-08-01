@@ -35,6 +35,9 @@ class ReservationFilterRequest(BaseModel):
     # Filtros por pedido
     order_code: Optional[str] = None
     
+    # Filtros por tipo de carga
+    cargo_type: Optional[str] = None
+    
     # Paginación
     page: int = Field(1, ge=1, description="Número de página")
     limit: int = Field(10, ge=1, le=100, description="Elementos por página")

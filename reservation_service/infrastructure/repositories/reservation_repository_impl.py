@@ -148,6 +148,9 @@ class ReservationRepositoryImpl(ReservationRepository):
                 query = query.join(ReservationOrderNumberModel)
                 conditions.append(ReservationOrderNumberModel.code.ilike(f"%{filter_request.order_code}%"))
             
+            if filter_request.cargo_type:
+                conditions.append(ReservationModel.cargo_type.ilike(f"%{filter_request.cargo_type}%"))
+            
             # Aplicar condiciones si existen
             if conditions:
                 query = query.where(and_(*conditions))
@@ -193,6 +196,7 @@ class ReservationRepositoryImpl(ReservationRepository):
             reservation_model.sector_id = reservation.sector_data.sector_id
             reservation_model.unloading_time_minutes = reservation.unloading_time_minutes
             reservation_model.reason = reservation.reason
+            reservation_model.cargo_type = reservation.cargo_type
             reservation_model.reservation_date = reservation.reservation_date
             reservation_model.start_time = reservation.start_time
             reservation_model.end_time = reservation.end_time

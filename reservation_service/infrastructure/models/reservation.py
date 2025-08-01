@@ -37,6 +37,7 @@ class ReservationModel(Base):
     # Información de la mercadería
     unloading_time_minutes = Column(Integer, nullable=False)
     reason = Column(Text, nullable=False)
+    cargo_type = Column(String(100), nullable=True, index=True)
     
     # Horario de la reserva
     reservation_date = Column(DateTime, nullable=False, index=True)
@@ -89,6 +90,7 @@ class ReservationModel(Base):
                 customer_data=customer_data,
                 unloading_time_minutes=self.unloading_time_minutes,
                 reason=self.reason,
+                cargo_type=self.cargo_type,
                 order_numbers=order_numbers,
                 reservation_date=self.reservation_date,
                 start_time=self.start_time,
@@ -154,6 +156,7 @@ class ReservationModel(Base):
                 sector_id=reservation.sector_data.sector_id,
                 unloading_time_minutes=reservation.unloading_time_minutes,
                 reason=reservation.reason,
+                cargo_type=reservation.cargo_type,
                 reservation_date=reservation.reservation_date,
                 start_time=reservation.start_time,
                 end_time=reservation.end_time,

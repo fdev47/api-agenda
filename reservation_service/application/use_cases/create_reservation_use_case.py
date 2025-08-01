@@ -96,7 +96,8 @@ class CreateReservationUseCase:
                 start_time=request.start_time,
                 end_time=request.end_time,
                 notes=request.notes,
-                status=ReservationStatus.PENDING
+                status=ReservationStatus.PENDING,
+                cargo_type=request.cargo_type
             )
             
             # Verificar conflictos de horario
@@ -199,6 +200,7 @@ class CreateReservationUseCase:
             unloading_time_minutes=reservation.unloading_time_minutes,
             unloading_time_hours=reservation.get_total_unloading_time_hours(),
             reason=reservation.reason,
+            cargo_type=reservation.cargo_type,
             order_numbers=order_responses,
             reservation_date=reservation.reservation_date,
             start_time=reservation.start_time,

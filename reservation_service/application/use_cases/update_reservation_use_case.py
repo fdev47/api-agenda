@@ -68,6 +68,10 @@ class UpdateReservationUseCase:
                 logger.info(f"📝 Actualizando reason: {request.reason}")
                 reservation.reason = request.reason
             
+            if request.cargo_type is not None:
+                logger.info(f"📝 Actualizando cargo_type: {request.cargo_type}")
+                reservation.cargo_type = request.cargo_type
+            
             if request.notes is not None:
                 logger.info(f"📝 Actualizando notes: {request.notes}")
                 reservation.notes = request.notes
@@ -274,6 +278,7 @@ class UpdateReservationUseCase:
                 unloading_time_minutes=reservation.unloading_time_minutes,
                 unloading_time_hours=reservation.get_total_unloading_time_hours(),
                 reason=reservation.reason,
+                cargo_type=reservation.cargo_type,
                 order_numbers=order_responses,
                 reservation_date=reservation.reservation_date,
                 start_time=reservation.start_time,

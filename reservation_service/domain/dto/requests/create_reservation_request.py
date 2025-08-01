@@ -30,6 +30,7 @@ class CreateReservationRequest(BaseModel):
     # Información de la mercadería
     unloading_time_minutes: int = Field(..., gt=0, le=1440, description="Tiempo de descarga en minutos (máximo 24 horas)")
     reason: str = Field(..., min_length=10, max_length=500, description="Motivo de la reserva")
+    cargo_type: Optional[str] = Field(None, max_length=100, description="Tipo de carga")
     
     # Números de pedidos
     order_numbers: List[OrderNumberRequest] = Field(..., min_items=1, max_items=50, description="Lista de números de pedido")

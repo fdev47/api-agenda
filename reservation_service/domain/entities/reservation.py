@@ -48,6 +48,9 @@ class Reservation:
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     
+    # Campos opcionales con valores por defecto (deben ir al final)
+    cargo_type: Optional[str] = None  # Tipo de carga
+    
     def __post_init__(self):
         """Validaciones después de la inicialización"""
         if not self.branch_data:
@@ -156,6 +159,7 @@ class Reservation:
             "merchandise_description": self.reason,
             "merchandise_quantity": self.unloading_time_minutes,
             "merchandise_unit": self.sector_data.measurement_unit_name,
+            "cargo_type": self.cargo_type,
             "special_requirements": self.notes,
             "status": self.status.value,
             "order_numbers": [order.code for order in self.order_numbers],
@@ -202,6 +206,7 @@ class Reservation:
             end_time=end_time,
             reason=data.get("merchandise_description"),
             unloading_time_minutes=data.get("merchandise_quantity"),
+            cargo_type=data.get("cargo_type"),
             notes=data.get("special_requirements"),
             status=ReservationStatus(data.get("status", "PENDING")),
             order_numbers=order_numbers,

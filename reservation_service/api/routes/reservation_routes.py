@@ -132,6 +132,9 @@ async def list_reservations(
     # Filtros por pedido
     order_code: Optional[str] = Query(None, description="Código del pedido"),
     
+    # Filtros por tipo de carga
+    cargo_type: Optional[str] = Query(None, description="Tipo de carga"),
+    
     # Paginación
     page: int = Query(1, ge=1, description="Número de página"),
     limit: int = Query(10, ge=1, le=100, description="Elementos por página"),
@@ -155,6 +158,7 @@ async def list_reservations(
         print(f"  - reservation_date_to: {reservation_date_to}")
         print(f"  - reservation_status: {reservation_status}")
         print(f"  - order_code: {order_code}")
+        print(f"  - cargo_type: {cargo_type}")
         print(f"  - page: {page}")
         print(f"  - limit: {limit}")
         
@@ -206,6 +210,7 @@ async def list_reservations(
             reservation_date_to=date_to,
             status=reservation_status,
             order_code=order_code,
+            cargo_type=cargo_type,
             page=page,
             limit=limit
         )

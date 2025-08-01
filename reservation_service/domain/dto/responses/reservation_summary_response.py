@@ -2,6 +2,7 @@
 Response DTO para resumen de reserva
 """
 from pydantic import BaseModel, Field
+from typing import Optional
 from datetime import datetime
 
 
@@ -19,4 +20,5 @@ class ReservationSummaryResponse(BaseModel):
     end_time: datetime = Field(..., description="Hora de fin")
     status: str = Field(..., description="Estado de la reserva")
     order_count: int = Field(..., description="Cantidad de pedidos")
-    unloading_time_hours: float = Field(..., description="Tiempo de descarga en horas") 
+    unloading_time_hours: float = Field(..., description="Tiempo de descarga en horas")
+    cargo_type: Optional[str] = Field(None, description="Tipo de carga") 

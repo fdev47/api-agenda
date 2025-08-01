@@ -31,6 +31,9 @@ class ReservationFilterRequest(BaseModel):
     # Filtros por pedido
     order_code: Optional[str] = Field(None, description="Código de pedido")
     
+    # Filtros por tipo de carga
+    cargo_type: Optional[str] = Field(None, description="Tipo de carga")
+    
     # Paginación
     skip: int = Field(default=0, ge=0, description="Número de registros a omitir")
     limit: int = Field(default=100, ge=1, le=1000, description="Número máximo de registros")
