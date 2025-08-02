@@ -12,6 +12,7 @@ from commons.service_factory import create_service_factory, ServiceConfig, Route
 from . import user_router, profile_router, location_router, customer_router
 from .schedule.schedule_routes import router as schedule_router
 from .reservation.reservation_routes import router as reservation_router
+from .branch.routes import router as branch_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -43,7 +44,8 @@ def create_api_gateway_app():
         RouterConfig(location_router, prefix="/location", tags=["Location"]),
         RouterConfig(customer_router, prefix="/customers", tags=["Customers"]),
         RouterConfig(schedule_router, prefix="/schedules", tags=["Schedules"]),
-        RouterConfig(reservation_router, prefix="/reservations", tags=["Reservations"])
+        RouterConfig(reservation_router, prefix="/reservations", tags=["Reservations"]),
+        RouterConfig(branch_router, prefix="/branches", tags=["Branches"])
     ]
     
     # Crear aplicación usando factory común
