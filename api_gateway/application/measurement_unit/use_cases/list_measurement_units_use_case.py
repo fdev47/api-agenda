@@ -4,7 +4,7 @@ Use case para listar unidades de medida desde el API Gateway
 from typing import List, Optional
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.location.dto.responses.location_responses import MeasurementUnitResponse
+from ....domain.measurement_unit.dto.responses.measurement_unit_responses import MeasurementUnitResponse
 
 class ListMeasurementUnitsUseCase:
     """Use case para listar unidades de medida usando location_service"""
@@ -37,7 +37,7 @@ class ListMeasurementUnitsUseCase:
             if code:
                 params["code"] = code
             if is_active is not None:
-                params["is_active"] = is_active
+                params["is_active"] = str(is_active).lower()  # Convertir boolean a string
             
             async with APIClient(self.location_service_url, "") as client:
                 response = await client.get(
