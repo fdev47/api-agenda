@@ -4,7 +4,7 @@ Use case para listar locales desde el API Gateway
 from typing import List, Optional
 from commons.api_client import APIClient
 from commons.config import config
-from ....domain.location.dto.responses.location_responses import LocalResponse
+from ....domain.local.dto.responses.local_responses import LocalResponse
 
 class ListLocalsUseCase:
     """Use case para listar locales usando location_service"""
