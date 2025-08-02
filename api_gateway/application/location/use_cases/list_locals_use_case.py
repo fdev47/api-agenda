@@ -38,7 +38,7 @@ class ListLocalsUseCase:
             if code:
                 params["code"] = code
             if is_active is not None:
-                params["is_active"] = is_active
+                params["is_active"] = str(is_active).lower()  # Convertir boolean a string
             
             # Headers con autorización
             headers = {}

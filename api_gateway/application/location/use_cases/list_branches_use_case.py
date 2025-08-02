@@ -50,7 +50,7 @@ class ListBranchesUseCase:
             if city_id:
                 params["city_id"] = city_id
             if is_active is not None:
-                params["is_active"] = is_active
+                params["is_active"] = str(is_active).lower()  # Convertir boolean a string
             
             # Headers con autorización
             headers = {}
