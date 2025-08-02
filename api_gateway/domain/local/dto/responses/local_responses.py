@@ -27,4 +27,22 @@ class LocalListResponse(BaseModel):
     locals: List[LocalResponse] = Field(..., description="Lista de locales")
     total: int = Field(..., description="Total de locales")
     limit: int = Field(..., description="Límite de resultados")
-    offset: int = Field(..., description="Offset para paginación") 
+    offset: int = Field(..., description="Offset para paginación")
+
+
+class LocalCreatedResponse(BaseModel):
+    """Response para local creado"""
+    id: int = Field(..., description="ID del local creado")
+    message: str = Field("Local creado exitosamente", description="Mensaje de confirmación")
+
+
+class LocalUpdatedResponse(BaseModel):
+    """Response para local actualizado"""
+    id: int = Field(..., description="ID del local actualizado")
+    message: str = Field("Local actualizado exitosamente", description="Mensaje de confirmación")
+
+
+class LocalDeletedResponse(BaseModel):
+    """Response para local eliminado"""
+    id: int = Field(..., description="ID del local eliminado")
+    message: str = Field("Local eliminado exitosamente", description="Mensaje de confirmación") 
