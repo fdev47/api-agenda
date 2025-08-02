@@ -3,7 +3,7 @@ DTOs de respuestas para sucursales
 """
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 
 
 class RampSummaryResponse(BaseModel):
@@ -51,4 +51,22 @@ class BranchListResponse(BaseModel):
     branches: List[BranchResponse] = Field(..., description="Lista de sucursales")
     total: int = Field(..., description="Total de sucursales")
     limit: int = Field(..., description="Límite de resultados")
-    offset: int = Field(..., description="Offset para paginación") 
+    offset: int = Field(..., description="Offset para paginación")
+
+
+class BranchCreatedResponse(BaseModel):
+    """Response para sucursal creada"""
+    id: int = Field(..., description="ID de la sucursal creada")
+    message: str = Field("Sucursal creada exitosamente", description="Mensaje de confirmación")
+
+
+class BranchUpdatedResponse(BaseModel):
+    """Response para sucursal actualizada"""
+    id: int = Field(..., description="ID de la sucursal actualizada")
+    message: str = Field("Sucursal actualizada exitosamente", description="Mensaje de confirmación")
+
+
+class BranchDeletedResponse(BaseModel):
+    """Response para sucursal eliminada"""
+    id: int = Field(..., description="ID de la sucursal eliminada")
+    message: str = Field("Sucursal eliminada exitosamente", description="Mensaje de confirmación") 
