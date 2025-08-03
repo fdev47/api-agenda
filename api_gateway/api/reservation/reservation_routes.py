@@ -15,11 +15,14 @@ from ...domain.reservation.dto.responses.reservation_response import Reservation
 from ...domain.reservation.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.reservation.dto.responses.reservation_summary_response import ReservationSummaryResponse
 from ...domain.reservation.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
+from ...domain.reservation.dto.requests.available_ramp_request import AvailableRampRequest
+from ...domain.reservation.dto.responses.available_ramp_response import AvailableRampResponse
 from ...application.reservation.use_cases.create_reservation_use_case import CreateReservationUseCase
 from ...application.reservation.use_cases.get_reservation_use_case import GetReservationUseCase
 from ...application.reservation.use_cases.list_reservations_use_case import ListReservationsUseCase
 from ...application.reservation.use_cases.update_reservation_use_case import UpdateReservationUseCase
 from ...application.reservation.use_cases.cancel_reservation_use_case import CancelReservationUseCase
+from ...application.reservation.use_cases.get_available_ramp_use_case import GetAvailableRampUseCase
 from ..middleware import auth_middleware
 
 # Configurar logging
@@ -66,6 +69,61 @@ async def create_reservation(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en create_reservation: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/available-ramp", response_model=AvailableRampResponse)
+async def get_available_ramp(
+    branch_id: int = Query(..., gt=0, description="ID de la sucursal"),
+    start_date: str = Query(..., description="Fecha y hora de inicio (YYYY-MM-DD HH:MM:SS)"),
+    end_date: str = Query(..., description="Fecha y hora de fin (YYYY-MM-DD HH:MM:SS)"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Obtener una rampa disponible para una sucursal en un rango de fechas"""
+    try:
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        
+        # Crear el request con los parámetros de query
+        request = AvailableRampRequest(
+            branch_id=branch_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        use_case = GetAvailableRampUseCase()
+        result = await use_case.execute(request, access_token)
+        return result
+    except ValueError as e:
+        logger.warning(f"⚠️ Error de validación: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": "VALIDATION_ERROR"}
+        )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP obteniendo rampa disponible: {str(e)}")
+        
+        # Intentar parsear el mensaje de error
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "SERVICE_ERROR"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en get_available_ramp: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
@@ -205,6 +263,12 @@ async def update_reservation(
 ):
     """Actualizar una reserva"""
     try:
+        if request is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": "Se requiere un body con los datos a actualizar", "error_code": "MISSING_REQUEST_BODY"}
+            )
+        
         access_token = authorization.replace("Bearer ", "") if authorization else ""
         use_case = UpdateReservationUseCase()
         result = await use_case.execute(reservation_id, request, access_token)
