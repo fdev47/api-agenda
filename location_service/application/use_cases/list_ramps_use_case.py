@@ -2,9 +2,11 @@
 Caso de uso para listar rampas
 """
 from typing import List
+from ...domain.entities.ramp import Ramp
 from ...domain.interfaces.ramp_repository import RampRepository
-from ...domain.dto.requests.ramp_requests import RampFilterRequest
-from ...domain.dto.responses.ramp_responses import RampResponse, RampListResponse
+from ...domain.dto.requests.ramp_filter_request import RampFilterRequest
+from ...domain.dto.responses.ramp_list_response import RampListResponse
+from ...domain.dto.responses.ramp_response import RampResponse
 
 
 class ListRampsUseCase:
@@ -19,7 +21,7 @@ class ListRampsUseCase:
         # Obtener rampas del repositorio
         ramps, total = await self.ramp_repository.list(filter_request)
         
-        # Convertir a respuestas
+        # Convertir a DTOs de respuesta
         ramp_responses = [
             RampResponse(
                 id=ramp.id,
@@ -34,9 +36,8 @@ class ListRampsUseCase:
         
         # Retornar respuesta
         return RampListResponse(
-            items=ramp_responses,
+            ramps=ramp_responses,
             total=total,
-            page=filter_request.page,
-            size=filter_request.limit,
-            pages=(total + filter_request.limit - 1) // filter_request.limit
+            skip=filter_request.skip,
+            limit=filter_request.limit
         ) 

@@ -4,8 +4,8 @@ Caso de uso para crear una rampa
 from datetime import datetime
 from ...domain.entities.ramp import Ramp
 from ...domain.interfaces.ramp_repository import RampRepository
-from ...domain.dto.requests.ramp_requests import CreateRampRequest
-from ...domain.dto.responses.ramp_responses import RampResponse
+from ...domain.dto.requests.create_ramp_request import CreateRampRequest
+from ...domain.dto.responses.ramp_response import RampResponse
 from ...domain.exceptions import RampAlreadyExistsException
 
 

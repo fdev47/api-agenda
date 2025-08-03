@@ -1,8 +1,9 @@
 """
 Caso de uso para obtener una rampa por ID
 """
+from ...domain.entities.ramp import Ramp
 from ...domain.interfaces.ramp_repository import RampRepository
-from ...domain.dto.responses.ramp_responses import RampResponse
+from ...domain.dto.responses.ramp_response import RampResponse
 from ...domain.exceptions import RampNotFoundException
 
 
@@ -20,7 +21,7 @@ class GetRampUseCase:
         
         if not ramp:
             raise RampNotFoundException(
-                f"No se encontró la rampa con ID {ramp_id}",
+                f"Rampa con ID {ramp_id} no encontrada",
                 entity_id=ramp_id
             )
         

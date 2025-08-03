@@ -36,13 +36,8 @@ from .branch_responses import (
     BranchUpdatedResponse,
     BranchDeletedResponse
 )
-from .ramp_responses import (
-    RampResponse,
-    RampListResponse,
-    RampCreatedResponse,
-    RampUpdatedResponse,
-    RampDeletedResponse
-)
+from .ramp_response import RampResponse
+from .ramp_list_response import RampListResponse
 from .sector_responses import (
     SectorResponse,
     SectorListResponse,
@@ -103,9 +98,6 @@ __all__ = [
     # Ramp responses
     "RampResponse",
     "RampListResponse",
-    "RampCreatedResponse",
-    "RampUpdatedResponse",
-    "RampDeletedResponse",
     # Sector responses
     "SectorResponse",
     "SectorListResponse",

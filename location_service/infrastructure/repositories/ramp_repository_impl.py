@@ -99,7 +99,7 @@ class RampRepositoryImpl(RampRepository):
             total = total_result.scalar()
             
             # Aplicar paginación y ordenamiento
-            query = query.offset(filter_request.offset).limit(filter_request.limit).order_by(RampModel.name)
+            query = query.offset(filter_request.skip).limit(filter_request.limit).order_by(RampModel.name)
             
             result = await session.execute(query)
             ramp_models = result.scalars().all()

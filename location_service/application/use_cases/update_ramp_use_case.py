@@ -4,9 +4,9 @@ Caso de uso para actualizar una rampa
 from datetime import datetime
 from ...domain.entities.ramp import Ramp
 from ...domain.interfaces.ramp_repository import RampRepository
-from ...domain.dto.requests.ramp_requests import UpdateRampRequest
-from ...domain.dto.responses.ramp_responses import RampResponse
-from ...domain.exceptions import RampNotFoundException, RampAlreadyExistsException
+from ...domain.dto.requests.update_ramp_request import UpdateRampRequest
+from ...domain.dto.responses.ramp_response import RampResponse
+from ...domain.exceptions import RampNotFoundException, RampValidationException
 
 
 class UpdateRampUseCase:
@@ -23,44 +23,41 @@ class UpdateRampUseCase:
         
         if not existing_ramp:
             raise RampNotFoundException(
-                f"No se encontró la rampa con ID {ramp_id}",
+                f"Rampa con ID {ramp_id} no encontrada",
                 entity_id=ramp_id
             )
         
-        # Verificar que no existe otra rampa con el mismo nombre en la misma sucursal
-        if request.name and request.name != existing_ramp.name:
-            exists = await self.ramp_repository.exists_by_name_and_branch(
-                name=request.name,
-                branch_id=request.branch_id or existing_ramp.branch_id,
-                exclude_id=ramp_id
+        # Validar campos
+        field_errors = {}
+        
+        if request.name is not None and not request.name.strip():
+            field_errors["name"] = "El nombre de la rampa no puede estar vacío"
+        
+        if field_errors:
+            raise RampValidationException(
+                "Error de validación en la actualización de la rampa",
+                field_errors=field_errors
             )
-            
-            if exists:
-                raise RampAlreadyExistsException(
-                    f"Ya existe una rampa con el nombre '{request.name}' en la sucursal {request.branch_id or existing_ramp.branch_id}",
-                    name=request.name,
-                    branch_id=request.branch_id or existing_ramp.branch_id
-                )
         
-        # Crear entidad actualizada
-        updated_ramp = Ramp(
-            id=ramp_id,
-            name=request.name or existing_ramp.name,
-            is_available=request.is_available if request.is_available is not None else existing_ramp.is_available,
-            branch_id=request.branch_id or existing_ramp.branch_id,
-            created_at=existing_ramp.created_at,
-            updated_at=datetime.utcnow()
-        )
+        # Actualizar campos
+        if request.name is not None:
+            existing_ramp.update_name(request.name)
         
-        # Actualizar en el repositorio
-        saved_ramp = await self.ramp_repository.update(updated_ramp)
+        if request.is_available is not None:
+            if request.is_available:
+                existing_ramp.make_available()
+            else:
+                existing_ramp.make_unavailable()
+        
+        # Guardar en el repositorio
+        updated_ramp = await self.ramp_repository.update(existing_ramp)
         
         # Retornar respuesta
         return RampResponse(
-            id=saved_ramp.id,
-            name=saved_ramp.name,
-            is_available=saved_ramp.is_available,
-            branch_id=saved_ramp.branch_id,
-            created_at=saved_ramp.created_at,
-            updated_at=saved_ramp.updated_at
+            id=updated_ramp.id,
+            name=updated_ramp.name,
+            is_available=updated_ramp.is_available,
+            branch_id=updated_ramp.branch_id,
+            created_at=updated_ramp.created_at,
+            updated_at=updated_ramp.updated_at
         ) 
