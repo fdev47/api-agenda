@@ -40,10 +40,10 @@ class GetAvailableRampUseCase:
                     headers={"Authorization": f"Bearer {access_token}"} if access_token else {}
                 )
                 
-                if not ramps_response.get("data"):
+                if not ramps_response.get("ramps"):
                     raise ValueError(f"No hay rampas disponibles en la sucursal {request.branch_id}")
                 
-                ramps = ramps_response["data"]
+                ramps = ramps_response["ramps"]
                 logger.info(f"📋 Encontradas {len(ramps)} rampas en la sucursal")
                 
                 # 2. Obtener reservas existentes en el rango de fechas desde reservation_service
@@ -53,7 +53,7 @@ class GetAvailableRampUseCase:
                     headers={"Authorization": f"Bearer {access_token}"} if access_token else {}
                 )
                 
-                existing_reservations = reservations_response.get("data", [])
+                existing_reservations = reservations_response.get("reservations", [])
                 logger.info(f"📋 Encontradas {len(existing_reservations)} reservas existentes")
                 
                 # 3. Filtrar rampas que no tienen conflictos de horario

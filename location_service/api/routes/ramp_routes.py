@@ -20,7 +20,7 @@ from ..middleware import auth_middleware
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/ramps", tags=["Ramps"])
+router = APIRouter(tags=["Ramps"])
 
 
 def get_container():
