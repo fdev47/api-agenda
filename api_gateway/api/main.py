@@ -51,7 +51,7 @@ def create_api_gateway_app():
         RouterConfig(branch_router, prefix="/branches", tags=["Branches"]),
         RouterConfig(measurement_unit_router, prefix="/measurement-units", tags=["Measurement Units"]),
         RouterConfig(local_router, prefix="/locals", tags=["Locals"]),
-        RouterConfig(sector_type_router, prefix="/sector-types", tags=["Sector Types"])
+        RouterConfig(sector_type_router, prefix="/sectors", tags=["Sectors"])
     ]
     
     # Crear aplicación usando factory común
