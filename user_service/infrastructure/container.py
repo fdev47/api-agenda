@@ -3,6 +3,7 @@ Container de dependencias para el user_service
 """
 import os
 from dependency_injector import containers, providers
+from sqlalchemy.ext.asyncio import AsyncSession
 from commons.database import db_manager
 from commons.auth_client import AuthClient
 from ..data.repositories.profile_repository_impl import ProfileRepositoryImpl
@@ -54,10 +55,8 @@ class UserServiceContainer(containers.DeclarativeContainer):
     # Configuración
     config = providers.Configuration()
     
-    # Base de datos
-    db_session = providers.Factory(
-        lambda: db_manager.AsyncSessionLocal()
-    )
+    # Base de datos - sesión que será inyectada desde las rutas
+    db_session = providers.Dependency()
     
     # Cliente de Auth Service
     auth_service_client = providers.Singleton(
@@ -65,7 +64,7 @@ class UserServiceContainer(containers.DeclarativeContainer):
         auth_service_url=os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
     )
     
-    # Repositorios
+    # Repositorios con sesiones gestionadas adecuadamente
     user_repository = providers.Factory(
         UserRepositoryImpl,
         session=db_session

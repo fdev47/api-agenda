@@ -4,9 +4,11 @@ Rutas de perfiles
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import List
 from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 from ...domain.dto.requests import CreateProfileRequest, UpdateProfileRequest
 from ...domain.dto.responses import ProfileResponse, ProfileListResponse, SuccessResponse
 from ...infrastructure.container import container
+from ...infrastructure.connection import get_db_session
 from ..middleware import auth_middleware
 from commons.error_utils import raise_not_found_error, raise_internal_error
 from commons.error_codes import ErrorCode
@@ -17,10 +19,13 @@ router = APIRouter()
 @router.post("/", response_model=ProfileResponse, status_code=status.HTTP_201_CREATED)
 async def create_profile(
     request: CreateProfileRequest,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Crear un nuevo perfil"""
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         create_use_case = container.create_profile_use_case()
         profile = await create_use_case.execute(request)
         return profile
@@ -34,10 +39,13 @@ async def create_profile(
 @router.get("/{profile_id}", response_model=ProfileResponse)
 async def get_profile_by_id(
     profile_id: UUID,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener perfil por ID"""
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         get_use_case = container.get_profile_by_id_use_case()
         profile = await get_use_case.execute(profile_id)
         return profile
@@ -57,10 +65,13 @@ async def get_profile_by_id(
 async def list_profiles(
     skip: int = Query(0, ge=0, description="Número de registros a omitir"),
     limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros a retornar"),
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Listar perfiles"""
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         list_use_case = container.list_profiles_use_case()
         profiles = await list_use_case.execute(skip=skip, limit=limit)
         return ProfileListResponse(
@@ -80,10 +91,13 @@ async def list_profiles(
 async def update_profile(
     profile_id: UUID,
     request: UpdateProfileRequest,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Actualizar perfil"""
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         update_use_case = container.update_profile_use_case()
         profile = await update_use_case.execute(profile_id, request)
         return profile
@@ -102,10 +116,13 @@ async def update_profile(
 @router.delete("/{profile_id}", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def delete_profile(
     profile_id: UUID,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Eliminar perfil"""
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         delete_use_case = container.delete_profile_use_case()
         success = await delete_use_case.execute(profile_id)
         return SuccessResponse(

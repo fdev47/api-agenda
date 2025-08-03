@@ -28,10 +28,16 @@ class DatabaseManager:
         if self.database_url.startswith('postgresql://'):
             self.database_url = self.database_url.replace('postgresql://', 'postgresql+asyncpg://')
         
-        # Crear engine
+        # Crear engine con configuración de pool optimizada
         self.engine = create_async_engine(
             self.database_url,
             echo=self.echo,
+            # Configuración del pool de conexiones
+            pool_size=10,  # Número de conexiones en el pool
+            max_overflow=20,  # Conexiones adicionales que se pueden crear
+            pool_timeout=30,  # Tiempo de espera para obtener una conexión
+            pool_recycle=3600,  # Reciclar conexiones cada hora
+            pool_pre_ping=True,  # Verificar conexión antes de usar
         )
         
         # Crear session factory

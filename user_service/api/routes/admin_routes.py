@@ -3,7 +3,9 @@ Rutas de administración
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 from ...infrastructure.container import container
+from ...infrastructure.connection import get_db_session
 from ...domain.dto.responses import (
     SuccessResponse, RoleAssignmentResponse, PermissionAssignmentResponse, 
     UserRolesResponse
@@ -17,9 +19,12 @@ router = APIRouter()
 async def assign_role(
     user_id: str,
     role: str,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Asignar rol a un usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     assign_role_use_case = container.assign_role_use_case()
     await assign_role_use_case.execute(user_id, role)
     return RoleAssignmentResponse(
@@ -34,9 +39,12 @@ async def assign_role(
 async def assign_permission(
     user_id: str,
     permission: str,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Asignar permiso a un usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     assign_permission_use_case = container.assign_permission_use_case()
     await assign_permission_use_case.execute(user_id, permission)
     return PermissionAssignmentResponse(
@@ -50,9 +58,12 @@ async def assign_permission(
 @router.get("/users/{user_id}/roles", response_model=UserRolesResponse)
 async def get_user_roles(
     user_id: UUID,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener roles de un usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     get_user_roles_use_case = container.get_user_roles_use_case()
     roles = await get_user_roles_use_case.execute(user_id)
     return UserRolesResponse(
@@ -64,9 +75,12 @@ async def get_user_roles(
 @router.post("/users/{user_id}/activate", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def activate_user(
     user_id: UUID,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Activar usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     activate_user_use_case = container.activate_user_use_case()
     user = await activate_user_use_case.execute(user_id)
     if not user:
@@ -83,9 +97,12 @@ async def activate_user(
 @router.post("/users/{user_id}/deactivate", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def deactivate_user(
     user_id: UUID,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Desactivar usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     deactivate_user_use_case = container.deactivate_user_use_case()
     user = await deactivate_user_use_case.execute(user_id)
     if not user:
@@ -102,9 +119,12 @@ async def deactivate_user(
 @router.delete("/users/{user_id}", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def delete_user_admin(
     user_id: UUID,
-    current_user=Depends(auth_middleware["require_role"]("admin"))
+    current_user=Depends(auth_middleware["require_role"]("admin")),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Eliminar usuario (solo admin)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     delete_user_use_case = container.delete_user_use_case()
     success = await delete_user_use_case.execute(user_id)
     if not success:

@@ -4,9 +4,11 @@ Rutas de usuarios
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from uuid import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
 from ...domain.dto.responses import UserResponse, UserListResponse, SuccessResponse
 from ...infrastructure.container import container
+from ...infrastructure.connection import get_db_session
 from ..middleware import auth_middleware
 from ...domain.exceptions.user_exceptions import UserNotFoundException
 from commons.error_utils import raise_not_found_error, raise_internal_error
@@ -16,7 +18,10 @@ router = APIRouter()
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(request: CreateUserRequest):
+async def create_user(
+    request: CreateUserRequest,
+    db: AsyncSession = Depends(get_db_session)
+):
     """
     Crear un nuevo usuario
     - Crea en Firebase primero
@@ -24,6 +29,8 @@ async def create_user(request: CreateUserRequest):
     - Si Firebase falla, no toca PostgreSQL
     """
     try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         create_use_case = container.create_user_use_case()
         user = await create_use_case.execute(request)
         return user
@@ -33,10 +40,15 @@ async def create_user(request: CreateUserRequest):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(current_user=Depends(auth_middleware["require_auth"])):
+async def get_current_user(
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
+):
     """Obtener información del usuario actual"""
     try:
         auth_uid = current_user["user_id"]
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
         get_use_case = container.get_user_by_auth_uid_use_case()
         user = await get_use_case.execute(auth_uid)
         return user
@@ -53,8 +65,14 @@ async def get_current_user(current_user=Depends(auth_middleware["require_auth"])
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user_by_id(user_id: UUID, current_user=Depends(auth_middleware["require_auth"])):
+async def get_user_by_id(
+    user_id: UUID, 
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
+):
     """Obtener usuario por ID (requiere autenticación)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     get_use_case = container.get_user_by_id_use_case()
     user = await get_use_case.execute(user_id)
     if not user:
@@ -69,9 +87,12 @@ async def get_user_by_id(user_id: UUID, current_user=Depends(auth_middleware["re
 async def list_users(
     skip: int = 0,
     limit: int = 100,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Listar usuarios (requiere autenticación)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     list_use_case = container.list_users_use_case()
     users = await list_use_case.execute(skip=skip, limit=limit)
     return users
@@ -81,9 +102,12 @@ async def list_users(
 async def update_user(
     user_id: UUID,
     request: UpdateUserRequest,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Actualizar usuario (requiere autenticación)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     update_use_case = container.update_user_use_case()
     user = await update_use_case.execute(user_id, request)
     if not user:
@@ -97,9 +121,12 @@ async def update_user(
 @router.delete("/{user_id}", response_model=SuccessResponse, status_code=status.HTTP_200_OK)
 async def delete_user(
     user_id: UUID,
-    current_user=Depends(auth_middleware["require_auth"])
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Eliminar usuario (requiere autenticación)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
     delete_use_case = container.delete_user_use_case()
     success = await delete_use_case.execute(user_id)
     if not success:
