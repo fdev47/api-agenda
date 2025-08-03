@@ -16,6 +16,7 @@ from .update_reservation_use_case import UpdateReservationUseCase
 from .delete_reservation_use_case import DeleteReservationUseCase
 from .confirm_reservation_use_case import ConfirmReservationUseCase
 from .cancel_reservation_use_case import CancelReservationUseCase
+from .reject_reservation_use_case import RejectReservationUseCase
 
 __all__ = [
     # Horarios
@@ -34,5 +35,6 @@ __all__ = [
     "UpdateReservationUseCase",
     "DeleteReservationUseCase",
     "ConfirmReservationUseCase",
-    "CancelReservationUseCase"
+    "CancelReservationUseCase",
+    "RejectReservationUseCase"
 ]

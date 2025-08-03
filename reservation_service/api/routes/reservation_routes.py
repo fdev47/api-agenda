@@ -8,6 +8,7 @@ from typing import List, Optional
 from ...domain.dto.requests.create_reservation_request import CreateReservationRequest
 from ...domain.dto.requests.update_reservation_request import UpdateReservationRequest
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
+from ...domain.dto.requests.reject_reservation_request import RejectReservationRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
@@ -372,21 +373,19 @@ async def confirm_reservation(
 @router.post("/{reservation_id}/cancel", response_model=ReservationResponse)
 async def cancel_reservation(
     reservation_id: int,
+    request: RejectReservationRequest,
     container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
-    """Cancelar una reserva"""
+    """Cancelar/Rechazar una reserva"""
     logger.info(f"🚀 Endpoint cancel_reservation llamado con ID: {reservation_id}")
     
     try:
-        logger.info("📝 Obteniendo use case...")
-        use_case = container.cancel_reservation_use_case()
+        logger.info(f"📝 Datos de cancelación/rechazo recibidos: {request}")
+        use_case = container.reject_reservation_use_case()
         logger.info("✅ Use case obtenido correctamente")
-        
-        logger.info(f"🔄 Ejecutando cancelación para reservation_id: {reservation_id}")
-        result = await use_case.execute(reservation_id)
-        logger.info("✅ Reserva cancelada exitosamente")
-        
+        result = await use_case.execute(reservation_id, request)
+        logger.info("✅ Reserva cancelada/rechazada exitosamente")
         return result
     except ReservationNotFoundException as e:
         logger.warning(f"⚠️ Reserva no encontrada: {e.message}")
@@ -405,4 +404,7 @@ async def cancel_reservation(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
-        ) 
+        )
+
+
+ 
