@@ -53,6 +53,9 @@ class ReservationModel(Base):
     sector_data = Column(JSON, nullable=False)
     customer_data = Column(JSON, nullable=False)  # Datos completos del cliente
     
+    # Resumen de cierre de la reserva
+    closing_summary = Column(JSON, nullable=True)  # Datos del resumen de cierre
+    
     # Campos de auditoría
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -97,6 +100,7 @@ class ReservationModel(Base):
                 end_time=self.end_time,
                 status=self.status,
                 notes=self.notes,
+                closing_summary=self.closing_summary,
                 created_at=self.created_at,
                 updated_at=self.updated_at
             )
@@ -162,6 +166,7 @@ class ReservationModel(Base):
                 end_time=reservation.end_time,
                 status=reservation.status,
                 notes=reservation.notes,
+                closing_summary=reservation.closing_summary,
                 branch_data=branch_data,
                 sector_data=sector_data,
                 customer_data=customer_data

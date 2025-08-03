@@ -22,6 +22,7 @@ class UpdateReservationRequest(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     notes: Optional[str] = Field(None, max_length=1000)
+    closing_summary: Optional[dict] = Field(None, description="Resumen de cierre de la reserva")
     
     # Datos de entidades relacionadas (opcionales para actualización parcial)
     sector_data: Optional[UpdateSectorDataRequest] = None

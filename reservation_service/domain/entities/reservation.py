@@ -50,6 +50,7 @@ class Reservation:
     
     # Campos opcionales con valores por defecto (deben ir al final)
     cargo_type: Optional[str] = None  # Tipo de carga
+    closing_summary: Optional[Dict[str, Any]] = None  # Resumen de cierre de la reserva
     
     def __post_init__(self):
         """Validaciones después de la inicialización"""
@@ -163,6 +164,7 @@ class Reservation:
             "special_requirements": self.notes,
             "status": self.status.value,
             "order_numbers": [order.code for order in self.order_numbers],
+            "closing_summary": self.closing_summary,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
@@ -210,6 +212,7 @@ class Reservation:
             notes=data.get("special_requirements"),
             status=ReservationStatus(data.get("status", "PENDING")),
             order_numbers=order_numbers,
+            closing_summary=data.get("closing_summary"),
             created_at=datetime.fromisoformat(data["created_at"]) if data.get("created_at") else None,
             updated_at=datetime.fromisoformat(data["updated_at"]) if data.get("updated_at") else None
         )

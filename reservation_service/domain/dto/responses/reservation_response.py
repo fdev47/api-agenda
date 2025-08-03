@@ -45,6 +45,7 @@ class ReservationResponse(BaseModel):
     # Estado y metadatos
     status: str = Field(..., description="Estado de la reserva")
     notes: Optional[str] = Field(None, description="Notas adicionales")
+    closing_summary: Optional[dict] = Field(None, description="Resumen de cierre de la reserva")
     created_at: datetime = Field(..., description="Fecha de creación")
     updated_at: datetime = Field(..., description="Fecha de última actualización")
     
