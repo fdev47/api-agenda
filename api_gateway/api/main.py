@@ -16,6 +16,7 @@ from .branch.routes import router as branch_router
 from .measurement_unit.routes import router as measurement_unit_router
 from .local.routes import router as local_router
 from .sector_type.routes import router as sector_type_router
+from .ramp.ramp_routes import router as ramp_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -51,7 +52,8 @@ def create_api_gateway_app():
         RouterConfig(branch_router, prefix="/branches", tags=["Branches"]),
         RouterConfig(measurement_unit_router, prefix="/measurement-units", tags=["Measurement Units"]),
         RouterConfig(local_router, prefix="/locals", tags=["Locals"]),
-        RouterConfig(sector_type_router, prefix="/sectors", tags=["Sectors"])
+        RouterConfig(sector_type_router, prefix="/sectors", tags=["Sectors"]),
+        RouterConfig(ramp_router, prefix="/ramps", tags=["Ramps"])
     ]
     
     # Crear aplicación usando factory común
