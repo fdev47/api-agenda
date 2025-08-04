@@ -40,9 +40,14 @@ class CompleteReservationUseCase:
             # Llamar al servicio de reservas para completar la reserva
             logger.info(f"📞 Llamando al reservation_service para completar reserva {reservation_id}")
             
+            # Convertir datetime a string para serialización JSON
+            request_data = complete_request.dict()
+            if request_data.get("date"):
+                request_data["date"] = request_data["date"].isoformat()
+            
             result = await reservation_client.post(
                 f"{config.API_PREFIX}/reservations/{reservation_id}/completed",
-                data=complete_request.dict(),
+                data=request_data,
                 headers={"Authorization": f"Bearer {access_token}"} if access_token else {}
             )
             

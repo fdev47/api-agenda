@@ -31,6 +31,7 @@ class CreateReservationUseCase:
                 headers["Authorization"] = f"Bearer {access_token}"
             
             async with APIClient(self.reservation_service_url, "") as client:
+                # El DTO ya tiene método dict() personalizado que convierte datetime
                 response = await client.post(
                     f"{config.API_PREFIX}/reservations/",
                     data=request.dict(),

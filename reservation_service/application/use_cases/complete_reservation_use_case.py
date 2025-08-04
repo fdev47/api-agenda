@@ -10,6 +10,10 @@ from ...domain.entities.reservation_status import ReservationStatus
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.dto.responses.branch_data_response import BranchDataResponse
+from ...domain.dto.responses.sector_data_response import SectorDataResponse
+from ...domain.dto.responses.customer_data_response import CustomerDataResponse
+from ...domain.dto.responses.order_number_response import OrderNumberResponse
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationStatusException
@@ -64,20 +68,59 @@ class CompleteReservationUseCase:
             id=updated_reservation.id,
             user_id=updated_reservation.user_id,
             customer_id=updated_reservation.customer_id,
-            branch_data=updated_reservation.branch_data,
-            sector_data=updated_reservation.sector_data,
-            customer_data=updated_reservation.customer_data,
+            branch_data=BranchDataResponse(
+                branch_id=updated_reservation.branch_data.branch_id,
+                name=updated_reservation.branch_data.name,
+                code=updated_reservation.branch_data.code,
+                address=updated_reservation.branch_data.address,
+                country_id=updated_reservation.branch_data.country_id,
+                country_name=updated_reservation.branch_data.country_name,
+                state_id=updated_reservation.branch_data.state_id,
+                state_name=updated_reservation.branch_data.state_name,
+                city_id=updated_reservation.branch_data.city_id,
+                city_name=updated_reservation.branch_data.city_name,
+                ramp_id=updated_reservation.branch_data.ramp_id,
+                ramp_name=updated_reservation.branch_data.ramp_name
+            ),
+            sector_data=SectorDataResponse(
+                sector_id=updated_reservation.sector_data.sector_id,
+                name=updated_reservation.sector_data.name,
+                description=updated_reservation.sector_data.description,
+                sector_type_id=updated_reservation.sector_data.sector_type_id,
+                sector_type_name=updated_reservation.sector_data.sector_type_name,
+                capacity=updated_reservation.sector_data.capacity,
+                measurement_unit_id=updated_reservation.sector_data.measurement_unit_id,
+                measurement_unit_name=updated_reservation.sector_data.measurement_unit_name
+            ),
+            customer_data=CustomerDataResponse(
+                customer_id=updated_reservation.customer_data.customer_id,
+                id=updated_reservation.customer_data.id,
+                auth_uid=updated_reservation.customer_data.auth_uid,
+                ruc=updated_reservation.customer_data.ruc,
+                company_name=updated_reservation.customer_data.company_name,
+                email=updated_reservation.customer_data.email,
+                username=updated_reservation.customer_data.username,
+                phone=updated_reservation.customer_data.phone,
+                cellphone_number=updated_reservation.customer_data.cellphone_number,
+                cellphone_country_code=updated_reservation.customer_data.cellphone_country_code,
+                address_id=updated_reservation.customer_data.address_id,
+                is_active=updated_reservation.customer_data.is_active
+            ),
             unloading_time_minutes=updated_reservation.unloading_time_minutes,
             unloading_time_hours=updated_reservation.get_total_unloading_time_hours(),
             reason=updated_reservation.reason,
             cargo_type=updated_reservation.cargo_type,
-            order_numbers=updated_reservation.order_numbers,
+            order_numbers=[
+                OrderNumberResponse(
+                    code=order.code,
+                    description=order.description
+                ) for order in updated_reservation.order_numbers
+            ],
             reservation_date=updated_reservation.reservation_date,
             start_time=updated_reservation.start_time,
             end_time=updated_reservation.end_time,
             status=updated_reservation.status.value,
             notes=updated_reservation.notes,
-            closing_summary=updated_reservation.closing_summary,
             created_at=updated_reservation.created_at,
             updated_at=updated_reservation.updated_at
         ) 

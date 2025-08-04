@@ -70,6 +70,7 @@ class ReservationDetailResponse(BaseModel):
     
     # Closing summary tipado
     closing_summary_type: ClosingSummaryType = Field(..., description="Tipo de closing_summary")
+    closing_summary: Optional[Dict[str, Any]] = Field(None, description="Datos del closing_summary")
     closing_summary_completed: Optional[CompleteReservationResponse] = Field(None, description="Datos de completado")
     closing_summary_rejected: Optional[RejectReservationResponse] = Field(None, description="Datos de rechazo")
     
@@ -92,15 +93,17 @@ class ReservationDetailResponse(BaseModel):
         """Validar que el closing_summary corresponda al tipo correcto"""
         data = info.data
         field_name = info.field_name
-        closing_summary_type = data.get('closing_summary_type')
         closing_summary_raw = data.get('closing_summary')
         
         if not closing_summary_raw:
             return None
+        
+        # Verificar si el closing_summary tiene la acción correcta
+        action = closing_summary_raw.get('action')
             
-        if field_name == 'closing_summary_completed' and closing_summary_type == ClosingSummaryType.COMPLETED:
+        if field_name == 'closing_summary_completed' and action == 'completed':
             return CompleteReservationResponse(**closing_summary_raw)
-        elif field_name == 'closing_summary_rejected' and closing_summary_type == ClosingSummaryType.REJECTED:
+        elif field_name == 'closing_summary_rejected' and action == 'rejected':
             return RejectReservationResponse(**closing_summary_raw)
         
         return None

@@ -202,6 +202,7 @@ class ReservationRepositoryImpl(ReservationRepository):
             reservation_model.end_time = reservation.end_time
             reservation_model.status = reservation.status
             reservation_model.notes = reservation.notes
+            reservation_model.closing_summary = reservation.closing_summary
             
             # Actualizar datos JSON
             reservation_model.branch_data = {
@@ -214,7 +215,9 @@ class ReservationRepositoryImpl(ReservationRepository):
                 "state_id": reservation.branch_data.state_id,
                 "state_name": reservation.branch_data.state_name,
                 "city_id": reservation.branch_data.city_id,
-                "city_name": reservation.branch_data.city_name
+                "city_name": reservation.branch_data.city_name,
+                "ramp_id": reservation.branch_data.ramp_id,
+                "ramp_name": reservation.branch_data.ramp_name
             }
             
             reservation_model.sector_data = {

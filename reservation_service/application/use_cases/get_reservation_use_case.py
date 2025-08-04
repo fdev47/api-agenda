@@ -116,6 +116,9 @@ class GetReservationUseCase:
             # Crear ReservationDetailResponse
             logger.info("🔄 Creando ReservationDetailResponse...")
             
+            # Debug: Log del closing_summary
+            logger.info(f"🔍 Closing summary de la reserva: {reservation.closing_summary}")
+            
             # Determinar el tipo de closing_summary basado en el status
             from ...domain.dto.responses.reservation_detail_response import ClosingSummaryType
             if reservation.status.value == "COMPLETED":
@@ -124,6 +127,8 @@ class GetReservationUseCase:
                 closing_summary_type = ClosingSummaryType.REJECTED
             else:
                 closing_summary_type = ClosingSummaryType.NONE
+            
+            logger.info(f"🔍 Closing summary type determinado: {closing_summary_type}")
             
             result = ReservationDetailResponse(
                 id=reservation.id,
@@ -146,8 +151,7 @@ class GetReservationUseCase:
                 created_at=reservation.created_at,
                 updated_at=reservation.updated_at,
                 closing_summary_type=closing_summary_type,
-                closing_summary_completed=None,
-                closing_summary_rejected=None
+                closing_summary=reservation.closing_summary
             )
             logger.info("✅ ReservationDetailResponse creado exitosamente")
             return result

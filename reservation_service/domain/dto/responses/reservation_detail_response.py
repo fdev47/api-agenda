@@ -70,6 +70,7 @@ class ReservationDetailResponse(BaseModel):
     
     # Closing summary tipado
     closing_summary_type: ClosingSummaryType = Field(..., description="Tipo de closing_summary")
+    closing_summary: Optional[Dict[str, Any]] = Field(None, description="Datos del closing_summary")
     closing_summary_completed: Optional[CompleteReservationResponse] = Field(None, description="Datos de completado")
     closing_summary_rejected: Optional[RejectReservationResponse] = Field(None, description="Datos de rechazo")
     
@@ -80,13 +81,15 @@ class ReservationDetailResponse(BaseModel):
         try:
             data = info.data
             status = data.get('status')
+            print(f"🔍 DEBUG: determine_closing_summary_type - status = {status}")
             if status == "COMPLETED":
                 return ClosingSummaryType.COMPLETED
             elif status == "CANCELLED":
                 return ClosingSummaryType.REJECTED
             else:
                 return ClosingSummaryType.NONE
-        except Exception:
+        except Exception as e:
+            print(f"🔍 DEBUG: Error en determine_closing_summary_type: {e}")
             return ClosingSummaryType.NONE
     
     @field_validator('closing_summary_completed', 'closing_summary_rejected', mode='before')
@@ -96,19 +99,30 @@ class ReservationDetailResponse(BaseModel):
         try:
             data = info.data
             field_name = info.field_name
-            closing_summary_type = data.get('closing_summary_type')
             closing_summary_raw = data.get('closing_summary')
             
+            print(f"🔍 DEBUG: Validando {field_name}")
+            print(f"🔍 DEBUG: closing_summary_raw = {closing_summary_raw}")
+            
             if not closing_summary_raw:
+                print(f"🔍 DEBUG: No hay closing_summary_raw")
                 return None
+            
+            # Verificar si el closing_summary tiene la acción correcta
+            action = closing_summary_raw.get('action')
+            print(f"🔍 DEBUG: action = {action}")
                 
-            if field_name == 'closing_summary_completed' and closing_summary_type == ClosingSummaryType.COMPLETED:
+            if field_name == 'closing_summary_completed' and action == 'completed':
+                print(f"🔍 DEBUG: Creando CompleteReservationResponse")
                 return CompleteReservationResponse(**closing_summary_raw)
-            elif field_name == 'closing_summary_rejected' and closing_summary_type == ClosingSummaryType.REJECTED:
+            elif field_name == 'closing_summary_rejected' and action == 'rejected':
+                print(f"🔍 DEBUG: Creando RejectReservationResponse")
                 return RejectReservationResponse(**closing_summary_raw)
             
+            print(f"🔍 DEBUG: No se cumple ninguna condición")
             return None
-        except Exception:
+        except Exception as e:
+            print(f"🔍 DEBUG: Error en validador: {e}")
             return None
     
     class Config:

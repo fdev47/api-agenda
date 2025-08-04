@@ -74,7 +74,14 @@ class ReservationModel(Base):
             if customer_data_dict.get('address_id'):
                 customer_data_dict['address_id'] = uuid.UUID(customer_data_dict['address_id'])
             
-            branch_data = BranchData(**self.branch_data)
+            # Manejar campos faltantes en branch_data (para compatibilidad con datos existentes)
+            branch_data_dict = self.branch_data.copy()
+            if 'ramp_id' not in branch_data_dict:
+                branch_data_dict['ramp_id'] = 0  # Valor por defecto
+            if 'ramp_name' not in branch_data_dict:
+                branch_data_dict['ramp_name'] = 'N/A'  # Valor por defecto
+            
+            branch_data = BranchData(**branch_data_dict)
             sector_data = SectorData(**self.sector_data)
             customer_data = CustomerData(**customer_data_dict)
             
