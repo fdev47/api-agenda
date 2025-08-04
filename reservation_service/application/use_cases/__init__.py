@@ -14,8 +14,7 @@ from .get_reservation_use_case import GetReservationUseCase
 from .list_reservations_use_case import ListReservationsUseCase
 from .update_reservation_use_case import UpdateReservationUseCase
 from .delete_reservation_use_case import DeleteReservationUseCase
-from .confirm_reservation_use_case import ConfirmReservationUseCase
-from .cancel_reservation_use_case import CancelReservationUseCase
+from .complete_reservation_use_case import CompleteReservationUseCase
 from .reject_reservation_use_case import RejectReservationUseCase
 
 __all__ = [
@@ -34,7 +33,6 @@ __all__ = [
     "ListReservationsUseCase",
     "UpdateReservationUseCase",
     "DeleteReservationUseCase",
-    "ConfirmReservationUseCase",
-    "CancelReservationUseCase",
+    "CompleteReservationUseCase",
     "RejectReservationUseCase"
 ]

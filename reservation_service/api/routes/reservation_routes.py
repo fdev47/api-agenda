@@ -9,6 +9,7 @@ from ...domain.dto.requests.create_reservation_request import CreateReservationR
 from ...domain.dto.requests.update_reservation_request import UpdateReservationRequest
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
 from ...domain.dto.requests.reject_reservation_request import RejectReservationRequest
+from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
@@ -331,24 +332,22 @@ async def delete_reservation(
         )
 
 
-@router.post("/{reservation_id}/confirm", response_model=ReservationResponse)
-async def confirm_reservation(
+@router.post("/{reservation_id}/completed", response_model=ReservationResponse)
+async def complete_reservation(
     reservation_id: int,
+    request: CompleteReservationRequest,
     container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"])
 ):
-    """Confirmar una reserva"""
-    logger.info(f"🚀 Endpoint confirm_reservation llamado con ID: {reservation_id}")
+    """Completar una reserva"""
+    logger.info(f"🚀 Endpoint complete_reservation llamado con ID: {reservation_id}")
     
     try:
-        logger.info("📝 Obteniendo use case...")
-        use_case = container.confirm_reservation_use_case()
+        logger.info(f"📝 Datos de completado recibidos: {request}")
+        use_case = container.complete_reservation_use_case()
         logger.info("✅ Use case obtenido correctamente")
-        
-        logger.info(f"🔄 Ejecutando confirmación para reservation_id: {reservation_id}")
-        result = await use_case.execute(reservation_id)
-        logger.info("✅ Reserva confirmada exitosamente")
-        
+        result = await use_case.execute(reservation_id, request)
+        logger.info("✅ Reserva completada exitosamente")
         return result
     except ReservationNotFoundException as e:
         logger.warning(f"⚠️ Reserva no encontrada: {e.message}")
@@ -363,7 +362,7 @@ async def confirm_reservation(
             detail={"message": e.message, "error_code": "INVALID_STATUS"}
         )
     except Exception as e:
-        logger.error(f"❌ Error inesperado en confirm_reservation: {str(e)}", exc_info=True)
+        logger.error(f"❌ Error inesperado en complete_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

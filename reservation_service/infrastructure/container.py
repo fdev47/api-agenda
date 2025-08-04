@@ -20,7 +20,7 @@ from ..application.use_cases import (
     ListReservationsUseCase,
     UpdateReservationUseCase,
     DeleteReservationUseCase,
-    ConfirmReservationUseCase,
+    CompleteReservationUseCase,
     RejectReservationUseCase
 )
 
@@ -114,8 +114,8 @@ class Container(containers.DeclarativeContainer):
         reservation_repository=reservation_repository
     )
     
-    confirm_reservation_use_case = providers.Factory(
-        ConfirmReservationUseCase,
+    complete_reservation_use_case = providers.Factory(
+        CompleteReservationUseCase,
         reservation_repository=reservation_repository
     )
     
