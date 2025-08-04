@@ -33,6 +33,7 @@ class ReservationResponse(BaseModel):
     unloading_time_hours: float = Field(..., description="Tiempo de descarga en horas")
     reason: str = Field(..., description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
+    ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
     
     # Números de pedidos
     order_numbers: List[OrderNumberResponse] = Field(..., description="Lista de números de pedido")

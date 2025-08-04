@@ -50,6 +50,7 @@ class Reservation:
     
     # Campos opcionales con valores por defecto (deben ir al final)
     cargo_type: Optional[str] = None  # Tipo de carga
+    ramp_id: Optional[int] = None  # ID de la rampa asignada
     closing_summary: Optional[Dict[str, Any]] = None  # Resumen de cierre de la reserva
     
     def __post_init__(self):
@@ -161,6 +162,7 @@ class Reservation:
             "merchandise_quantity": self.unloading_time_minutes,
             "merchandise_unit": self.sector_data.measurement_unit_name,
             "cargo_type": self.cargo_type,
+            "ramp_id": self.ramp_id,
             "special_requirements": self.notes,
             "status": self.status.value,
             "order_numbers": [order.code for order in self.order_numbers],
@@ -209,6 +211,7 @@ class Reservation:
             reason=data.get("merchandise_description"),
             unloading_time_minutes=data.get("merchandise_quantity"),
             cargo_type=data.get("cargo_type"),
+            ramp_id=data.get("ramp_id"),
             notes=data.get("special_requirements"),
             status=ReservationStatus(data.get("status", "PENDING")),
             order_numbers=order_numbers,

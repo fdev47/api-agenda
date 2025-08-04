@@ -48,6 +48,7 @@ class ReservationDetailResponse(BaseModel):
     merchandise_quantity: int = Field(..., description="Cantidad de mercadería")
     merchandise_unit: str = Field(..., description="Unidad de medida")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
+    ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
     
     # Horarios
     schedule_date: str = Field(..., description="Fecha de la reserva")

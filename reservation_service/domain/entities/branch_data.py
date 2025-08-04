@@ -18,4 +18,6 @@ class BranchData:
     state_id: int
     state_name: str
     city_id: int
-    city_name: str 
+    city_name: str
+    ramp_id: int
+    ramp_name: str 
