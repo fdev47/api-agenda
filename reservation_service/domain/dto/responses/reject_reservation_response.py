@@ -12,7 +12,7 @@ class RejectReservationResponse(BaseModel):
     user_id: str = Field(..., description="ID del usuario que rechaza la reserva")
     user_name: str = Field(..., description="Nombre del usuario que rechaza la reserva")
     date: datetime = Field(..., description="Fecha y hora del rechazo")
-    reason: str = Field(..., min_length=10, max_length=500, description="Motivo del rechazo")
+    reason: Optional[str] = Field(None, min_length=3, max_length=500, description="Motivo del rechazo")
     comment: Optional[str] = Field(None, max_length=1000, description="Comentario adicional del rechazo")
     
     class Config:
