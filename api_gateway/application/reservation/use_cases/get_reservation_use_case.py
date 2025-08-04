@@ -4,7 +4,7 @@ Use case para obtener reservas desde el API Gateway
 from typing import Optional
 from commons.api_client import APIClient, HTTPError
 from commons.config import config
-from ....domain.reservation.dto.responses.reservation_response import ReservationResponse
+from ....domain.reservation.dto.responses.reservation_detail_response import ReservationDetailResponse
 
 
 class GetReservationUseCase:
@@ -13,7 +13,7 @@ class GetReservationUseCase:
     def __init__(self):
         self.reservation_service_url = config.RESERVATION_SERVICE_URL
     
-    async def execute(self, reservation_id: int, access_token: str = "") -> ReservationResponse:
+    async def execute(self, reservation_id: int, access_token: str = "") -> ReservationDetailResponse:
         """
         Obtener reserva desde el reservation_service
         
@@ -36,7 +36,7 @@ class GetReservationUseCase:
                 )
                 
                 if response:
-                    return ReservationResponse(**response)
+                    return ReservationDetailResponse(**response)
                 
                 raise Exception("Reserva no encontrada")
                 

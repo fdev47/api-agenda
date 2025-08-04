@@ -11,6 +11,7 @@ from ...domain.dto.requests.reservation_filter_request import ReservationFilterR
 from ...domain.dto.requests.reject_reservation_request import RejectReservationRequest
 from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
 from ...domain.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
@@ -83,7 +84,7 @@ async def create_reservation(
         )
 
 
-@router.get("/{reservation_id}", response_model=ReservationResponse)
+@router.get("/{reservation_id}", response_model=ReservationDetailResponse)
 async def get_reservation(
     reservation_id: int,
     container = Depends(get_container),

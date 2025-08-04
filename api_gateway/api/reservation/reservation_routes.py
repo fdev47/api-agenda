@@ -14,6 +14,7 @@ from ...domain.reservation.dto.requests.reservation_filter_request import Reserv
 from ...domain.reservation.dto.requests.reject_reservation_request import RejectReservationRequest
 from ...domain.reservation.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.reservation.dto.responses.reservation_response import ReservationResponse
+from ...domain.reservation.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.reservation.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.reservation.dto.responses.reservation_summary_response import ReservationSummaryResponse
 from ...domain.reservation.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
@@ -134,7 +135,7 @@ async def get_available_ramp(
         )
 
 
-@router.get("/{reservation_id}", response_model=ReservationResponse)
+@router.get("/{reservation_id}", response_model=ReservationDetailResponse)
 async def get_reservation(
     reservation_id: int = Path(..., gt=0, description="ID de la reserva"),
     current_user=Depends(auth_middleware["require_auth"]),

@@ -1,7 +1,7 @@
 """
 Use case para obtener una reserva
 """
-from ...domain.dto.responses.reservation_response import ReservationResponse
+from ...domain.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.exceptions.reservation_exceptions import ReservationNotFoundException
 
@@ -12,7 +12,7 @@ class GetReservationUseCase:
     def __init__(self, reservation_repository: ReservationRepository):
         self.reservation_repository = reservation_repository
     
-    async def execute(self, reservation_id: int) -> ReservationResponse:
+    async def execute(self, reservation_id: int) -> ReservationDetailResponse:
         """Ejecutar el caso de uso"""
         
         # Buscar la reserva
@@ -27,7 +27,7 @@ class GetReservationUseCase:
         # Convertir a DTO de respuesta
         return self.to_response(reservation)
     
-    def to_response(self, reservation) -> ReservationResponse:
+    def to_response(self, reservation) -> ReservationDetailResponse:
         """Convertir entidad a DTO de respuesta"""
         from ...domain.dto.responses.reservation_responses import (
             CustomerDataResponse, BranchDataResponse, SectorDataResponse, OrderNumberResponse
@@ -69,23 +69,27 @@ class GetReservationUseCase:
             for order in reservation.order_numbers
         ]
         
-        return ReservationResponse(
+        # Preparar datos para el closing_summary
+        closing_summary_raw = reservation.closing_summary if reservation.closing_summary else None
+        
+        return ReservationDetailResponse(
             id=reservation.id,
             user_id=reservation.user_id,
             customer_id=reservation.customer_id,
-            branch_data=branch_response,
-            sector_data=sector_response,
-            customer_data=customer_response,
-            unloading_time_minutes=reservation.unloading_time_minutes,
-            unloading_time_hours=reservation.get_total_unloading_time_hours(),
-            reason=reservation.reason,
+            branch_data=reservation.branch_data.__dict__,
+            sector_data=reservation.sector_data.__dict__,
+            customer_data=reservation.customer_data.__dict__,
+            merchandise_description=reservation.reason,
+            merchandise_quantity=reservation.unloading_time_minutes,
+            merchandise_unit=reservation.sector_data.measurement_unit_name,
             cargo_type=reservation.cargo_type,
-            order_numbers=order_responses,
-            reservation_date=reservation.reservation_date,
-            start_time=reservation.start_time,
-            end_time=reservation.end_time,
+            schedule_date=reservation.reservation_date.isoformat() if reservation.reservation_date else None,
+            schedule_start_time=reservation.start_time.strftime("%H:%M") if reservation.start_time else None,
+            schedule_end_time=reservation.end_time.strftime("%H:%M") if reservation.end_time else None,
             status=reservation.status.value,
-            notes=reservation.notes,
-            created_at=reservation.created_at,
-            updated_at=reservation.updated_at
+            special_requirements=reservation.notes,
+            order_numbers=[order.code for order in reservation.order_numbers],
+            created_at=reservation.created_at.isoformat() if reservation.created_at else None,
+            updated_at=reservation.updated_at.isoformat() if reservation.updated_at else None,
+            closing_summary=closing_summary_raw
         ) 
