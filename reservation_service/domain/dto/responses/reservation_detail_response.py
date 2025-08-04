@@ -77,33 +77,39 @@ class ReservationDetailResponse(BaseModel):
     @classmethod
     def determine_closing_summary_type(cls, v, info):
         """Determinar el tipo de closing_summary basado en el status"""
-        data = info.data
-        status = data.get('status')
-        if status == "COMPLETED":
-            return ClosingSummaryType.COMPLETED
-        elif status == "CANCELLED":
-            return ClosingSummaryType.REJECTED
-        else:
+        try:
+            data = info.data
+            status = data.get('status')
+            if status == "COMPLETED":
+                return ClosingSummaryType.COMPLETED
+            elif status == "CANCELLED":
+                return ClosingSummaryType.REJECTED
+            else:
+                return ClosingSummaryType.NONE
+        except Exception:
             return ClosingSummaryType.NONE
     
     @field_validator('closing_summary_completed', 'closing_summary_rejected', mode='before')
     @classmethod
     def validate_closing_summary(cls, v, info):
         """Validar que el closing_summary corresponda al tipo correcto"""
-        data = info.data
-        field_name = info.field_name
-        closing_summary_type = data.get('closing_summary_type')
-        closing_summary_raw = data.get('closing_summary')
-        
-        if not closing_summary_raw:
-            return None
+        try:
+            data = info.data
+            field_name = info.field_name
+            closing_summary_type = data.get('closing_summary_type')
+            closing_summary_raw = data.get('closing_summary')
             
-        if field_name == 'closing_summary_completed' and closing_summary_type == ClosingSummaryType.COMPLETED:
-            return CompleteReservationResponse(**closing_summary_raw)
-        elif field_name == 'closing_summary_rejected' and closing_summary_type == ClosingSummaryType.REJECTED:
-            return RejectReservationResponse(**closing_summary_raw)
-        
-        return None
+            if not closing_summary_raw:
+                return None
+                
+            if field_name == 'closing_summary_completed' and closing_summary_type == ClosingSummaryType.COMPLETED:
+                return CompleteReservationResponse(**closing_summary_raw)
+            elif field_name == 'closing_summary_rejected' and closing_summary_type == ClosingSummaryType.REJECTED:
+                return RejectReservationResponse(**closing_summary_raw)
+            
+            return None
+        except Exception:
+            return None
     
     class Config:
         json_schema_extra = {

@@ -31,11 +31,11 @@ class ListReservationsUseCase:
             if access_token:
                 headers["Authorization"] = f"Bearer {access_token}"
             
-            # Construir parámetros de filtro (mapear skip/limit a page/size)
+            # Construir parámetros de filtro (mapear skip/limit a page/limit)
             page = (request.skip // request.limit) + 1 if request.limit > 0 else 1
             params = {
                 "page": page,
-                "size": request.limit
+                "limit": request.limit
             }
             
             if request.user_id:
@@ -48,18 +48,26 @@ class ListReservationsUseCase:
                 params["branch_name"] = request.branch_name
             if request.sector_id:
                 params["sector_id"] = request.sector_id
+            if request.sector_name:
+                params["sector_name"] = request.sector_name
             if request.sector_type_id:
                 params["sector_type_id"] = request.sector_type_id
             if request.start_date:
-                params["start_date"] = request.start_date.isoformat()
+                params["reservation_date_from"] = request.start_date.isoformat()
             if request.end_date:
-                params["end_date"] = request.end_date.isoformat()
+                params["reservation_date_to"] = request.end_date.isoformat()
             if request.status:
-                params["status"] = request.status
+                params["reservation_status"] = request.status
             if request.status_list:
                 params["status_list"] = ",".join(request.status_list)
             if request.order_code:
                 params["order_code"] = request.order_code
+            if request.customer_ruc:
+                params["customer_ruc"] = request.customer_ruc
+            if request.company_name:
+                params["company_name"] = request.company_name
+            if request.cargo_type:
+                params["cargo_type"] = request.cargo_type
             if request.sort_by:
                 params["sort_by"] = request.sort_by
             if request.sort_order:

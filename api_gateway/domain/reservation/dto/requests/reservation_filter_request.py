@@ -18,6 +18,7 @@ class ReservationFilterRequest(BaseModel):
     
     # Filtros por sector
     sector_id: Optional[int] = Field(None, gt=0, description="ID del sector")
+    sector_name: Optional[str] = Field(None, description="Nombre del sector")
     sector_type_id: Optional[int] = Field(None, gt=0, description="ID del tipo de sector")
     
     # Filtros por fecha
@@ -30,6 +31,10 @@ class ReservationFilterRequest(BaseModel):
     
     # Filtros por pedido
     order_code: Optional[str] = Field(None, description="Código de pedido")
+    
+    # Filtros por cliente
+    customer_ruc: Optional[str] = Field(None, description="RUC del cliente")
+    company_name: Optional[str] = Field(None, description="Nombre de la empresa")
     
     # Filtros por tipo de carga
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
