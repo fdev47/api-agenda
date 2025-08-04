@@ -17,4 +17,6 @@ class UpdateBranchDataRequest(BaseModel):
     state_id: Optional[int] = Field(None, gt=0, description="ID del estado")
     state_name: Optional[str] = Field(None, min_length=2, max_length=50, description="Nombre del estado")
     city_id: Optional[int] = Field(None, gt=0, description="ID de la ciudad")
-    city_name: Optional[str] = Field(None, min_length=2, max_length=50, description="Nombre de la ciudad") 
+    city_name: Optional[str] = Field(None, min_length=2, max_length=50, description="Nombre de la ciudad")
+    ramp_id: Optional[int] = Field(None, gt=0, description="ID de la rampa")
+    ramp_name: Optional[str] = Field(None, min_length=2, max_length=100, description="Nombre de la rampa") 

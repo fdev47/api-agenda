@@ -31,6 +31,7 @@ class UpdateReservationRequest(BaseModel):
     unloading_time_minutes: Optional[int] = Field(None, gt=0, le=1440, description="Tiempo de descarga en minutos")
     reason: Optional[str] = Field(None, min_length=10, max_length=500, description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, max_length=100, description="Tipo de carga")
+    ramp_id: Optional[int] = Field(None, gt=0, description="ID de la rampa asignada")
     
     # Números de pedidos (opcional)
     order_numbers: Optional[List[OrderNumberRequest]] = Field(None, min_items=1, max_items=50, description="Lista de números de pedido")
