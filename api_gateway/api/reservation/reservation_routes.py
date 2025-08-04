@@ -12,6 +12,7 @@ from ...domain.reservation.dto.requests.create_reservation_request import Create
 from ...domain.reservation.dto.requests.update_reservation_request import UpdateReservationRequest
 from ...domain.reservation.dto.requests.reservation_filter_request import ReservationFilterRequest
 from ...domain.reservation.dto.requests.reject_reservation_request import RejectReservationRequest
+from ...domain.reservation.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.reservation.dto.responses.reservation_response import ReservationResponse
 from ...domain.reservation.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.reservation.dto.responses.reservation_summary_response import ReservationSummaryResponse
@@ -24,6 +25,7 @@ from ...application.reservation.use_cases.list_reservations_use_case import List
 from ...application.reservation.use_cases.update_reservation_use_case import UpdateReservationUseCase
 from ...application.reservation.use_cases.cancel_reservation_use_case import CancelReservationUseCase
 from ...application.reservation.use_cases.reject_reservation_use_case import RejectReservationUseCase
+from ...application.reservation.use_cases.complete_reservation_use_case import CompleteReservationUseCase
 from ...application.reservation.use_cases.get_available_ramp_use_case import GetAvailableRampUseCase
 from ..middleware import auth_middleware
 
@@ -387,6 +389,52 @@ async def reject_reservation(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en reject_reservation: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.post("/{reservation_id}/completed", response_model=ReservationResponse)
+async def complete_reservation(
+    request: CompleteReservationRequest,
+    reservation_id: int = Path(..., gt=0, description="ID de la reserva"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Completar una reserva con datos del completado"""
+    try:
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        use_case = CompleteReservationUseCase()
+        result = await use_case.execute(reservation_id, request, access_token)
+        return result
+    except ValidationError as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
+        )
+    except HTTPError as e:
+        # Propagar errores HTTP directamente
+        logger.error(f"❌ Error HTTP completando reserva {reservation_id}: {str(e)}")
+        
+        # Intentar parsear el mensaje de error del reservation service
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            # Si no se puede parsear, usar el mensaje original
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en complete_reservation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
