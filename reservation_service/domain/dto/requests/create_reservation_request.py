@@ -14,8 +14,8 @@ from .sector_data_request import SectorDataRequest
 class CreateReservationRequest(BaseModel):
     """Request para crear una reserva completa"""
     
-    # Datos del usuario (opcional, puede venir del token)
-    user_id: Optional[int] = Field(None, gt=0, description="ID del usuario que hace la reserva")
+    # Datos del usuario
+    user_id: int = Field(..., gt=0, description="ID del usuario que hace la reserva")
     customer_id: Optional[int] = Field(None, gt=0, description="ID del cliente en el sistema")
     
     # Datos de la sucursal (completos)

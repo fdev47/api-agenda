@@ -61,7 +61,9 @@ class CreateReservationUseCase:
                 state_id=request.branch_data.state_id,
                 state_name=request.branch_data.state_name,
                 city_id=request.branch_data.city_id,
-                city_name=request.branch_data.city_name
+                city_name=request.branch_data.city_name,
+                ramp_id=request.branch_data.ramp_id,
+                ramp_name=request.branch_data.ramp_name
             )
             
             sector_data = SectorData(
@@ -97,7 +99,8 @@ class CreateReservationUseCase:
                 end_time=request.end_time,
                 notes=request.notes,
                 status=ReservationStatus.PENDING,
-                cargo_type=request.cargo_type
+                cargo_type=request.cargo_type,
+                ramp_id=request.ramp_id
             )
             
             # Verificar conflictos de horario
@@ -169,7 +172,9 @@ class CreateReservationUseCase:
             state_id=reservation.branch_data.state_id,
             state_name=reservation.branch_data.state_name,
             city_id=reservation.branch_data.city_id,
-            city_name=reservation.branch_data.city_name
+            city_name=reservation.branch_data.city_name,
+            ramp_id=reservation.branch_data.ramp_id,
+            ramp_name=reservation.branch_data.ramp_name
         )
         
         # Convertir datos del sector

@@ -134,6 +134,10 @@ class UpdateReservationUseCase:
                     reservation.branch_data.city_id = request.branch_data.city_id
                 if request.branch_data.city_name is not None:
                     reservation.branch_data.city_name = request.branch_data.city_name
+                if request.branch_data.ramp_id is not None:
+                    reservation.branch_data.ramp_id = request.branch_data.ramp_id
+                if request.branch_data.ramp_name is not None:
+                    reservation.branch_data.ramp_name = request.branch_data.ramp_name
                 logger.info("✅ branch_data actualizado")
             
             # Actualizar datos del cliente si están presentes
@@ -244,7 +248,9 @@ class UpdateReservationUseCase:
                 state_id=reservation.branch_data.state_id,
                 state_name=reservation.branch_data.state_name,
                 city_id=reservation.branch_data.city_id,
-                city_name=reservation.branch_data.city_name
+                city_name=reservation.branch_data.city_name,
+                ramp_id=reservation.branch_data.ramp_id,
+                ramp_name=reservation.branch_data.ramp_name
             )
             logger.info("✅ BranchDataResponse creado")
             

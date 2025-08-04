@@ -113,7 +113,9 @@ class CancelReservationUseCase:
             state_id=reservation.branch_data.state_id,
             state_name=reservation.branch_data.state_name,
             city_id=reservation.branch_data.city_id,
-            city_name=reservation.branch_data.city_name
+            city_name=reservation.branch_data.city_name,
+            ramp_id=reservation.branch_data.ramp_id,
+            ramp_name=reservation.branch_data.ramp_name
         )
         
         # Convertir datos del sector
