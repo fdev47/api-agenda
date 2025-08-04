@@ -42,7 +42,6 @@ class CreateReservationRequest(BaseModel):
     
     # Información adicional
     notes: Optional[str] = Field(None, max_length=1000, description="Notas adicionales")
-    closing_summary: Optional[dict] = Field(None, description="Resumen de cierre de la reserva")
     
     @validator('end_time')
     def validate_end_time(cls, v, values):
