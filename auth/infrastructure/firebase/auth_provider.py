@@ -17,6 +17,7 @@ from auth.domain.models import (
 )
 from auth.domain.exceptions.auth_exceptions import UserNotFoundException
 from commons.config import config
+from .config import firebase_config
 
 # Configurar logger
 logger = logging.getLogger(__name__)
@@ -39,14 +40,28 @@ class FirebaseAuthProvider(IAuthProvider):
 
         if not firebase_admin._apps:
             try:
+                # Validar configuración de Firebase
+                if not firebase_config.validate_config():
+                    raise ValueError("Configuración de Firebase inválida")
+                
                 # Configurar timeouts más apropiados para Firebase
                 import google.auth.transport.requests
                 import google.auth.transport.urllib3
+                import urllib3
                 
-                # Usar timeout total para mayor compatibilidad con Firebase Admin SDK
-                total_timeout = config.FIREBASE_TOTAL_TIMEOUT
+                timeout_config = firebase_config.get_timeout_config()
+                app_config = firebase_config.get_app_config()
                 
-                logger.info(f"🔧 Configurando Firebase con timeout total: {total_timeout}s")
+                logger.info(f"🔧 Configurando Firebase con timeouts: {timeout_config}")
+                
+                # Configurar timeouts globales para urllib3
+                urllib3.util.Retry.DEFAULT_ALLOWED_METHODS = frozenset(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'])
+                
+                # Configurar timeouts para urllib3
+                urllib3.util.Timeout.DEFAULT_TIMEOUT = urllib3.util.Timeout(
+                    connect=timeout_config['connect_timeout'], 
+                    read=timeout_config['read_timeout']
+                )
                 
                 if credentials_path and os.path.exists(credentials_path):
                     # OPCIÓN 1: Usar archivo de credenciales
@@ -59,17 +74,11 @@ class FirebaseAuthProvider(IAuthProvider):
                             cred_data = json.load(f)
                             project_id = cred_data.get('project_id')
                     
-                    firebase_admin.initialize_app(cred, {
-                        'projectId': project_id,
-                        'httpTimeout': total_timeout
-                    })
+                    firebase_admin.initialize_app(cred, app_config)
                     
                 elif project_id:
                     # OPCIÓN 2: Solo con project_id (usando credenciales por defecto)
-                    firebase_admin.initialize_app(options={
-                        'projectId': project_id,
-                        'httpTimeout': total_timeout
-                    })
+                    firebase_admin.initialize_app(options=app_config)
                     
                 else:
                     # OPCIÓN 3: Usar variables de entorno
@@ -83,10 +92,7 @@ class FirebaseAuthProvider(IAuthProvider):
                             "4. Archivo de credenciales con project_id"
                         )
                     
-                    firebase_admin.initialize_app(options={
-                        'projectId': project_id,
-                        'httpTimeout': total_timeout
-                    })
+                    firebase_admin.initialize_app(options=app_config)
                     
             except Exception as e:
                 logger.error(f"❌ Error inicializando Firebase: {e}")
@@ -145,7 +151,14 @@ class FirebaseAuthProvider(IAuthProvider):
             return self._map_firebase_user_to_domain(user_record)
         except FirebaseError as e:
             logger.error(f"❌ Error verificando token: {e}")
+            # Manejar específicamente tokens expirados
+            if 'expired' in str(e).lower() or e.code == 'ID_TOKEN_EXPIRED':
+                logger.warning("⚠️ Token expirado detectado")
+                raise AuthError("Token expirado", AuthErrorCode.TOKEN_EXPIRED.value)
             raise self._map_firebase_error(e)
+        except Exception as e:
+            logger.error(f"❌ Error inesperado verificando token: {e}")
+            raise AuthError(f"Error verificando token: {e}", AuthErrorCode.INVALID_TOKEN.value)
     
     def refresh_token(self, refresh_token: str) -> AuthToken:
         raise NotImplementedError("Se maneja automáticamente en Firebase")
@@ -158,7 +171,14 @@ class FirebaseAuthProvider(IAuthProvider):
             logger.info("✅ Tokens revocados exitosamente")
         except FirebaseError as e:
             logger.error(f"❌ Error revocando tokens: {e}")
+            # Si el token ya está expirado, considerarlo como revocado exitosamente
+            if 'expired' in str(e).lower() or e.code == 'ID_TOKEN_EXPIRED':
+                logger.warning("⚠️ Token ya expirado, considerando como revocado")
+                return
             raise self._map_firebase_error(e)
+        except Exception as e:
+            logger.error(f"❌ Error inesperado revocando tokens: {e}")
+            raise AuthError(f"Error revocando tokens: {e}", AuthErrorCode.INVALID_TOKEN.value)
     
     def get_user_by_id(self, user_id: str) -> Optional[AuthenticatedUser]:
         try:
