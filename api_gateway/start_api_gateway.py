@@ -7,7 +7,7 @@ import os
 import sys
 
 # Agregar el directorio raíz al path para importar módulos
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from api_gateway.api.main import app
 from commons.config import config
