@@ -111,6 +111,14 @@ class APIConfig:
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     AUTH_TIMEOUT = int(os.getenv("AUTH_TIMEOUT", "30"))
     
+    # Firebase timeouts específicos
+    FIREBASE_CONNECT_TIMEOUT = int(os.getenv("FIREBASE_CONNECT_TIMEOUT", "5"))
+    FIREBASE_READ_TIMEOUT = int(os.getenv("FIREBASE_READ_TIMEOUT", "25"))
+    FIREBASE_RETRIES = int(os.getenv("FIREBASE_RETRIES", "3"))
+    
+    # Firebase timeout total (connect + read)
+    FIREBASE_TOTAL_TIMEOUT = FIREBASE_CONNECT_TIMEOUT + FIREBASE_READ_TIMEOUT
+    
     # CORS
     GATEWAY_CORS_ORIGINS = os.getenv("GATEWAY_CORS_ORIGINS", "*").split(",")
     AUTH_CORS_ORIGINS = os.getenv("AUTH_CORS_ORIGINS", "*").split(",")

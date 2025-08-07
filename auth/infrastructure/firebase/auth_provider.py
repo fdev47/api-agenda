@@ -6,6 +6,7 @@ from firebase_admin import credentials, auth as firebase_auth
 from firebase_admin.exceptions import FirebaseError
 from datetime import datetime
 import os
+import logging
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -15,6 +16,10 @@ from auth.domain.models import (
     CustomClaims, AuthError, AuthErrorCode
 )
 from auth.domain.exceptions.auth_exceptions import UserNotFoundException
+from commons.config import config
+
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 
 class FirebaseAuthProvider(IAuthProvider):
@@ -34,6 +39,15 @@ class FirebaseAuthProvider(IAuthProvider):
 
         if not firebase_admin._apps:
             try:
+                # Configurar timeouts más apropiados para Firebase
+                import google.auth.transport.requests
+                import google.auth.transport.urllib3
+                
+                # Usar timeout total para mayor compatibilidad con Firebase Admin SDK
+                total_timeout = config.FIREBASE_TOTAL_TIMEOUT
+                
+                logger.info(f"🔧 Configurando Firebase con timeout total: {total_timeout}s")
+                
                 if credentials_path and os.path.exists(credentials_path):
                     # OPCIÓN 1: Usar archivo de credenciales
                     cred = credentials.Certificate(credentials_path)
@@ -46,13 +60,15 @@ class FirebaseAuthProvider(IAuthProvider):
                             project_id = cred_data.get('project_id')
                     
                     firebase_admin.initialize_app(cred, {
-                        'projectId': project_id
+                        'projectId': project_id,
+                        'httpTimeout': total_timeout
                     })
                     
                 elif project_id:
                     # OPCIÓN 2: Solo con project_id (usando credenciales por defecto)
                     firebase_admin.initialize_app(options={
-                        'projectId': project_id
+                        'projectId': project_id,
+                        'httpTimeout': total_timeout
                     })
                     
                 else:
@@ -68,15 +84,18 @@ class FirebaseAuthProvider(IAuthProvider):
                         )
                     
                     firebase_admin.initialize_app(options={
-                        'projectId': project_id
+                        'projectId': project_id,
+                        'httpTimeout': total_timeout
                     })
                     
             except Exception as e:
+                logger.error(f"❌ Error inicializando Firebase: {e}")
                 raise ValueError(f"Error inicializando Firebase: {e}")
     
     def create_user(self, registration: UserRegistration) -> AuthenticatedUser:
         """Crear usuario en Firebase Auth"""
         try:
+            logger.info(f"🔄 Creando usuario en Firebase: {registration.email}")
             # Configurar parámetros básicos
             user_params = {
                 'email': registration.email,
@@ -88,6 +107,7 @@ class FirebaseAuthProvider(IAuthProvider):
             
             # Crear usuario en Firebase
             user_record = firebase_auth.create_user(**user_params)
+            logger.info(f"✅ Usuario creado exitosamente: {user_record.uid}")
             
             # Si se requiere 2FA, configurarlo después de crear el usuario
             if registration.two_factor_enabled:
@@ -106,10 +126,11 @@ class FirebaseAuthProvider(IAuthProvider):
                     firebase_auth.generate_email_verification_link(registration.email)
                 except Exception as e:
                     # Si falla el envío, no bloqueamos la creación del usuario
-                    print(f"⚠️ No se pudo enviar email de verificación: {e}")
+                    logger.warning(f"⚠️ No se pudo enviar email de verificación: {e}")
             
             return self._map_firebase_user_to_domain(user_record)
         except FirebaseError as e:
+            logger.error(f"❌ Error creando usuario en Firebase: {e}")
             raise self._map_firebase_error(e)
     
     def authenticate_user(self, credentials: UserCredentials) -> AuthToken:
@@ -117,10 +138,13 @@ class FirebaseAuthProvider(IAuthProvider):
     
     def verify_token(self, token: str) -> AuthenticatedUser:
         try:
+            logger.debug("🔄 Verificando token de Firebase")
             decoded_token = firebase_auth.verify_id_token(token)
             user_record = firebase_auth.get_user(decoded_token['uid'])
+            logger.debug(f"✅ Token verificado para usuario: {user_record.uid}")
             return self._map_firebase_user_to_domain(user_record)
         except FirebaseError as e:
+            logger.error(f"❌ Error verificando token: {e}")
             raise self._map_firebase_error(e)
     
     def refresh_token(self, refresh_token: str) -> AuthToken:
@@ -128,43 +152,58 @@ class FirebaseAuthProvider(IAuthProvider):
     
     def revoke_token(self, token: str) -> None:
         try:
+            logger.info("🔄 Revocando tokens de Firebase")
             decoded_token = firebase_auth.verify_id_token(token)
             firebase_auth.revoke_refresh_tokens(decoded_token['uid'])
+            logger.info("✅ Tokens revocados exitosamente")
         except FirebaseError as e:
+            logger.error(f"❌ Error revocando tokens: {e}")
             raise self._map_firebase_error(e)
     
     def get_user_by_id(self, user_id: str) -> Optional[AuthenticatedUser]:
         try:
+            logger.debug(f"🔄 Obteniendo usuario por ID: {user_id}")
             user_record = firebase_auth.get_user(user_id)
+            logger.debug(f"✅ Usuario encontrado: {user_record.uid}")
             return self._map_firebase_user_to_domain(user_record)
         except firebase_auth.UserNotFoundError:
+            logger.warning(f"⚠️ Usuario no encontrado: {user_id}")
             return None
         except FirebaseError as e:
+            logger.error(f"❌ Error obteniendo usuario por ID: {e}")
             raise self._map_firebase_error(e)
     
     def get_user_by_email(self, email: str) -> Optional[AuthenticatedUser]:
         try:
+            logger.debug(f"🔄 Obteniendo usuario por email: {email}")
             user_record = firebase_auth.get_user_by_email(email)
+            logger.debug(f"✅ Usuario encontrado: {user_record.uid}")
             return self._map_firebase_user_to_domain(user_record)
         except firebase_auth.UserNotFoundError:
+            logger.warning(f"⚠️ Usuario no encontrado: {email}")
             return None
         except FirebaseError as e:
+            logger.error(f"❌ Error obteniendo usuario por email: {e}")
             raise self._map_firebase_error(e)
     
     def update_user_claims(self, user_id: str, claims: CustomClaims) -> None:
         try:
+            logger.info(f"🔄 Actualizando claims para usuario: {user_id}")
             custom_claims = {
                 'roles': claims.roles,
                 'permissions': claims.permissions,
                 'organization_id': claims.organization_id
             }
             firebase_auth.set_custom_user_claims(user_id, custom_claims)
+            logger.info(f"✅ Claims actualizados para usuario: {user_id}")
         except FirebaseError as e:
+            logger.error(f"❌ Error actualizando claims: {e}")
             raise self._map_firebase_error(e)
     
     def update_user(self, user_id: str, user_data) -> AuthenticatedUser:
         """Actualizar usuario en Firebase Auth"""
         try:
+            logger.info(f"🔄 Actualizando usuario: {user_id}")
             # Verificar que el usuario existe
             user_record = firebase_auth.get_user(user_id)
             
@@ -190,33 +229,43 @@ class FirebaseAuthProvider(IAuthProvider):
             # Actualizar usuario en Firebase
             if update_params:
                 updated_user = firebase_auth.update_user(user_id, **update_params)
+                logger.info(f"✅ Usuario actualizado: {user_id}")
                 return self._map_firebase_user_to_domain(updated_user)
             else:
                 # Si no hay parámetros para actualizar, devolver usuario actual
+                logger.info(f"✅ No hay cambios para actualizar: {user_id}")
                 return self._map_firebase_user_to_domain(user_record)
                 
         except FirebaseError as e:
+            logger.error(f"❌ Error actualizando usuario: {e}")
             raise self._map_firebase_error(e)
     
     def disable_user(self, user_id: str) -> None:
         try:
+            logger.info(f"🔄 Deshabilitando usuario: {user_id}")
             firebase_auth.update_user(user_id, disabled=True)
+            logger.info(f"✅ Usuario deshabilitado: {user_id}")
         except FirebaseError as e:
+            logger.error(f"❌ Error deshabilitando usuario: {e}")
             raise self._map_firebase_error(e)
     
     def delete_user(self, user_id: str) -> bool:
         """Eliminar usuario de Firebase Auth"""
         try:
+            logger.info(f"🔄 Eliminando usuario: {user_id}")
             # Verificar que el usuario existe
             firebase_auth.get_user(user_id)
             
             # Eliminar usuario
             firebase_auth.delete_user(user_id)
+            logger.info(f"✅ Usuario eliminado: {user_id}")
             return True
             
         except FirebaseError as e:
             if e.code == 'user-not-found':
+                logger.warning(f"⚠️ Usuario no encontrado para eliminar: {user_id}")
                 raise UserNotFoundException(user_id)
+            logger.error(f"❌ Error eliminando usuario: {e}")
             raise self._map_firebase_error(e)
     
     def _map_firebase_user_to_domain(self, user_record) -> AuthenticatedUser:
