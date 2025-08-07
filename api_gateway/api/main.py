@@ -22,10 +22,10 @@ from .ramp.ramp_routes import router as ramp_router
 def create_api_gateway_service() -> ServiceConfig:
     """Crear configuración del API Gateway"""
     return ServiceConfig(
-        service_name="API Gateway",
-        service_version="1.0.0",
+        service_name=config.API_GATEWAY_NAME,
+        service_version=config.API_GATEWAY_VERSION,
         service_port=config.API_GATEWAY_PORT,
-        cors_origins=["*"],
+        cors_origins=config.API_GATEWAY_CORS_ORIGINS,
         database_url=None,  # API Gateway no tiene BD
         api_version=config.API_VERSION,
         api_prefix=config.API_PREFIX,

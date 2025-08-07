@@ -23,6 +23,8 @@ class APIConfig:
     API_PREFIX = f"/api/{API_VERSION}"
 
     # Configuración de servicios
+    API_GATEWAY_NAME = os.getenv("API_GATEWAY_SERVICE_NAME")
+    API_GATEWAY_VERSION = os.getenv("API_GATEWAY_SERVICE_VERSION")
     AUTH_SERVICE_NAME = os.getenv("AUTH_SERVICE_NAME")
     AUTH_SERVICE_VERSION = os.getenv("AUTH_SERVICE_VERSION")
     USER_SERVICE_NAME = os.getenv("USER_SERVICE_NAME")
@@ -60,7 +62,7 @@ class APIConfig:
     FIREBASE_TOTAL_TIMEOUT = FIREBASE_CONNECT_TIMEOUT + FIREBASE_READ_TIMEOUT
     
     # CORS
-    GATEWAY_CORS_ORIGINS = os.getenv("GATEWAY_CORS_ORIGINS").split(",")
+    API_GATEWAY_CORS_ORIGINS = os.getenv("GATEWAY_CORS_ORIGINS").split(",")
     AUTH_CORS_ORIGINS = os.getenv("AUTH_CORS_ORIGINS").split(",")
     USER_CORS_ORIGINS = os.getenv("USER_CORS_ORIGINS").split(",")
     LOCATION_CORS_ORIGINS = os.getenv("LOCATION_CORS_ORIGINS").split(",")
