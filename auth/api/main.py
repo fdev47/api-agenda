@@ -28,8 +28,8 @@ def get_settings():
         "log_level": config.LOG_LEVEL,
         "environment": config.ENVIRONMENT,
         "service_port": config.AUTH_SERVICE_PORT,
-        "service_name": os.getenv("AUTH_SERVICE_NAME", "auth-service"),
-        "service_version": os.getenv("AUTH_SERVICE_VERSION", "1.0.0"),
+        "service_name": config.AUTH_SERVICE_NAME,
+        "service_version": config.AUTH_SERVICE_VERSION,
         "api_version": config.API_VERSION,
         "api_prefix": config.API_PREFIX
     }

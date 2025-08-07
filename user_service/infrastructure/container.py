@@ -61,7 +61,7 @@ class UserServiceContainer(containers.DeclarativeContainer):
     # Cliente de Auth Service
     auth_service_client = providers.Singleton(
         AuthClient,
-        auth_service_url=os.getenv("AUTH_SERVICE_URL", "http://localhost:8001")
+        auth_service_url=os.getenv("AUTH_SERVICE_URL")
     )
     
     # Repositorios con sesiones gestionadas adecuadamente

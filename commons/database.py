@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import text
 from typing import Optional
-from .config import db_settings
+import os
 
 # Base declarativa común para todos los modelos
 Base = declarative_base()
@@ -21,8 +21,21 @@ class DatabaseManager:
             database_url: URL de conexión a la BD (opcional, usa la configuración por defecto)
             echo: Habilitar logs de SQL (opcional, usa la configuración por defecto)
         """
-        self.database_url = database_url or db_settings.DATABASE_URL
-        self.echo = echo if echo is not None else db_settings.DATABASE_ECHO
+        # Si no se proporciona URL, intentar detectar automáticamente según el servicio
+        if database_url is None:
+            # Detectar el servicio basado en las variables de entorno disponibles
+            if os.getenv("USER_DATABASE_URL"):
+                database_url = os.getenv("USER_DATABASE_URL")
+            elif os.getenv("LOCATION_DATABASE_URL"):
+                database_url = os.getenv("LOCATION_DATABASE_URL")
+            elif os.getenv("RESERVATION_DATABASE_URL"):
+                database_url = os.getenv("RESERVATION_DATABASE_URL")
+            else:
+                # Fallback a DATABASE_URL genérica
+                database_url = os.getenv("DATABASE_URL", "")
+        
+        self.database_url = database_url
+        self.echo = echo if echo is not None else (os.getenv("DATABASE_ECHO", "false").lower() == "true")
         
         # Convertir URL de PostgreSQL a async
         if self.database_url.startswith('postgresql://'):
@@ -98,28 +111,40 @@ class DatabaseManager:
         """Cerrar la conexión a la base de datos"""
         await self.engine.dispose()
 
-# Instancia global del gestor de base de datos
-db_manager = DatabaseManager()
+# Instancia global del gestor de base de datos (se inicializará cuando se necesite)
+db_manager = None
+
+def get_db_manager(database_url: Optional[str] = None) -> DatabaseManager:
+    """Obtener una instancia del gestor de base de datos"""
+    global db_manager
+    
+    if db_manager is None:
+        db_manager = DatabaseManager(database_url)
+    return db_manager
 
 # Funciones de conveniencia para compatibilidad con el código existente
-async def create_tables(base: Optional[declarative_base] = None) -> None:
+async def create_tables(base: Optional[declarative_base] = None, database_url: Optional[str] = None) -> None:
     """Crear todas las tablas de forma asíncrona"""
-    await db_manager.create_tables(base)
+    manager = get_db_manager(database_url)
+    await manager.create_tables(base)
 
-async def get_db_session() -> AsyncSession:
+async def get_db_session(database_url: Optional[str] = None) -> AsyncSession:
     """Dependency para FastAPI (async)"""
-    async with db_manager.AsyncSessionLocal() as session:
+    manager = get_db_manager(database_url)
+    async with manager.AsyncSessionLocal() as session:
         yield session
 
-async def test_connection() -> bool:
+async def test_connection(database_url: Optional[str] = None) -> bool:
     """Probar conexión a la BD de forma asíncrona"""
-    return await db_manager.test_connection()
+    manager = get_db_manager(database_url)
+    return await manager.test_connection()
 
 # Exportar componentes principales
 __all__ = [
     'Base',
     'DatabaseManager',
     'db_manager',
+    'get_db_manager',
     'create_tables',
     'get_db_session',
     'test_connection'

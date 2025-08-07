@@ -20,7 +20,7 @@ def main():
     
     # Configuración del servicio
     host = "0.0.0.0"
-    port = int(os.getenv("USER_SERVICE_PORT", "8002"))
+    port = int(os.getenv("USER_SERVICE_PORT"))
     reload = os.getenv("ENVIRONMENT", "development") == "development"
     
     print(f"🚀 Iniciando User Service...")
@@ -28,14 +28,14 @@ def main():
     print(f"🔌 Puerto: {port}")
     print(f"🔄 Reload: {reload}")
     print(f"🌍 Entorno: {os.getenv('ENVIRONMENT', 'development')}")
-    print(f"🔗 Auth Service URL: {os.getenv('AUTH_SERVICE_URL', 'http://localhost:8001')}")
-    print(f"🗄️ Database URL configurado: {bool(os.getenv('DATABASE_URL'))}")
+    print(f"🔗 Auth Service URL: {os.getenv('AUTH_SERVICE_URL')}")
+    print(f"🗄️ Database URL configurado: {bool(os.getenv('USER_DATABASE_URL'))}")
     print()
     
     # Verificar configuración
-    if not os.getenv("DATABASE_URL"):
-        print("❌ Error: DATABASE_URL no configurado en .env")
-        print("💡 Asegúrate de tener un archivo .env con DATABASE_URL=postgresql://...")
+    if not os.getenv("USER_DATABASE_URL"):
+        print("❌ Error: USER_DATABASE_URL no configurado en .env")
+        print("💡 Asegúrate de tener un archivo .env con USER_DATABASE_URL=postgresql://...")
         sys.exit(1)
     
     if not os.getenv("AUTH_SERVICE_URL"):

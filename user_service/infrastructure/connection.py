@@ -3,7 +3,10 @@ Conexión a la base de datos para el microservicio de usuarios
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from commons.database import db_manager, Base
+from commons.database import get_db_manager, Base
+
+# Obtener el gestor de base de datos para este servicio
+db_manager = get_db_manager()
 
 # Re-exportar para compatibilidad con código existente
 engine = db_manager.engine

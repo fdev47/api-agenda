@@ -28,13 +28,13 @@ def main():
     print(f"🔌 Puerto: {port}")
     print(f"🔄 Reload: {reload}")
     print(f"🌍 Entorno: {os.getenv('ENVIRONMENT', 'development')}")
-    print(f"🗄️ Database URL configurado: {bool(os.getenv('DATABASE_URL'))}")
+    print(f"🗄️ Database URL configurado: {bool(os.getenv('RESERVATION_DATABASE_URL'))}")
     print()
     
     # Verificar configuración
-    if not os.getenv("DATABASE_URL"):
-        print("❌ Error: DATABASE_URL no configurado en .env")
-        print("💡 Asegúrate de tener un archivo .env con DATABASE_URL=postgresql://...")
+    if not os.getenv("RESERVATION_DATABASE_URL"):
+        print("❌ Error: RESERVATION_DATABASE_URL no configurado en .env")
+        print("💡 Asegúrate de tener un archivo .env con RESERVATION_DATABASE_URL=postgresql://...")
         sys.exit(1)
     
     try:

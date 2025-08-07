@@ -125,8 +125,5 @@ def create_auth_middleware(auth_service_url: str = None) -> ExternalAuthMiddlewa
     Returns:
         ExternalAuthMiddleware configurado
     """
-    if auth_service_url is None:
-        service_port = os.getenv("AUTH_SERVICE_PORT", "8001")
-        auth_service_url = f"http://localhost:{service_port}"
     
     return ExternalAuthMiddleware(auth_service_url) 

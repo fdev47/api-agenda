@@ -19,11 +19,11 @@ from ..infrastructure.models.base import Base
 def create_location_service() -> ServiceConfig:
     """Crear configuración del Location Service"""
     return ServiceConfig(
-        service_name="Location Service",
-        service_version="1.0.0",
+        service_name=config.LOCATION_SERVICE_NAME,
+        service_version=config.LOCATION_SERVICE_VERSION,
         service_port=config.LOCATION_SERVICE_PORT,
-        cors_origins=["*"],
-        database_url=config.DATABASE_URL,
+        cors_origins=config.LOCATION_CORS_ORIGINS,
+        database_url=config.LOCATION_DATABASE_URL,
         api_version=config.API_VERSION,
         api_prefix=config.API_PREFIX,
         title="Location Service API",

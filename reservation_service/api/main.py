@@ -25,11 +25,11 @@ from ..infrastructure.container import container
 def create_reservation_service() -> ServiceConfig:
     """Crear configuración del Reservation Service"""
     return ServiceConfig(
-        service_name="Reservation Service",
-        service_version="1.0.0",
-        service_port=8004,  # Puerto por defecto para reservation service
-        cors_origins=["*"],
-        database_url=config.DATABASE_URL,
+        service_name=config.RESERVATION_SERVICE_NAME,
+        service_version=config.RESERVATION_SERVICE_VERSION,
+        service_port=config.RESERVATION_SERVICE_PORT,
+        cors_origins=config.RESERVATION_CORS_ORIGINS,
+        database_url=config.RESERVATION_DATABASE_URL,
         api_version=config.API_VERSION,
         api_prefix=config.API_PREFIX,
         title="Reservation Service API",

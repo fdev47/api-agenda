@@ -18,11 +18,11 @@ from ..infrastructure.models.base import Base
 def create_user_service() -> ServiceConfig:
     """Crear configuración del User Service"""
     return ServiceConfig(
-        service_name="User Service",
-        service_version="1.0.0",
+        service_name=config.USER_SERVICE_NAME,
+        service_version=config.USER_SERVICE_VERSION,
         service_port=config.USER_SERVICE_PORT,
         cors_origins=config.USER_CORS_ORIGINS,
-        database_url=config.DATABASE_URL,
+        database_url=config.USER_DATABASE_URL,
         api_version=config.API_VERSION,
         api_prefix=config.API_PREFIX,
         title="User Service API",

@@ -12,9 +12,9 @@ def start_auth_service():
     """Iniciar el servicio auth"""
     
     # Obtener configuración del .env
-    service_port = int(os.getenv("AUTH_SERVICE_PORT", "8001"))
-    service_name = os.getenv("AUTH_SERVICE_NAME", "auth-service")
-    environment = os.getenv("ENVIRONMENT", "development")
+    service_port = int(os.getenv("AUTH_SERVICE_PORT"))
+    service_name = os.getenv("AUTH_SERVICE_NAME")
+    environment = os.getenv("ENVIRONMENT")
     
     print(f"🚀 Iniciando {service_name}...")
     print(f"📡 Puerto: {service_port}")
