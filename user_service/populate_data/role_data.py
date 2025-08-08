@@ -8,7 +8,8 @@ import os
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from commons.database import db_manager
+from commons.database import get_db_manager
+from commons.config import config
 from user_service.infrastructure.container import container
 from user_service.domain.dto.requests.role_requests import CreateRoleRequest
 from user_service.domain.exceptions.user_exceptions import RoleAlreadyExistsException
@@ -32,6 +33,10 @@ async def populate_role_data(dry_run: bool = False):
         {
             "name": "AGENDAMIENTO",
             "description": "Realiza agendamientos"
+        },
+        {
+            "name": "ADMIN",
+            "description": "Administrador"
         }
     ]
     
@@ -42,6 +47,14 @@ async def populate_role_data(dry_run: bool = False):
         return {"roles": len(roles_data)}
     
     inserted_count = 0
+    
+    # Obtener la URL de la base de datos de user service
+    user_db_url = config.USER_DATABASE_URL
+    if not user_db_url:
+        raise ValueError("USER_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para user service
+    db_manager = get_db_manager(user_db_url)
     
     # Usar el contexto de sesión de base de datos
     async with db_manager.AsyncSessionLocal() as session:
