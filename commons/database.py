@@ -4,6 +4,8 @@ Módulo común para la conexión a la base de datos
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import text
+import ssl
+from urllib.parse import quote_plus
 from typing import Optional
 import os
 
@@ -34,6 +36,7 @@ class DatabaseManager:
                 # Fallback a DATABASE_URL genérica
                 database_url = os.getenv("DATABASE_URL", "")
         
+        ssl_context = ssl.create_default_context(cafile=os.getenv("DATABASE_CA_FILE_PATH"))
         self.database_url = database_url
         self.echo = echo if echo is not None else (os.getenv("DATABASE_ECHO", "false").lower() == "true")
         
@@ -41,7 +44,6 @@ class DatabaseManager:
         if self.database_url.startswith('postgresql://'):
             self.database_url = self.database_url.replace('postgresql://', 'postgresql+asyncpg://')
         
-        # Crear engine con configuración de pool optimizada
         self.engine = create_async_engine(
             self.database_url,
             echo=self.echo,
@@ -51,9 +53,9 @@ class DatabaseManager:
             pool_timeout=30,  # Tiempo de espera para obtener una conexión
             pool_recycle=3600,  # Reciclar conexiones cada hora
             pool_pre_ping=True,  # Verificar conexión antes de usar
+            connect_args={"ssl": ssl_context},  # habilitar SSL en asyncpg
         )
-        
-        # Crear session factory
+
         self.AsyncSessionLocal = sessionmaker(
             bind=self.engine,
             class_=AsyncSession,
