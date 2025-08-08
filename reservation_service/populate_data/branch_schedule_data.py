@@ -12,7 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from commons.api_client import APIClient
 from commons.config import config
-from commons.database import get_db_session
 
 # Imports del reservation_service
 from reservation_service.domain.entities.day_of_week import DayOfWeek
@@ -25,7 +24,7 @@ async def get_branches(api_client: APIClient) -> List[Dict[str, Any]]:
     Obtener sucursales disponibles desde api_gateway
     """
     try:
-        response = await api_client.get(f"{config.API_PREFIX}/location/branches/")
+        response = await api_client.get(f"{config.API_PREFIX}/branches/")
         
         if response:
             # La respuesta tiene 'branches' no 'items'
@@ -53,7 +52,7 @@ async def create_branch_schedule(
     day_of_week: DayOfWeek,
     start_time: time,
     end_time: time,
-    interval_minutes: int = 120  # 2 horas por defecto
+    interval_minutes: int = 60  # 2 horas por defecto
 ) -> bool:
     """
     Crear un horario para una sucursal
@@ -112,7 +111,7 @@ async def populate_branch_schedule_data(dry_run: bool = False):
     
     start_time = time(8, 0)  # 8:00 AM
     end_time = time(18, 0)   # 6:00 PM
-    interval_minutes = 120    # 2 horas
+    interval_minutes = 60    # 1 hora
     
     if dry_run:
         print(f"🔍 Simulando creación de horarios...")

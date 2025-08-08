@@ -3,7 +3,7 @@ Implementación del repositorio para sucursales
 """
 from typing import List, Optional, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select, func
+from sqlalchemy import and_, or_, select, func, text
 from sqlalchemy.orm import selectinload
 from ...domain.interfaces.branch_repository import BranchRepository
 from ...domain.entities.branch import Branch

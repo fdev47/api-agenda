@@ -38,6 +38,16 @@ class ListBranchesUseCase:
         # Obtener sucursales del repositorio
         branches, total = await self.branch_repository.list_all(filter_request)
         
+
+        if not branches:
+            return BranchListResponse(
+                branches=[],
+                total=total,
+                limit=filter_request.limit,
+                offset=filter_request.offset
+            )
+        
+
         # Obtener información relacionada para cada sucursal
         branch_responses = []
         for branch in branches:
