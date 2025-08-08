@@ -10,6 +10,8 @@ from infrastructure.models.sector import Sector
 from infrastructure.models.branch import Branch
 from domain.entities.measurement_unit import MeasurementUnit as MeasurementUnitEnum
 from sqlalchemy.ext.asyncio import AsyncSession
+from commons.database import get_db_manager
+from commons.config import config
 
 async def populate_measurement_units(dry_run: bool = False):
     """Poblar unidades de medida"""
@@ -17,6 +19,12 @@ async def populate_measurement_units(dry_run: bool = False):
     if dry_run:
         print("🔍 MODO SIMULACIÓN: No se guardarán datos en la BD")
 
+    location_db_url = config.LOCATION_DATABASE_URL
+    if not location_db_url:
+        raise ValueError("LOCATION_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para location
+    db_manager = get_db_manager(location_db_url)
     session: AsyncSession = await db_manager.get_session()
     try:
         # Datos de unidades de medida basados en el enum MeasurementUnit
@@ -72,6 +80,12 @@ async def populate_sector_types(dry_run: bool = False):
     if dry_run:
         print("🔍 MODO SIMULACIÓN: No se guardarán datos en la BD")
 
+    location_db_url = config.LOCATION_DATABASE_URL
+    if not location_db_url:
+        raise ValueError("LOCATION_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para location
+    db_manager = get_db_manager(location_db_url)
     session: AsyncSession = await db_manager.get_session()
     try:
         # Datos de tipos de sector basados en CSV proporcionado
@@ -125,6 +139,12 @@ async def populate_sectors(dry_run: bool = False):
     if dry_run:
         print("🔍 MODO SIMULACIÓN: No se guardarán datos en la BD")
 
+    location_db_url = config.LOCATION_DATABASE_URL
+    if not location_db_url:
+        raise ValueError("LOCATION_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para location
+    db_manager = get_db_manager(location_db_url)
     session: AsyncSession = await db_manager.get_session()
     try:
         # Obtener todas las sucursales y tipos de sector
@@ -191,7 +211,7 @@ async def populate_sector_data(dry_run: bool = False):
         print(f"   🏭 Sectores: {sectors_result['sectors']}")
         
         return {
-            "measurement_units": measurement_units_result["measurement_units"],
+            #"measurement_units": measurement_units_result["measurement_units"],
             "sector_types": sector_types_result["sector_types"],
             "sectors": sectors_result["sectors"]
         }

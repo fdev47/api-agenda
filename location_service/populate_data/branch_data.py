@@ -10,6 +10,8 @@ from infrastructure.models.city import City
 from infrastructure.models.local import Local
 from infrastructure.models.ramp import Ramp
 from sqlalchemy.ext.asyncio import AsyncSession
+from commons.database import get_db_manager
+from commons.config import config
 
 BRANCHES_CSV = [
     {"code": "F", "name": "FORTIS Pedro Juan Caballero", "address": "Avda. R. Mal. Floriano c/ Cincuentenario de la Guerra del Chaco", "state": "Amambay", "city": "Pedro Juan Caballero"},
@@ -53,6 +55,12 @@ async def populate_branch_data(dry_run: bool = False):
     if dry_run:
         print("🔍 MODO SIMULACIÓN: No se guardarán datos en la BD")
 
+    location_db_url = config.LOCATION_DATABASE_URL
+    if not location_db_url:
+        raise ValueError("LOCATION_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para location
+    db_manager = get_db_manager(location_db_url)
     session: AsyncSession = await db_manager.get_session()
     try:
         country_id = await get_country_id(session)

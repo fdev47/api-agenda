@@ -15,6 +15,8 @@ from infrastructure.models.country import Country as CountryModel
 from infrastructure.models.state import State as StateModel
 from infrastructure.models.city import City as CityModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from commons.database import get_db_manager
+from commons.config import config
 
 
 async def populate_countries(session: AsyncSession, dry_run: bool = False):
@@ -423,7 +425,13 @@ async def populate_location_data(dry_run: bool = False):
     if dry_run:
         print("🔍 MODO SIMULACIÓN: No se guardarán datos en la BD")
     
-    # Obtener sesión de base de datos
+    # Obtener la URL de la base de datos de location
+    location_db_url = config.LOCATION_DATABASE_URL
+    if not location_db_url:
+        raise ValueError("LOCATION_DATABASE_URL no está configurada")
+    
+    # Obtener el gestor de base de datos para location
+    db_manager = get_db_manager(location_db_url)
     session = await db_manager.get_session()
     
     try:
