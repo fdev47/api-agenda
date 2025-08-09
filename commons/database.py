@@ -36,24 +36,36 @@ class DatabaseManager:
                 # Fallback a DATABASE_URL genérica
                 database_url = os.getenv("DATABASE_URL", "")
         
-        ssl_context = ssl.create_default_context(cafile=os.getenv("DATABASE_CA_FILE_PATH"))
         self.database_url = database_url
         self.echo = echo if echo is not None else (os.getenv("DATABASE_ECHO", "false").lower() == "true")
+        
+        # Determinar si usar SSL basado en la URL y configuración
+        use_ssl = self._should_use_ssl(database_url)
+        connect_args = {}
+        
+        if use_ssl:
+            ssl_context = self._create_ssl_context()
+            if ssl_context:
+                connect_args["ssl"] = ssl_context
         
         # Convertir URL de PostgreSQL a async
         if self.database_url.startswith('postgresql://'):
             self.database_url = self.database_url.replace('postgresql://', 'postgresql+asyncpg://')
         
+        # Obtener configuración del pool
+        pool_config = self.get_pool_config()
+        
         self.engine = create_async_engine(
             self.database_url,
             echo=self.echo,
-            # Configuración optimizada del pool
-            pool_size=5,  # Número de conexiones en el pool
-            max_overflow=10,  # Reducido para evitar sobrecarga
-            pool_timeout=10,  # Reducido para fallar rápido
-            pool_recycle=1800,  # Reciclar cada 30 minutos
-            pool_pre_ping=True,  # Verificar conexión antes de usar
-            connect_args={"ssl": ssl_context},  # habilitar SSL en asyncpg
+            # Configuración del pool
+            pool_size=pool_config["pool_size"],
+            max_overflow=pool_config["max_overflow"],
+            pool_timeout=pool_config["pool_timeout"],
+            pool_recycle=pool_config["pool_recycle"],
+            pool_pre_ping=pool_config["pool_pre_ping"],
+            # SSL solo si es necesario
+            connect_args=connect_args,
         )
 
         self.AsyncSessionLocal = sessionmaker(
@@ -113,6 +125,53 @@ class DatabaseManager:
         """Cerrar la conexión a la base de datos"""
         await self.engine.dispose()
 
+    def get_pool_config(self) -> dict:
+        """
+        Obtener la configuración actual del pool de conexiones
+        
+        Returns:
+            dict: Configuración del pool
+        """
+        return {
+            "pool_size": int(os.getenv("DATABASE_POOL_SIZE", "5")),
+            "max_overflow": int(os.getenv("DATABASE_MAX_OVERFLOW", "10")),
+            "pool_timeout": int(os.getenv("DATABASE_POOL_TIMEOUT", "10")),
+            "pool_recycle": int(os.getenv("DATABASE_POOL_RECYCLE", "1800")),
+            "pool_pre_ping": os.getenv("DATABASE_POOL_PRE_PING", "true").lower() == "true"
+        }
+
+    def _should_use_ssl(self, database_url: str) -> bool:
+        """
+        Determina si se debe usar SSL basado en la URL de la base de datos.
+        Por defecto, no se usa SSL en desarrollo local.
+        """
+        # Primero verificar si está explícitamente configurado
+        use_ssl_env = os.getenv("DATABASE_USE_SSL", "").lower()
+        if use_ssl_env == "true":
+            return True
+        elif use_ssl_env == "false":
+            return False
+
+    def _create_ssl_context(self) -> Optional[ssl.SSLContext]:
+        """
+        Crea un contexto SSL para la conexión a la base de datos.
+        Solo se usa si se determina que se debe usar SSL.
+        """
+        ca_file_path = os.getenv("DATABASE_CA_FILE_PATH")
+        if not ca_file_path:
+            print("⚠️ DATABASE_CA_FILE_PATH no configurado. SSL no se puede habilitar.")
+            return None
+
+        try:
+            ssl_context = ssl.create_default_context(cafile=ca_file_path)
+            return ssl_context
+        except FileNotFoundError:
+            print(f"❌ Error: El archivo de certificado SSL no encontrado en {ca_file_path}")
+            return None
+        except Exception as e:
+            print(f"❌ Error al crear contexto SSL: {e}")
+            return None
+
 # Instancia global del gestor de base de datos (se inicializará cuando se necesite)
 db_manager = None
 
@@ -149,5 +208,6 @@ __all__ = [
     'get_db_manager',
     'create_tables',
     'get_db_session',
-    'test_connection'
-] 
+    'test_connection',
+    'get_pool_config'
+]
