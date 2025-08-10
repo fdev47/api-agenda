@@ -32,6 +32,7 @@ class ErrorCode(Enum):
     # Errores de conflicto (409)
     CONFLICT = "CONFLICT"
     USER_ALREADY_EXISTS = "USER_ALREADY_EXISTS"
+    PHONE_NUMBER_EXISTS = "PHONE_NUMBER_EXISTS"
     RESOURCE_ALREADY_EXISTS = "RESOURCE_ALREADY_EXISTS"
     
     # Errores internos (500)

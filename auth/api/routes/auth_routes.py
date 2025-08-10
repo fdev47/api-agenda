@@ -51,6 +51,11 @@ async def register_user(request: CreateUserRequest):
                 message="El usuario ya existe en Firebase",
                 error_code=ErrorCode.USER_ALREADY_EXISTS.value
             )
+        elif e.error_code == AuthErrorCode.PHONE_NUMBER_EXISTS.value:
+            raise_conflict_error(
+                message="El número de teléfono ya existe en el sistema. Intente con otro número.",
+                error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
+            )
         elif e.error_code == AuthErrorCode.WEAK_PASSWORD.value:
             raise_validation_error(
                 message="La contraseña es demasiado débil",
@@ -83,6 +88,18 @@ async def update_user(user_id: str, request: UpdateUserRequest):
             message=f"Usuario con ID '{user_id}' no encontrado",
             error_code=ErrorCode.USER_NOT_FOUND.value
         )
+    except AuthError as e:
+        # Manejar errores específicos de autenticación
+        if e.error_code == AuthErrorCode.PHONE_NUMBER_EXISTS.value:
+            raise_conflict_error(
+                message="El número de teléfono ya existe en el sistema. Intente con otro número.",
+                error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
+            )
+        else:
+            raise_internal_error(
+                message=f"Error actualizando usuario: {str(e)}",
+                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+            )
     except Exception as e:
         raise_internal_error(
             message=f"Error actualizando usuario: {str(e)}",

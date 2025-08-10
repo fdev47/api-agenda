@@ -134,6 +134,7 @@ def create_app() -> FastAPI:
             AuthErrorCode.INVALID_CREDENTIALS.value: 401,
             AuthErrorCode.USER_NOT_FOUND.value: 404,
             AuthErrorCode.EMAIL_ALREADY_EXISTS.value: 409,
+            AuthErrorCode.PHONE_NUMBER_EXISTS.value: 409,
             AuthErrorCode.WEAK_PASSWORD.value: 400,
             AuthErrorCode.INVALID_TOKEN.value: 401,
             AuthErrorCode.TOKEN_EXPIRED.value: 401,

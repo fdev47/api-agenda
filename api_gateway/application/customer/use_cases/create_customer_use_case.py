@@ -64,14 +64,20 @@ class CreateCustomerUseCase:
                 return response
                 
         except Exception as e:
-            if "already exists" in str(e).lower() or "already registered" in str(e).lower():
+            error_message = str(e)
+            if "PHONE_NUMBER_EXISTS" in error_message or "phone number already exists" in error_message.lower():
+                raise_conflict_error(
+                    message="El número de teléfono ya existe en el sistema. Intente con otro número.",
+                    error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
+                )
+            elif "already exists" in error_message.lower() or "already registered" in error_message.lower():
                 raise_conflict_error(
                     message="El customer ya existe en Firebase",
                     error_code=ErrorCode.USER_ALREADY_EXISTS.value
                 )
             else:
                 raise_internal_error(
-                    message=f"Error creando customer en Firebase: {str(e)}",
+                    message=f"Error creando customer en Firebase: {error_message}",
                     error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
                 )
     

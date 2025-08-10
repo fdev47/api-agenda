@@ -128,10 +128,30 @@ class UserRepositoryImpl(UserRepository):
         if user_data.user_type is not None:
             user_db.user_type = user_data.user_type.value
         
+        # Actualizar perfiles si se proporcionan
+        if user_data.profile_ids is not None:
+            # Limpiar perfiles existentes
+            user_db.profiles.clear()
+            # Asignar nuevos perfiles
+            for profile_id in user_data.profile_ids:
+                profile_query = select(ProfileDB).where(ProfileDB.id == profile_id)
+                profile_result = await self._session.execute(profile_query)
+                profile_db = profile_result.scalar_one_or_none()
+                if profile_db:
+                    user_db.profiles.append(profile_db)
+        
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        return User.model_validate(user_db)
+        # Recargar el usuario con las relaciones explícitamente
+        # Solo cargar perfiles, sin cargar roles
+        query = select(UserDB).options(
+            selectinload(UserDB.profiles)
+        ).where(UserDB.id == user_db.id)
+        result = await self._session.execute(query)
+        user_db_with_relations = result.scalar_one()
+        
+        return User.model_validate(user_db_with_relations)
     
     async def delete(self, user_id: UUID) -> bool:
         """Eliminar usuario"""
@@ -154,7 +174,14 @@ class UserRepositoryImpl(UserRepository):
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        return User.model_validate(user_db)
+        # Recargar el usuario con las relaciones explícitamente
+        query = select(UserDB).options(
+            selectinload(UserDB.profiles)
+        ).where(UserDB.id == user_db.id)
+        result = await self._session.execute(query)
+        user_db_with_relations = result.scalar_one()
+        
+        return User.model_validate(user_db_with_relations)
     
     async def deactivate(self, user_id: UUID) -> Optional[User]:
         """Desactivar usuario"""
@@ -169,4 +196,11 @@ class UserRepositoryImpl(UserRepository):
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        return User.model_validate(user_db) 
+        # Recargar el usuario con las relaciones explícitamente
+        query = select(UserDB).options(
+            selectinload(UserDB.profiles)
+        ).where(UserDB.id == user_db.id)
+        result = await self._session.execute(query)
+        user_db_with_relations = result.scalar_one()
+        
+        return User.model_validate(user_db_with_relations) 

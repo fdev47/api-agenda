@@ -6,6 +6,9 @@ from uuid import UUID, uuid4
 from typing import List, Literal, Optional
 from .profile import ProfileSimple
 
+# Definir el tipo como variable para mejor mantenibilidad
+UserType = Literal['admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
+
 class User(BaseModel):
     """Entidad User del dominio - Usuarios internos del sistema"""
     model_config = ConfigDict(from_attributes=True)
@@ -18,7 +21,7 @@ class User(BaseModel):
     last_name: str | None = Field(None, description="Apellido del usuario")
     phone: str | None = Field(None, description="Número de teléfono fijo")
     cellphone_number: str | None = Field(None, description="Número de celular")
-    cellphone_country_code: str | None = Field(None, description="Código de país del celular (+52, +1, etc.)")
+    cellphone_country_code: str | None = Field(None, description="Código de país del celular (+595)")
     is_active: bool = Field(True, description="Estado activo del usuario")
-    user_type: Literal['admin', 'user'] = Field(..., description="Tipo de usuario interno")
+    user_type: UserType = Field(..., description="Tipo de usuario interno")
     profiles: List[ProfileSimple] = Field(default=[], description="Perfiles del usuario") 

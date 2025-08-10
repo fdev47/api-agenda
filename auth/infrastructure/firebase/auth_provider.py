@@ -308,6 +308,7 @@ class FirebaseAuthProvider(IAuthProvider):
         error_mapping = {
             'EMAIL_ALREADY_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,
             'EMAIL_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,  # Agregado
+            'PHONE_NUMBER_EXISTS': AuthErrorCode.PHONE_NUMBER_EXISTS,
             'WEAK_PASSWORD': AuthErrorCode.WEAK_PASSWORD,
             'USER_NOT_FOUND': AuthErrorCode.USER_NOT_FOUND,
             'INVALID_ID_TOKEN': AuthErrorCode.INVALID_TOKEN,

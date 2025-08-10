@@ -77,4 +77,10 @@ class UserListResponse(BaseModel):
 class SuccessResponse(BaseModel):
     """Respuesta de éxito genérica"""
     message: str
-    timestamp: str 
+    timestamp: str
+
+
+class DeleteUserResponse(BaseModel):
+    """Respuesta de eliminación de usuario"""
+    success: bool
+    message: str 

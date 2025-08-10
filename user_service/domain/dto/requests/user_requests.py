@@ -33,4 +33,5 @@ class UpdateUserRequest(BaseModel):
     cellphone_number: Optional[str] = Field(None, description="Número de celular")
     cellphone_country_code: Optional[str] = Field(None, description="Código de país del celular (+52, +1, etc.)")
     is_active: Optional[bool] = Field(None, description="Estado activo del usuario")
-    user_type: Optional[UserType] = Field(None, description="Tipo de usuario interno") 
+    user_type: Optional[UserType] = Field(None, description="Tipo de usuario interno")
+    profile_ids: Optional[List[UUID]] = Field(None, description="IDs de perfiles a asignar") 
