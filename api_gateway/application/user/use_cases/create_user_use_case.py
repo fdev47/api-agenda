@@ -98,6 +98,7 @@ class CreateUserUseCase:
                     "phone": request.phone,
                     "cellphone_number": request.cellphone_number,
                     "cellphone_country_code": request.cellphone_country_code,
+                    "is_active": request.is_active,
                     "user_type": request.user_type,
                     "profile_ids": [str(pid) for pid in request.profile_ids] if request.profile_ids else []
                 }

@@ -16,6 +16,7 @@ class CreateUserRequest(BaseModel):
     phone: Optional[str] = Field(None, description="Teléfono del usuario")
     cellphone_number: Optional[str] = Field(None, description="Número de celular")
     cellphone_country_code: Optional[str] = Field(None, description="Código de país del celular")
+    is_active: bool = Field(default=True, description="Estado activo del usuario")
     user_type: str = Field(default="customer", description="Tipo de usuario")
     profile_ids: Optional[List[UUID]] = Field(default=[], description="IDs de perfiles a asignar")
     two_factor_enabled: bool = Field(default=False, description="Habilitar autenticación de dos factores")
