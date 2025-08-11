@@ -90,16 +90,22 @@ async def get_user_by_username(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener usuario por username (requiere autenticación)"""
-    # Inyectar la sesión de base de datos en el contenedor
-    container.db_session.override(db)
-    get_use_case = container.get_user_by_username_use_case()
-    user = await get_use_case.execute(username)
-    if not user:
+    try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
+        get_use_case = container.get_user_by_username_use_case()
+        user = await get_use_case.execute(username)
+        return user
+    except UserNotFoundException as e:
         raise_not_found_error(
             message="Usuario no encontrado",
             error_code=ErrorCode.USER_NOT_FOUND.value
         )
-    return user
+    except Exception as e:
+        raise_internal_error(
+            message=f"Error obteniendo usuario",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
 
 
 @router.get("/", response_model=UserListResponse)
