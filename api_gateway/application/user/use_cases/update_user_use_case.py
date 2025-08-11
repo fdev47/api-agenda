@@ -5,8 +5,7 @@ from uuid import UUID
 from typing import Optional
 from commons.api_client import APIClient
 from commons.config import config
-from commons.error_codes import ErrorCode
-from ...utils.error_utils import raise_internal_error, raise_not_found_error, raise_conflict_error
+from ..utils.error_handler import handle_auth_service_error
 from ....domain.user.dto.requests.user_requests import UpdateUserRequest
 from ....domain.user.dto.responses.user_responses import UserResponse
 
@@ -47,43 +46,8 @@ class UpdateUserUseCase:
             return updated_user
             
         except Exception as error:
-            # Convertir string a dict
-            import ast
-            import json
-
-            error_str = str(error)
-            # Separar la parte después de los ":" para aislar el dict
-            _, dict_part = error_str.split(":", 1)
-            error_dict = json.loads(dict_part.strip())
-
-            message = error_dict.get('message', 'Mensaje no disponible')
-            error_code = error_dict.get('error_code', 'Código no disponible')
-
-            print("Mensaje:", message)
-            print("Código de error:", error_code)
-            
-            # Mapear el código de error a nuestros códigos
-            if error_code == 'PHONE_NUMBER_EXISTS':
-                raise_internal_error(
-                    message="El número de teléfono ya existe en el sistema. Intente con otro número.",
-                    error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
-                )
-            elif error_code == 'EMAIL_ALREADY_EXISTS':
-                raise_internal_error(
-                    message="El email ya existe en el sistema. Intente con otro email.",
-                    error_code=ErrorCode.USER_ALREADY_EXISTS.value
-                )
-            elif error_code == 'WEAK_PASSWORD':
-                raise_internal_error(
-                    message="La contraseña es demasiado débil.",
-                    error_code=ErrorCode.VALIDATION_ERROR.value
-                )
-            else:
-                # Usar el mensaje del error original
-                raise_internal_error(
-                    message=message,
-                    error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-                )
+            # Usar el error handler centralizado
+            handle_auth_service_error(error)
     
     async def _get_user_info(self, user_id: UUID, access_token: str) -> dict:
         """Obtener información del usuario para obtener el auth_uid"""
