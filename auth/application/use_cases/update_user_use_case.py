@@ -6,6 +6,7 @@ from ...domain.dto.requests.auth_requests import UpdateUserRequest
 from ...domain.dto.responses.auth_responses import UserInfoResponse
 from ...domain.entities.authenticated_user import AuthenticatedUser
 from ...domain.exceptions.auth_exceptions import AuthException, UserNotFoundException
+from ...domain.models import AuthError
 
 
 class AuthProvider(Protocol):
@@ -35,6 +36,8 @@ class UpdateUserUseCase:
             user = self.auth_provider.update_user(user_id, request)
             return UserInfoResponse.model_validate(user)
         except UserNotFoundException:
+            raise
+        except AuthError:
             raise
         except AuthException:
             raise

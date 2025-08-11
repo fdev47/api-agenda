@@ -309,6 +309,7 @@ class FirebaseAuthProvider(IAuthProvider):
             'EMAIL_ALREADY_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,
             'EMAIL_EXISTS': AuthErrorCode.EMAIL_ALREADY_EXISTS,  # Agregado
             'PHONE_NUMBER_EXISTS': AuthErrorCode.PHONE_NUMBER_EXISTS,
+            'ALREADY_EXISTS': AuthErrorCode.PHONE_NUMBER_EXISTS,  # Firebase usa este código para teléfonos duplicados
             'WEAK_PASSWORD': AuthErrorCode.WEAK_PASSWORD,
             'USER_NOT_FOUND': AuthErrorCode.USER_NOT_FOUND,
             'INVALID_ID_TOKEN': AuthErrorCode.INVALID_TOKEN,

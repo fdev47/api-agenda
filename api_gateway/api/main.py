@@ -9,6 +9,8 @@ load_dotenv()
 
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
+from commons.api_client import HTTPError
+from commons.error_codes import ErrorCode
 from . import user_router, profile_router, location_router, customer_router
 from .schedule.schedule_routes import router as schedule_router
 from .reservation.reservation_routes import router as reservation_router
@@ -63,6 +65,37 @@ def create_api_gateway_app():
         enable_auth=False,  # Deshabilitado para usar dependencias
         enable_auto_tables=False  # API Gateway no tiene BD
     )
+    
+    # Handler personalizado para HTTPError del APIClient
+    @app.exception_handler(HTTPError)
+    async def http_error_handler(request, exc: HTTPError):
+        from fastapi.responses import JSONResponse
+        from datetime import datetime
+        
+        # Mapear códigos de estado HTTP a códigos de error
+        if exc.status_code == 409:
+            error_code = ErrorCode.PHONE_NUMBER_EXISTS.value
+            message = "El número de teléfono ya existe en el sistema. Intente con otro número."
+        elif exc.status_code == 400:
+            error_code = ErrorCode.VALIDATION_ERROR.value
+            message = "Datos de usuario inválidos"
+        else:
+            error_code = ErrorCode.INTERNAL_SERVER_ERROR.value
+            message = "Error del servicio de autenticación"
+        
+        error_response = {
+            "error": True,
+            "message": message,
+            "error_code": error_code,
+            "timestamp": datetime.utcnow().isoformat(),
+            "path": request.url.path,
+            "request_id": getattr(request.state, 'request_id', None)
+        }
+        
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=error_response
+        )
     
     return app
 

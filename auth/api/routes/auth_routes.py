@@ -92,17 +92,22 @@ async def update_user(user_id: str, request: UpdateUserRequest):
         # Manejar errores específicos de autenticación
         if e.error_code == AuthErrorCode.PHONE_NUMBER_EXISTS.value:
             raise_conflict_error(
-                message="El número de teléfono ya existe en el sistema. Intente con otro número.",
+                message="El número de teléfono ya existe en el sistema. Intente con otro número66.",
                 error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
+            )
+        elif e.error_code == AuthErrorCode.EMAIL_ALREADY_EXISTS.value:
+            raise_conflict_error(
+                message="El email ya existe en el sistema. Intente con otro email.",
+                error_code=ErrorCode.EMAIL_ALREADY_EXISTS.value
             )
         else:
             raise_internal_error(
-                message=f"Error actualizando usuario: {str(e)}",
+                message="Error inesperado al actualizar usuario 22",
                 error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
             )
     except Exception as e:
         raise_internal_error(
-            message=f"Error actualizando usuario: {str(e)}",
+            message="Error inesperado al actualizar usuario 33",
             error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
         )
 
