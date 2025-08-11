@@ -55,7 +55,6 @@ async def get_current_user(
 async def get_user_by_username(
     username: str,
     container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
 ):
     """Obtener usuario por username (requiere autenticación)"""

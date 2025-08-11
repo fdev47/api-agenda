@@ -86,7 +86,6 @@ async def get_user_by_id(
 @router.get("/by-username/{username}", response_model=UserResponse)
 async def get_user_by_username(
     username: str,
-    current_user=Depends(auth_middleware["require_auth"]),
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener usuario por username (requiere autenticación)"""

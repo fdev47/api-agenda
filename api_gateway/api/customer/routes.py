@@ -55,7 +55,6 @@ async def get_current_customer(
 async def get_customer_by_username(
     username: str,
     container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
 ):
     """Obtener customer por username (requiere autenticación)"""
