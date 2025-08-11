@@ -3,7 +3,7 @@ Manejador centralizado de errores del auth service para API Gateway
 """
 import json
 from commons.error_codes import ErrorCode
-from commons.error_utils import raise_internal_error
+from commons.error_utils import raise_internal_error, raise_not_found_error
 
 
 def handle_auth_service_error(error: Exception) -> None:
@@ -27,20 +27,30 @@ def handle_auth_service_error(error: Exception) -> None:
     print("Código de error:", error_code)
     
     # Mapear el código de error a nuestros códigos
-    if error_code == 'PHONE_NUMBER_EXISTS':
+    if error_code == ErrorCode.PHONE_NUMBER_EXISTS.value:
         raise_internal_error(
             message="El número de teléfono ya existe en el sistema. Intente con otro número.",
             error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
         )
-    elif error_code == 'EMAIL_ALREADY_EXISTS':
+    elif error_code == ErrorCode.EMAIL_ALREADY_EXISTS.value:
         raise_internal_error(
             message="El email ya existe en el sistema. Intente con otro email.",
             error_code=ErrorCode.USER_ALREADY_EXISTS.value
         )
-    elif error_code == 'WEAK_PASSWORD':
+    elif error_code == ErrorCode.WEAK_PASSWORD.value:
         raise_internal_error(
             message="La contraseña es demasiado débil.",
             error_code=ErrorCode.VALIDATION_ERROR.value
+        )
+    elif error_code == ErrorCode.USER_NOT_FOUND.value:
+        raise_not_found_error(
+            message="Usuario no encontrado en el sistema",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    elif error_code == ErrorCode.USER_ALREADY_EXISTS.value:
+        raise_internal_error(
+            message="El usuario ya existe en el sistema.",
+            error_code=ErrorCode.USER_ALREADY_EXISTS.value
         )
     else:
         # Usar el mensaje del error original

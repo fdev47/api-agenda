@@ -7,7 +7,7 @@ from commons.api_client import APIClient
 from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error, raise_not_found_error
-
+from ..utils.error_handler import handle_auth_service_error
 
 class DeleteUserUseCase:
     """Use case para eliminar usuarios usando auth_service y user_service"""
@@ -41,49 +41,20 @@ class DeleteUserUseCase:
             return True
             
         except Exception as e:
-            raise_internal_error(
-                message=f"Error eliminando usuario: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            )
+            handle_auth_service_error(e)
     
     async def _get_user_info(self, user_id: UUID, access_token: str) -> dict:
         """Obtener información del usuario para obtener el auth_uid"""
-        try:
-            async with APIClient(self.user_service_url, access_token) as client:
+        async with APIClient(self.user_service_url, access_token) as client:
                 response = await client.get(f"{config.API_PREFIX}/users/{user_id}")
                 return response
-        except Exception as e:
-            if "not found" in str(e).lower():
-                raise_not_found_error(
-                    message=f"Usuario con ID '{user_id}' no encontrado",
-                    error_code=ErrorCode.USER_NOT_FOUND.value
-                )
-            else:
-                raise_internal_error(
-                    message=f"Error obteniendo información del usuario: {str(e)}",
-                    error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-                )
     
     async def _delete_firebase_user(self, auth_uid: str, access_token: str):
         """Eliminar usuario de Firebase"""
-        try:
-            async with APIClient(self.auth_service_url, access_token) as client:
+        async with APIClient(self.auth_service_url, access_token) as client:
                 await client.delete(f"{config.API_PREFIX}/auth/users/{auth_uid}")
-                
-        except Exception as e:
-            raise_internal_error(
-                message=f"Error eliminando usuario de Firebase: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            )
     
     async def _delete_db_user(self, user_id: UUID, access_token: str):
         """Eliminar usuario de la base de datos"""
-        try:
-            async with APIClient(self.user_service_url, access_token) as client:
+        async with APIClient(self.user_service_url, access_token) as client:
                 await client.delete(f"{config.API_PREFIX}/users/{user_id}")
-                
-        except Exception as e:
-            raise_internal_error(
-                message=f"Error eliminando usuario de la base de datos: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            )

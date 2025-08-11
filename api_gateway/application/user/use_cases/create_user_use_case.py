@@ -8,7 +8,7 @@ from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error, raise_conflict_error
 from ....domain.user.dto.requests.user_requests import CreateUserRequest
 from ....domain.user.dto.responses.user_responses import UserResponse
-
+from ..utils.error_handler import handle_auth_service_error
 
 class CreateUserUseCase:
     """Use case para crear usuarios usando auth_service y user_service"""
@@ -39,81 +39,50 @@ class CreateUserUseCase:
             return db_user
             
         except Exception as e:
-            # Si falla la creación en la BD, deberíamos eliminar el usuario de Firebase
-            # Por simplicidad, solo lanzamos el error
-            raise_internal_error(
-                message=f"Error creando usuario: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            )
+            handle_auth_service_error(e)
     
     async def _create_firebase_user(self, request: CreateUserRequest, access_token: str) -> dict:
         """Crear usuario en Firebase"""
-        try:
-            async with APIClient(self.auth_service_url, access_token) as client:
-                # Preparar datos para Firebase
-                display_name = f"{request.first_name or ''} {request.last_name or ''}".strip()
-                phone_number = None
-                if request.cellphone_number and request.cellphone_country_code:
-                    phone_number = f"{request.cellphone_country_code}{request.cellphone_number}"
-                elif request.cellphone_number:
-                    phone_number = request.cellphone_number
-                elif request.phone:
-                    phone_number = request.phone
-                
-                firebase_data = {
-                    "email": request.email,
-                    "password": request.password,
-                    "display_name": display_name,
-                    "phone_number": phone_number,
-                    "two_factor_enabled": request.two_factor_enabled,
-                    "send_email_verification": request.send_email_verification
-                }
-                
-                response = await client.post(f"{config.API_PREFIX}/auth/register", data=firebase_data)
-                return response
-                
-        except Exception as e:
-            error_message = str(e)
-            if "PHONE_NUMBER_EXISTS" in error_message or "phone number already exists" in error_message.lower():
-                raise_conflict_error(
-                    message="El número de teléfono ya existe en el sistema. Intente con otro número.",
-                    error_code=ErrorCode.PHONE_NUMBER_EXISTS.value
-                )
-            elif "already exists" in error_message.lower() or "already registered" in error_message.lower():
-                raise_conflict_error(
-                    message="El usuario ya existe en Firebase",
-                    error_code=ErrorCode.USER_ALREADY_EXISTS.value
-                )
-            else:
-                raise_internal_error(
-                    message=f"Error creando usuario en Firebase: {error_message}",
-                    error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-                )
+        async with APIClient(self.auth_service_url, access_token) as client:
+            # Preparar datos para Firebase
+            display_name = f"{request.first_name or ''} {request.last_name or ''}".strip()
+            phone_number = None
+            if request.cellphone_number and request.cellphone_country_code:
+                phone_number = f"{request.cellphone_country_code}{request.cellphone_number}"
+            elif request.cellphone_number:
+                phone_number = request.cellphone_number
+            elif request.phone:
+                phone_number = request.phone
+            
+            firebase_data = {
+                "email": request.email,
+                "password": request.password,
+                "display_name": display_name,
+                "phone_number": phone_number,
+                "two_factor_enabled": request.two_factor_enabled,
+                "send_email_verification": request.send_email_verification
+            }
+            
+            response = await client.post(f"{config.API_PREFIX}/auth/register", data=firebase_data)
+            return response
     
     async def _create_db_user(self, request: CreateUserRequest, firebase_uid: str, access_token: str) -> UserResponse:
         """Crear usuario en la base de datos"""
-        try:
-            async with APIClient(self.user_service_url, access_token) as client:
-                # Preparar datos para la BD
-                db_data = {
-                    "auth_uid": firebase_uid,
-                    "email": request.email,
-                    "username": request.username,  # Agregar username
-                    "first_name": request.first_name,
-                    "last_name": request.last_name,
-                    "phone": request.phone,
-                    "cellphone_number": request.cellphone_number,
-                    "cellphone_country_code": request.cellphone_country_code,
-                    "is_active": request.is_active,
-                    "user_type": request.user_type,
-                    "profile_ids": [str(pid) for pid in request.profile_ids] if request.profile_ids else []
-                }
-                
-                response = await client.post(f"{config.API_PREFIX}/users/", data=db_data)
-                return UserResponse(**response)
-                
-        except Exception as e:
-            raise_internal_error(
-                message=f"Error creando usuario en la base de datos: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            ) 
+        async with APIClient(self.user_service_url, access_token) as client:
+            # Preparar datos para la BD
+            db_data = {
+                "auth_uid": firebase_uid,
+                "email": request.email,
+                "username": request.username,  # Agregar username
+                "first_name": request.first_name,
+                "last_name": request.last_name,
+                "phone": request.phone,
+                "cellphone_number": request.cellphone_number,
+                "cellphone_country_code": request.cellphone_country_code,
+                "is_active": request.is_active,
+                "user_type": request.user_type,
+                "profile_ids": [str(pid) for pid in request.profile_ids] if request.profile_ids else []
+            }
+            
+            response = await client.post(f"{config.API_PREFIX}/users/", data=db_data)
+            return UserResponse(**response)

@@ -7,7 +7,7 @@ from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error
 from ....domain.user.dto.responses.user_responses import UserListResponse
-
+from ..utils.error_handler import handle_auth_service_error
 
 class ListUsersUseCase:
     """Use case para listar usuarios desde User Service"""
@@ -27,7 +27,4 @@ class ListUsersUseCase:
                 return UserListResponse(**response)
                 
         except Exception as e:
-            raise_internal_error(
-                message=f"Error obteniendo lista de usuarios: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            ) 
+            handle_auth_service_error(e)

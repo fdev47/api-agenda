@@ -7,7 +7,7 @@ from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_not_found_error, raise_internal_error
 from ....domain.user.dto.responses.user_responses import UserResponse
-
+from ..utils.error_handler import handle_auth_service_error
 
 class GetUserUseCase:
     """Use case para obtener usuario desde User Service"""
@@ -34,7 +34,4 @@ class GetUserUseCase:
                     error_code=ErrorCode.USER_NOT_FOUND.value
                 )
             else:
-                raise_internal_error(
-                    message=f"Error obteniendo usuario: {str(e)}",
-                    error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-                ) 
+                handle_auth_service_error(e)
