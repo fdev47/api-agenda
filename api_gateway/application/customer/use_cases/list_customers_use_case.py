@@ -4,10 +4,8 @@ Use case para listar customers desde API Gateway
 from typing import Optional
 from commons.api_client import APIClient
 from commons.config import config
-from commons.error_codes import ErrorCode
-from commons.error_utils import raise_internal_error
+from ..utils.error_handler import handle_auth_service_error
 from ....domain.customer.dto.responses.customer_responses import CustomerListResponse
-
 
 class ListCustomersUseCase:
     """Use case para listar customers desde User Service"""
@@ -27,7 +25,4 @@ class ListCustomersUseCase:
                 return CustomerListResponse(**response)
                 
         except Exception as e:
-            raise_internal_error(
-                message=f"Error obteniendo lista de customers: {str(e)}",
-                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
-            ) 
+            handle_auth_service_error(e)

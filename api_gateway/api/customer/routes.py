@@ -3,10 +3,11 @@ Rutas de customers para API Gateway
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
 from typing import Optional
+from uuid import UUID
 from ...infrastructure.container import Container
 from ..middleware import auth_middleware
-from ...domain.customer.dto.responses.customer_responses import CustomerResponse, CustomerListResponse
-from ...domain.customer.dto.requests.customer_requests import CreateCustomerRequest
+from ...domain.customer.dto.responses.customer_responses import CustomerResponse, CustomerListResponse, CustomerUpdatedResponse, CustomerDeletedResponse
+from ...domain.customer.dto.requests.customer_requests import CreateCustomerRequest, UpdateCustomerRequest
 
 router = APIRouter()
 
@@ -65,4 +66,39 @@ async def list_customers(
     list_customers_use_case = container.list_customers_use_case()
     customers = await list_customers_use_case.execute(page=page, size=size, access_token=access_token)
     
-    return customers 
+    return customers
+
+
+@router.put("/{customer_id}", response_model=CustomerUpdatedResponse)
+async def update_customer(
+    customer_id: UUID,
+    request: UpdateCustomerRequest,
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Actualizar customer (requiere autenticación)"""
+    access_token = authorization.replace("Bearer ", "") if authorization else ""
+    
+    # Actualizar customer usando el use case
+    update_customer_use_case = container.update_customer_use_case()
+    customer = await update_customer_use_case.execute(customer_id, request, access_token)
+    
+    return customer
+
+
+@router.delete("/{customer_id}", response_model=CustomerDeletedResponse)
+async def delete_customer(
+    customer_id: UUID,
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Eliminar customer (requiere autenticación)"""
+    access_token = authorization.replace("Bearer ", "") if authorization else ""
+    
+    # Eliminar customer usando el use case
+    delete_customer_use_case = container.delete_customer_use_case()
+    result = await delete_customer_use_case.execute(customer_id, access_token)
+    
+    return result 
