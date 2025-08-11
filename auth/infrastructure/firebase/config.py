@@ -13,10 +13,11 @@ class FirebaseConfig:
     
     def __init__(self):
         # Obtener configuración de timeouts con valores por defecto
-        self.connect_timeout = int(os.getenv("FIREBASE_CONNECT_TIMEOUT", "10"))
-        self.read_timeout = int(os.getenv("FIREBASE_READ_TIMEOUT", "30"))
+        self.connect_timeout = int(os.getenv("FIREBASE_CONNECT_TIMEOUT", "30"))
+        self.read_timeout = int(os.getenv("FIREBASE_READ_TIMEOUT", "120"))
         self.total_timeout = self.connect_timeout + self.read_timeout
-        self.retries = int(os.getenv("FIREBASE_RETRIES", "3"))
+        self.retries = int(os.getenv("FIREBASE_RETRIES", "5"))
+        self.backoff_factor = float(os.getenv("FIREBASE_BACKOFF_FACTOR", "2.0"))
         
         # Configuración de credenciales
         self.credentials_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
@@ -30,7 +31,8 @@ class FirebaseConfig:
             'connect_timeout': self.connect_timeout,
             'read_timeout': self.read_timeout,
             'total_timeout': self.total_timeout,
-            'retries': self.retries
+            'retries': self.retries,
+            'backoff_factor': self.backoff_factor
         }
     
     def get_app_config(self) -> dict:

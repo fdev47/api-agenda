@@ -37,7 +37,7 @@ async def create_user(
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(
     container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"]),
+    current_user=Depends(auth_middleware["require_auth_full"]),
     authorization: Optional[str] = Header(None)
 ):
     """Obtener información del usuario actual"""

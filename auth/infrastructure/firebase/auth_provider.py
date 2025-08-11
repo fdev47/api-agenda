@@ -18,6 +18,8 @@ from auth.domain.models import (
 from auth.domain.exceptions.auth_exceptions import UserNotFoundException
 from commons.config import config
 from .config import firebase_config
+from .urllib3_config import urllib3_config
+from .logging_config import configure_firebase_logging
 
 # Configurar logger
 logger = logging.getLogger(__name__)
@@ -38,29 +40,29 @@ class FirebaseAuthProvider(IAuthProvider):
         credentials_path = credentials_path or os.getenv("FIREBASE_CREDENTIALS_PATH")
         project_id = project_id or os.getenv("FIREBASE_PROJECT_ID")
 
+        # Configurar logging para reducir warnings
+        configure_firebase_logging()
+
         if not firebase_admin._apps:
             try:
                 # Validar configuración de Firebase
                 if not firebase_config.validate_config():
                     raise ValueError("Configuración de Firebase inválida")
                 
-                # Configurar timeouts más apropiados para Firebase
-                import google.auth.transport.requests
-                import google.auth.transport.urllib3
-                import urllib3
-                
-                timeout_config = firebase_config.get_timeout_config()
+                # Configuración de Firebase usando urllib3_config
+                timeout_config = urllib3_config.get_timeout_config()
                 app_config = firebase_config.get_app_config()
                 
                 logger.info(f"🔧 Configurando Firebase con timeouts: {timeout_config}")
                 
-                # Configurar timeouts globales para urllib3
-                urllib3.util.Retry.DEFAULT_ALLOWED_METHODS = frozenset(['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE'])
+                # Configurar timeouts específicos para Firebase Auth
+                import google.auth.transport.requests
+                import google.auth.transport.urllib3
                 
-                # Configurar timeouts para urllib3
-                urllib3.util.Timeout.DEFAULT_TIMEOUT = urllib3.util.Timeout(
-                    connect=timeout_config['connect_timeout'], 
-                    read=timeout_config['read_timeout']
+                # Configurar timeouts para google-auth
+                google.auth.transport.requests.Request.DEFAULT_TIMEOUT = (
+                    timeout_config['connect_timeout'], 
+                    timeout_config['read_timeout']
                 )
                 
                 if credentials_path and os.path.exists(credentials_path):
@@ -145,20 +147,69 @@ class FirebaseAuthProvider(IAuthProvider):
     def verify_token(self, token: str) -> AuthenticatedUser:
         try:
             logger.debug("🔄 Verificando token de Firebase")
+            # Solo verificar el token, no obtener datos del usuario
             decoded_token = firebase_auth.verify_id_token(token)
-            user_record = firebase_auth.get_user(decoded_token['uid'])
-            logger.debug(f"✅ Token verificado para usuario: {user_record.uid}")
-            return self._map_firebase_user_to_domain(user_record)
+            
+            # Crear usuario autenticado solo con los datos del token
+            # Esto evita la segunda llamada a Firebase para tokens válidos
+            user_id = decoded_token['uid']
+            email = decoded_token.get('email', '')
+            email_verified = decoded_token.get('email_verified', False)
+            phone_number = decoded_token.get('phone_number', '')
+            
+            # Obtener claims personalizados del token
+            custom_claims = decoded_token.get('firebase', {}).get('identities', {})
+            
+            logger.debug(f"✅ Token verificado para usuario: {user_id}")
+            
+            return AuthenticatedUser(
+                user_id=user_id,
+                email=email,
+                display_name=decoded_token.get('name', ''),
+                phone_number=phone_number,
+                email_verified=email_verified,
+                custom_claims=custom_claims,
+                created_at=datetime.fromtimestamp(decoded_token.get('auth_time', 0)),
+                last_sign_in=datetime.fromtimestamp(decoded_token.get('auth_time', 0))
+            )
+            
         except FirebaseError as e:
             logger.error(f"❌ Error verificando token: {e}")
-            # Manejar específicamente tokens expirados
+            # Manejar específicamente tokens expirados de forma rápida
             if 'expired' in str(e).lower() or e.code == 'ID_TOKEN_EXPIRED':
-                logger.warning("⚠️ Token expirado detectado")
+                logger.warning("⚠️ Token expirado detectado - respuesta rápida")
                 raise AuthError("Token expirado", AuthErrorCode.TOKEN_EXPIRED.value)
             raise self._map_firebase_error(e)
         except Exception as e:
             logger.error(f"❌ Error inesperado verificando token: {e}")
             raise AuthError(f"Error verificando token: {e}", AuthErrorCode.INVALID_TOKEN.value)
+    
+    def validate_token_quick(self, token: str) -> bool:
+        """
+        Validación rápida de token sin obtener datos del usuario.
+        Útil para endpoints que solo necesitan verificar si el token es válido.
+        """
+        try:
+            logger.debug("🔄 Validación rápida de token")
+            # Solo verificar el token, sin procesar datos
+            firebase_auth.verify_id_token(token, check_revoked=False)
+            logger.debug("✅ Token válido (validación rápida)")
+            return True
+        except FirebaseError as e:
+            # Para tokens expirados, responder inmediatamente
+            if 'expired' in str(e).lower() or e.code == 'ID_TOKEN_EXPIRED':
+                logger.warning("⚠️ Token expirado - validación rápida")
+                return False
+            # Para otros errores, logear pero no fallar
+            logger.warning(f"⚠️ Token inválido: {e}")
+            return False
+        except Exception as e:
+            # Reducir logging de errores de red para evitar spam
+            if "NameResolutionError" in str(e) or "www.googleapis.com" in str(e):
+                logger.debug(f"🔍 Error de red en validación rápida: {type(e).__name__}")
+            else:
+                logger.warning(f"⚠️ Error en validación rápida: {e}")
+            return False
     
     def refresh_token(self, refresh_token: str) -> AuthToken:
         raise NotImplementedError("Se maneja automáticamente en Firebase")

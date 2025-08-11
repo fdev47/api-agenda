@@ -7,7 +7,7 @@ from typing import Dict, Any
 import logging
 from datetime import datetime
 
-from .auth_client import AuthClient
+from .auth_client import AuthClient, auth_dependencies
 from .config import config
 
 # Configurar logging
@@ -165,9 +165,10 @@ def require_role(role: str):
 # Exportar middleware para uso en servicios
 auth_middleware_dict = {
     "auth_middleware": auth_middleware,
-    "require_auth": require_auth,
+    "require_auth": require_auth,           # Validación rápida (por defecto)
+    "require_auth_full": auth_dependencies["require_auth_full"],  # Validación completa
     "require_role": require_role
 }
 
 # También exportar directamente para compatibilidad
-__all__ = ["require_auth", "require_role", "auth_middleware_dict"]
+__all__ = ["require_auth", "require_role", "require_auth_full", "auth_middleware_dict"]

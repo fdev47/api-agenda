@@ -37,7 +37,7 @@ async def create_customer(
 @router.get("/me", response_model=CustomerResponse)
 async def get_current_customer(
     container: Container = Depends(get_container),
-    current_user=Depends(auth_middleware["require_auth"]),
+    current_user=Depends(auth_middleware["require_auth_full"]),
     authorization: Optional[str] = Header(None)
 ):
     """Obtener información del customer actual"""

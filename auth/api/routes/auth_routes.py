@@ -1,6 +1,7 @@
 """
 Rutas de autenticación para Firebase Auth
 """
+import logging
 from fastapi import APIRouter, Depends, Header
 from typing import Optional
 from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
@@ -10,6 +11,8 @@ from ...domain.exceptions.auth_exceptions import UserNotFoundException
 from ...infrastructure.container import container
 from commons.error_utils import raise_conflict_error, raise_validation_error, raise_internal_error, raise_not_found_error
 from commons.error_codes import ErrorCode
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -172,6 +175,44 @@ async def validate_token_header(authorization: Optional[str] = Header(None)):
             "valid": False,
             "message": str(e),
             "user": None
+        }
+
+
+@router.get("/validate-token-quick")
+async def validate_token_quick(authorization: Optional[str] = Header(None)):
+    """
+    Validación rápida de token sin obtener datos del usuario.
+    Útil para endpoints que solo necesitan verificar si el token es válido.
+    Responde mucho más rápido para tokens expirados.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return {
+            "valid": False,
+            "message": "Token no proporcionado o formato incorrecto"
+        }
+    
+    token = authorization.replace("Bearer ", "")
+    
+    try:
+        # Usar validación rápida directamente
+        auth_provider = container.auth_provider()
+        is_valid = auth_provider.validate_token_quick(token)
+        
+        if is_valid:
+            return {
+                "valid": True,
+                "message": "Token válido"
+            }
+        else:
+            return {
+                "valid": False,
+                "message": "Token inválido o expirado"
+            }
+    except Exception as e:
+        logger.error(f"Error en validación rápida: {e}")
+        return {
+            "valid": False,
+            "message": "Error validando token"
         }
 
 

@@ -28,7 +28,7 @@ router = APIRouter(tags=["Customers"])
 
 @router.get("/me", response_model=CustomerResponse)
 async def get_current_customer_info(
-    current_user=Depends(auth_middleware["require_auth"]),
+    current_user=Depends(auth_middleware["require_auth_full"]),
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener información del customer actual"""

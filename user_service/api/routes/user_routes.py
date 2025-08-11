@@ -41,7 +41,7 @@ async def create_user(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(
-    current_user=Depends(auth_middleware["require_auth"]),
+    current_user=Depends(auth_middleware["require_auth_full"]),
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener información del usuario actual"""
