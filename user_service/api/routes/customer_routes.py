@@ -111,6 +111,25 @@ async def get_customer(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
 
+@router.get("/by-username/{username}", response_model=CustomerResponse)
+async def get_customer_by_username(
+    username: str,
+    db: AsyncSession = Depends(get_db_session)
+):
+    """Obtener un customer por username"""
+    try:
+        # Inyectar la sesión de base de datos en el contenedor
+        container.db_session.override(db)
+        get_use_case = container.get_customer_by_username_use_case()
+        result = await get_use_case.execute(username)
+        return result
+    except UserNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except UserException as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
+
 @router.put("/{customer_id}", response_model=CustomerUpdatedResponse)
 async def update_customer(
     customer_id: UUID, 

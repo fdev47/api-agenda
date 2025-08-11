@@ -3,7 +3,7 @@ Container de dependencias para el API Gateway
 """
 from dependency_injector import containers, providers
 from ..application.user.use_cases import GetUserUseCase, GetUserByUsernameUseCase, ListUsersUseCase, CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase
-from ..application.customer.use_cases import CreateCustomerUseCase, GetCustomerUseCase, ListCustomersUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase
+from ..application.customer.use_cases import CreateCustomerUseCase, GetCustomerUseCase, GetCustomerByUsernameUseCase, ListCustomersUseCase, UpdateCustomerUseCase, DeleteCustomerUseCase
 from ..application.schedule.use_cases.create_branch_schedule_use_case import CreateBranchScheduleUseCase
 from ..application.schedule.use_cases.get_available_slots_use_case import GetAvailableSlotsUseCase
 from ..application.schedule.use_cases.list_branch_schedules_use_case import ListBranchSchedulesUseCase
@@ -31,6 +31,7 @@ class Container(containers.DeclarativeContainer):
     delete_user_use_case = providers.Factory(DeleteUserUseCase)
     create_customer_use_case = providers.Factory(CreateCustomerUseCase)
     get_customer_use_case = providers.Factory(GetCustomerUseCase)
+    get_customer_by_username_use_case = providers.Factory(GetCustomerByUsernameUseCase)
     list_customers_use_case = providers.Factory(ListCustomersUseCase)
     update_customer_use_case = providers.Factory(UpdateCustomerUseCase)
     delete_customer_use_case = providers.Factory(DeleteCustomerUseCase)

@@ -97,6 +97,30 @@ class CustomerRepositoryImpl(CustomerRepository):
             is_active=customer_db.is_active
         )
 
+    async def get_by_username(self, username: str) -> Optional[Customer]:
+        """Obtener un customer por username"""
+        result = await self.session.execute(
+            select(CustomerDB).where(CustomerDB.username == username)
+        )
+        customer_db = result.scalar_one_or_none()
+
+        if not customer_db:
+            return None
+
+        return Customer(
+            id=customer_db.id,
+            auth_uid=customer_db.auth_uid,
+            ruc=customer_db.ruc,
+            company_name=customer_db.company_name,
+            email=customer_db.email,
+            username=customer_db.username,
+            phone=customer_db.phone,
+            cellphone_number=customer_db.cellphone_number,
+            cellphone_country_code=customer_db.cellphone_country_code,
+            address_id=customer_db.address_id,
+            is_active=customer_db.is_active
+        )
+
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
         """Obtener todos los customers"""
         result = await self.session.execute(

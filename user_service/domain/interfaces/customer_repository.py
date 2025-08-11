@@ -26,6 +26,11 @@ class CustomerRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_by_username(self, username: str) -> Optional[Customer]:
+        """Obtener un customer por username"""
+        pass
+
+    @abstractmethod
     async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
         """Obtener todos los customers"""
         pass

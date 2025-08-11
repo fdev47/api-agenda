@@ -22,6 +22,7 @@ from .update_role_use_case import UpdateRoleUseCase
 from .delete_role_use_case import DeleteRoleUseCase
 from .create_customer_use_case import CreateCustomerUseCase
 from .get_customer_by_id_use_case import GetCustomerByIdUseCase
+from .get_customer_by_username_use_case import GetCustomerByUsernameUseCase
 from .get_user_by_auth_uid_use_case import GetUserByAuthUidUseCase
 from .get_customer_by_auth_uid_use_case import GetCustomerByAuthUidUseCase
 from .assign_role_use_case import AssignRoleUseCase
@@ -60,6 +61,7 @@ __all__ = [
     "UpdateRoleUseCase",
     "DeleteRoleUseCase",
     "CreateCustomerUseCase",
+    "GetCustomerByUsernameUseCase",
     "GetUserByAuthUidUseCase",
     "GetCustomerByAuthUidUseCase",
     "AssignRoleUseCase",
