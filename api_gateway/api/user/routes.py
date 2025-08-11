@@ -51,6 +51,23 @@ async def get_current_user(
     return user
 
 
+@router.get("/by-username/{username}", response_model=UserResponse)
+async def get_user_by_username(
+    username: str,
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Obtener usuario por username (requiere autenticación)"""
+    access_token = authorization.replace("Bearer ", "") if authorization else ""
+    
+    # Obtener usuario por username usando el use case
+    get_user_by_username_use_case = container.get_user_by_username_use_case()
+    user = await get_user_by_username_use_case.execute(username, access_token)
+    
+    return user
+
+
 @router.get("/", response_model=UserListResponse)
 async def list_users(
     page: int = Query(1, ge=1, description="Número de página"),
