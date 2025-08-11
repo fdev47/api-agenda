@@ -53,6 +53,16 @@ class UserRepositoryImpl(UserRepository):
             return User.model_validate(user_db)
         return None
     
+    async def get_by_username(self, username: str) -> Optional[User]:
+        """Obtener usuario por username"""
+        query = select(UserDB).options(selectinload(UserDB.profiles)).where(UserDB.username == username)
+        result = await self._session.execute(query)
+        user_db = result.scalar_one_or_none()
+        
+        if user_db:
+            return User.model_validate(user_db)
+        return None
+    
     async def create(self, user_data: CreateUserRequest) -> User:
         """Crear usuario"""
         user_db = UserDB(

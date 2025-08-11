@@ -83,6 +83,25 @@ async def get_user_by_id(
     return user
 
 
+@router.get("/by-username/{username}", response_model=UserResponse)
+async def get_user_by_username(
+    username: str,
+    current_user=Depends(auth_middleware["require_auth"]),
+    db: AsyncSession = Depends(get_db_session)
+):
+    """Obtener usuario por username (requiere autenticación)"""
+    # Inyectar la sesión de base de datos en el contenedor
+    container.db_session.override(db)
+    get_use_case = container.get_user_by_username_use_case()
+    user = await get_use_case.execute(username)
+    if not user:
+        raise_not_found_error(
+            message="Usuario no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    return user
+
+
 @router.get("/", response_model=UserListResponse)
 async def list_users(
     skip: int = 0,

@@ -15,6 +15,7 @@ from ..application.use_cases import (
     CreateUserUseCase,
     GetUserByIdUseCase,
     GetUserByEmailUseCase,
+    GetUserByUsernameUseCase,
     ListUsersUseCase,
     UpdateUserUseCase,
     DeleteUserUseCase,
@@ -104,6 +105,11 @@ class UserServiceContainer(containers.DeclarativeContainer):
     
     get_user_by_email_use_case = providers.Factory(
         GetUserByEmailUseCase,
+        user_repository=user_repository
+    )
+    
+    get_user_by_username_use_case = providers.Factory(
+        GetUserByUsernameUseCase,
         user_repository=user_repository
     )
     

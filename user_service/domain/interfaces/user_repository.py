@@ -28,6 +28,11 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
+    async def get_by_username(self, username: str) -> User | None:
+        """Obtener usuario por username"""
+        pass
+    
+    @abstractmethod
     async def list_users(self, skip: int = 0, limit: int = 100) -> List[User]:
         """Listar usuarios con paginación"""
         pass

@@ -4,6 +4,7 @@ Use cases del dominio de usuarios
 from .create_user_use_case import CreateUserUseCase
 from .get_user_by_id_use_case import GetUserByIdUseCase
 from .get_user_by_email_use_case import GetUserByEmailUseCase
+from .get_user_by_username_use_case import GetUserByUsernameUseCase
 from .list_users_use_case import ListUsersUseCase
 from .update_user_use_case import UpdateUserUseCase
 from .delete_user_use_case import DeleteUserUseCase
@@ -42,6 +43,7 @@ __all__ = [
     "CreateUserUseCase",
     "GetUserByIdUseCase",
     "GetUserByEmailUseCase",
+    "GetUserByUsernameUseCase",
     "ListUsersUseCase",
     "UpdateUserUseCase",
     "DeleteUserUseCase",
