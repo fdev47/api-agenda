@@ -10,6 +10,9 @@ class UserType(str, Enum):
     """Tipos de usuario interno disponibles"""
     ADMIN = "admin"
     USER = "user"
+    RECEPCIONISTA = "recepcionista"
+    RECEPCIONISTA_RAMPA = "recepcionista_rampa"
+    RECEPCIONISTA_RAMPA_FRIO = "recepcionista_rampa_frio"
 
 class UserResponse(BaseModel):
     """DTO para respuesta de usuario interno"""
