@@ -116,6 +116,7 @@ async def list_reservations(
     # Filtros por sucursal
     branch_id: Optional[int] = Query(None, description="ID de la sucursal"),
     branch_name: Optional[str] = Query(None, description="Nombre de la sucursal"),
+    branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
     
     # Filtros por sector
     sector_id: Optional[int] = Query(None, description="ID del sector"),
@@ -147,31 +148,12 @@ async def list_reservations(
 ):
     """Listar reservas con filtros y paginación"""
     try:
-        print(f"🔍 DEBUG: Iniciando list_reservations")
-        print(f"🔍 DEBUG: Parámetros recibidos:")
-        print(f"  - user_id: {user_id}")
-        print(f"  - customer_id: {customer_id}")
-        print(f"  - branch_id: {branch_id}")
-        print(f"  - branch_name: {branch_name}")
-        print(f"  - sector_id: {sector_id}")
-        print(f"  - sector_name: {sector_name}")
-        print(f"  - customer_ruc: {customer_ruc}")
-        print(f"  - company_name: {company_name}")
-        print(f"  - reservation_date_from: {reservation_date_from}")
-        print(f"  - reservation_date_to: {reservation_date_to}")
-        print(f"  - reservation_status: {reservation_status}")
-        print(f"  - order_code: {order_code}")
-        print(f"  - cargo_type: {cargo_type}")
-        print(f"  - page: {page}")
-        print(f"  - limit: {limit}")
-        
         from datetime import datetime
         
         # Convertir fechas si están presentes y no vacías
         date_from = None
         date_to = None
         if reservation_date_from and reservation_date_from.strip():
-            print(f"🔍 DEBUG: Procesando reservation_date_from: '{reservation_date_from}'")
             try:
                 # Intentar diferentes formatos de fecha
                 if len(reservation_date_from) == 10:  # YYYY-MM-DD
@@ -180,12 +162,9 @@ async def list_reservations(
                     date_from = datetime.strptime(reservation_date_from, "%Y-%m-%d %H:%M:%S")
                 else:
                     date_from = datetime.fromisoformat(reservation_date_from)
-                print(f"🔍 DEBUG: date_from convertido: {date_from}")
             except ValueError as e:
-                print(f"❌ ERROR: Formato de fecha inválido para reservation_date_from: {reservation_date_from}")
                 raise ValueError(f"Formato de fecha inválido para reservation_date_from: {reservation_date_from}")
         if reservation_date_to and reservation_date_to.strip():
-            print(f"🔍 DEBUG: Procesando reservation_date_to: '{reservation_date_to}'")
             try:
                 # Intentar diferentes formatos de fecha
                 if len(reservation_date_to) == 10:  # YYYY-MM-DD
@@ -194,17 +173,15 @@ async def list_reservations(
                     date_to = datetime.strptime(reservation_date_to, "%Y-%m-%d %H:%M:%S")
                 else:
                     date_to = datetime.fromisoformat(reservation_date_to)
-                print(f"🔍 DEBUG: date_to convertido: {date_to}")
             except ValueError as e:
-                print(f"❌ ERROR: Formato de fecha inválido para reservation_date_to: {reservation_date_to}")
                 raise ValueError(f"Formato de fecha inválido para reservation_date_to: {reservation_date_to}")
         
-        print(f"🔍 DEBUG: Creando ReservationFilterRequest")
         request = ReservationFilterRequest(
             user_id=user_id,
             customer_id=customer_id,
             branch_id=branch_id,
             branch_name=branch_name,
+            branch_code=branch_code,
             sector_id=sector_id,
             sector_name=sector_name,
             customer_ruc=customer_ruc,
@@ -217,26 +194,16 @@ async def list_reservations(
             page=page,
             limit=limit
         )
-        print(f"🔍 DEBUG: ReservationFilterRequest creado exitosamente")
         
-        print(f"🔍 DEBUG: Obteniendo use case")
         use_case = get_list_reservations_use_case()
-        print(f"🔍 DEBUG: Use case obtenido: {use_case}")
-        print(f"🔍 DEBUG: Tipo del use case: {type(use_case)}")
-        print(f"🔍 DEBUG: Atributos del use case: {dir(use_case)}")
-        print(f"🔍 DEBUG: Use case ejecutando...")
         result = await use_case.execute(request)
-        print(f"🔍 DEBUG: Use case ejecutado exitosamente, resultado: {result}")
         return result
     except ValueError as e:
-        print(f"❌ ERROR: ValueError en list_reservations: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": "Formato de fecha inválido", "error_code": "INVALID_DATE_FORMAT"}
         )
     except Exception as e:
-        print(f"❌ ERROR: Excepción no manejada en list_reservations: {e}")
-        print(f"❌ ERROR: Tipo de excepción: {type(e).__name__}")
         import traceback
         print(f"❌ ERROR: Traceback completo:")
         traceback.print_exc()

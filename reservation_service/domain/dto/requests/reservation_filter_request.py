@@ -16,6 +16,7 @@ class ReservationFilterRequest(BaseModel):
     # Filtros por sucursal
     branch_id: Optional[int] = None
     branch_name: Optional[str] = None
+    branch_code: Optional[str] = None
     
     # Filtros por sector
     sector_id: Optional[int] = None

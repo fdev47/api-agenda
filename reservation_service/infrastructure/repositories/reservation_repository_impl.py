@@ -106,6 +106,10 @@ class ReservationRepositoryImpl(ReservationRepository):
             if filter_request.branch_name:
                 conditions.append(ReservationModel.branch_data['name'].astext.ilike(f"%{filter_request.branch_name}%"))
             
+            if filter_request.branch_code:
+                # Usar filtro exacto para branch_code con sintaxis correcta de PostgreSQL JSON
+                conditions.append(func.json_extract_path_text(ReservationModel.branch_data, 'code') == filter_request.branch_code)
+            
             if filter_request.sector_name:
                 conditions.append(ReservationModel.sector_data['name'].astext.ilike(f"%{filter_request.sector_name}%"))
             

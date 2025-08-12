@@ -15,6 +15,7 @@ class ReservationFilterRequest(BaseModel):
     # Filtros por sucursal
     branch_id: Optional[int] = Field(None, gt=0, description="ID de la sucursal")
     branch_name: Optional[str] = Field(None, description="Nombre de la sucursal")
+    branch_code: Optional[str] = Field(None, description="Código de la sucursal")
     
     # Filtros por sector
     sector_id: Optional[int] = Field(None, gt=0, description="ID del sector")

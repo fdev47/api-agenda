@@ -46,6 +46,8 @@ class ListReservationsUseCase:
                 params["branch_id"] = request.branch_id
             if request.branch_name:
                 params["branch_name"] = request.branch_name
+            if request.branch_code:
+                params["branch_code"] = request.branch_code
             if request.sector_id:
                 params["sector_id"] = request.sector_id
             if request.sector_name:
