@@ -197,6 +197,7 @@ async def list_reservations(
         
         use_case = get_list_reservations_use_case()
         result = await use_case.execute(request)
+        
         return result
     except ValueError as e:
         raise HTTPException(

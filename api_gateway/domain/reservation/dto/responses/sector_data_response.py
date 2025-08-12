@@ -7,10 +7,10 @@ from typing import Optional
 
 class SectorDataResponse(BaseModel):
     """DTO para datos de sector"""
-    sector_id: int = Field(..., description="ID del sector")
-    name: str = Field(..., description="Nombre del sector")
+    sector_id: Optional[int] = Field(None, description="ID del sector")
+    name: Optional[str] = Field(None, description="Nombre del sector")
     description: Optional[str] = Field(None, description="Descripción del sector")
-    sector_type_id: int = Field(..., description="ID del tipo de sector")
+    sector_type_id: Optional[int] = Field(None, description="ID del tipo de sector")
     sector_type_name: Optional[str] = Field(None, description="Nombre del tipo de sector")
     capacity: Optional[int] = Field(None, description="Capacidad del sector")
     measurement_unit_id: Optional[int] = Field(None, description="ID de la unidad de medida")

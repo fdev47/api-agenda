@@ -31,45 +31,63 @@ class ListReservationsUseCase:
             if access_token:
                 headers["Authorization"] = f"Bearer {access_token}"
             
-            # Construir parámetros de filtro (mapear skip/limit a page/limit)
+            # Construir parámetros de filtro (mapear correctamente a los parámetros del reservation_service)
+            # El API Gateway usa skip/limit, pero el reservation_service espera page/limit
             page = (request.skip // request.limit) + 1 if request.limit > 0 else 1
             params = {
                 "page": page,
                 "limit": request.limit
             }
             
+            # Filtros por usuario/cliente
             if request.user_id:
                 params["user_id"] = request.user_id
             if request.customer_id:
                 params["customer_id"] = request.customer_id
+            
+            # Filtros por sucursal
             if request.branch_id:
                 params["branch_id"] = request.branch_id
             if request.branch_name:
                 params["branch_name"] = request.branch_name
             if request.branch_code:
                 params["branch_code"] = request.branch_code
+            
+            # Filtros por sector
             if request.sector_id:
                 params["sector_id"] = request.sector_id
             if request.sector_name:
                 params["sector_name"] = request.sector_name
             if request.sector_type_id:
                 params["sector_type_id"] = request.sector_type_id
-            if request.start_date:
-                params["reservation_date_from"] = request.start_date.isoformat()
-            if request.end_date:
-                params["reservation_date_to"] = request.end_date.isoformat()
-            if request.status:
-                params["reservation_status"] = request.status
-            if request.status_list:
-                params["status_list"] = ",".join(request.status_list)
-            if request.order_code:
-                params["order_code"] = request.order_code
+            
+            # Filtros por cliente
             if request.customer_ruc:
                 params["customer_ruc"] = request.customer_ruc
             if request.company_name:
                 params["company_name"] = request.company_name
+            
+            # Filtros por fecha (mapear correctamente)
+            if request.start_date:
+                params["reservation_date_from"] = request.start_date.isoformat()
+            if request.end_date:
+                params["reservation_date_to"] = request.end_date.isoformat()
+            
+            # Filtros por estado (mapear correctamente)
+            if request.status:
+                params["reservation_status"] = request.status
+            if request.status_list:
+                params["status_list"] = ",".join(request.status_list)
+            
+            # Filtros por pedido
+            if request.order_code:
+                params["order_code"] = request.order_code
+            
+            # Filtros por tipo de carga
             if request.cargo_type:
                 params["cargo_type"] = request.cargo_type
+            
+            # Ordenamiento (si el reservation_service los soporta)
             if request.sort_by:
                 params["sort_by"] = request.sort_by
             if request.sort_order:
@@ -99,7 +117,6 @@ class ListReservationsUseCase:
                 )
                 
         except Exception as e:
-            print(f"Error obteniendo reservas: {e}")
             return ReservationListResponse(
                 reservations=[],
                 total=0,

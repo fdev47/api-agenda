@@ -15,53 +15,55 @@ class ReservationResponse(BaseModel):
     """Response para una reserva completa"""
     
     # Identificación básica
-    id: int = Field(..., description="ID de la reserva")
-    user_id: int = Field(..., description="ID del usuario que hizo la reserva")
+    id: Optional[int] = Field(None, description="ID de la reserva")
+    user_id: Optional[int] = Field(None, description="ID del usuario que hizo la reserva")
     customer_id: Optional[int] = Field(None, description="ID del cliente en el sistema")
     
     # Datos de la sucursal (completos)
-    branch_data: BranchDataResponse = Field(..., description="Datos completos de la sucursal")
+    branch_data: Optional[BranchDataResponse] = Field(None, description="Datos completos de la sucursal")
     
     # Datos del sector (completos)
-    sector_data: SectorDataResponse = Field(..., description="Datos completos del sector")
+    sector_data: Optional[SectorDataResponse] = Field(None, description="Datos completos del sector")
     
     # Datos del cliente (completos)
-    customer_data: CustomerDataResponse = Field(..., description="Datos completos del cliente")
+    customer_data: Optional[CustomerDataResponse] = Field(None, description="Datos completos del cliente")
     
     # Información de la mercadería
-    unloading_time_minutes: int = Field(..., description="Tiempo de descarga en minutos")
-    unloading_time_hours: float = Field(..., description="Tiempo de descarga en horas")
-    reason: str = Field(..., description="Motivo de la reserva")
+    unloading_time_minutes: Optional[int] = Field(None, description="Tiempo de descarga en minutos")
+    unloading_time_hours: Optional[float] = Field(None, description="Tiempo de descarga en horas")
+    reason: Optional[str] = Field(None, description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
     ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
     
     # Números de pedidos
-    order_numbers: List[OrderNumberResponse] = Field(..., description="Lista de números de pedido")
+    order_numbers: Optional[List[OrderNumberResponse]] = Field(None, description="Lista de números de pedido")
     
     # Horario de la reserva
-    reservation_date: datetime = Field(..., description="Fecha de la reserva")
-    start_time: datetime = Field(..., description="Hora de inicio de la reserva")
-    end_time: datetime = Field(..., description="Hora de fin de la reserva")
+    reservation_date: Optional[datetime] = Field(None, description="Fecha de la reserva")
+    start_time: Optional[datetime] = Field(None, description="Hora de inicio de la reserva")
+    end_time: Optional[datetime] = Field(None, description="Hora de fin de la reserva")
     
     # Estado y metadatos
-    status: str = Field(..., description="Estado de la reserva")
+    status: Optional[str] = Field(None, description="Estado de la reserva")
     notes: Optional[str] = Field(None, description="Notas adicionales")
-    created_at: datetime = Field(..., description="Fecha de creación")
-    updated_at: datetime = Field(..., description="Fecha de última actualización")
+    created_at: Optional[datetime] = Field(None, description="Fecha de creación")
+    updated_at: Optional[datetime] = Field(None, description="Fecha de última actualización")
     
     # Métodos de conveniencia
     def is_active(self) -> bool:
         """Verifica si la reserva está activa"""
-        return self.status in ["pending", "confirmed"]
+        return self.status in ["pending", "confirmed"] if self.status else False
     
     def is_cancelled(self) -> bool:
         """Verifica si la reserva está cancelada"""
-        return self.status == "cancelled"
+        return self.status == "cancelled" if self.status else False
     
     def is_completed(self) -> bool:
         """Verifica si la reserva está completada"""
-        return self.status == "completed"
+        return self.status == "completed" if self.status else False
     
     def get_order_codes(self) -> List[str]:
         """Obtiene la lista de códigos de pedidos"""
-        return [order.code for order in self.order_numbers] 
+        if self.order_numbers:
+            return [order.code for order in self.order_numbers if order and order.code]
+        return [] 
