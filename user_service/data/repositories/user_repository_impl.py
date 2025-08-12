@@ -123,6 +123,8 @@ class UserRepositoryImpl(UserRepository):
             return None
         
         # Actualizar campos si están presentes
+        if user_data.username is not None:
+            user_db.username = user_data.username
         if user_data.first_name is not None:
             user_db.first_name = user_data.first_name
         if user_data.last_name is not None:

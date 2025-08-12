@@ -26,6 +26,7 @@ class CreateUserRequest(BaseModel):
 class UpdateUserRequest(BaseModel):
     """DTO para actualizar un usuario desde el API Gateway"""
     email: Optional[EmailStr] = Field(None, description="Email del usuario")
+    username: Optional[str] = Field(None, description="Nombre de usuario")
     first_name: Optional[str] = Field(None, description="Nombre del usuario")
     last_name: Optional[str] = Field(None, description="Apellido del usuario")
     phone: Optional[str] = Field(None, description="Teléfono del usuario")

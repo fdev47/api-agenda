@@ -34,6 +34,7 @@ class CreateCustomerRequest(BaseModel):
 class UpdateCustomerRequest(BaseModel):
     """DTO para actualizar un customer desde el API Gateway"""
     email: Optional[EmailStr] = Field(None, description="Email del customer")
+    username: Optional[str] = Field(None, description="Nombre de usuario del customer")
     ruc: Optional[str] = Field(None, min_length=5, max_length=11, description="RUC de la empresa")
     company_name: Optional[str] = Field(None, min_length=3, description="Nombre de la empresa")
     phone: Optional[str] = Field(None, description="Teléfono fijo")

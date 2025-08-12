@@ -40,6 +40,7 @@ class CustomerResponse(BaseModel):
     ruc: str
     company_name: str
     email: str
+    username: Optional[str] = None
     phone: Optional[str] = None
     cellphone_number: Optional[str] = None
     cellphone_country_code: Optional[str] = None
@@ -55,6 +56,7 @@ class UserResponse(BaseModel):
     id: UUID
     auth_uid: str
     email: str
+    username: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None

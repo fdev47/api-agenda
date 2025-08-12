@@ -27,6 +27,7 @@ class CreateUserRequest(BaseModel):
 
 class UpdateUserRequest(BaseModel):
     """DTO para actualizar un usuario interno"""
+    username: Optional[str] = Field(None, description="Nombre de usuario")
     first_name: Optional[str] = Field(None, description="Nombre del usuario")
     last_name: Optional[str] = Field(None, description="Apellido del usuario")
     phone: Optional[str] = Field(None, description="Número de teléfono fijo")
