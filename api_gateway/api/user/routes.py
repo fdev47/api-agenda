@@ -71,6 +71,7 @@ async def get_user_by_username(
 async def list_users(
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(100, ge=1, le=1000, description="Número de registros por página"),
+    branch_code: Optional[str] = Query(None, description="Filtrar por código de sucursal"),
     container: Container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
@@ -80,7 +81,7 @@ async def list_users(
     
     # Obtener lista de usuarios usando el use case
     list_users_use_case = container.list_users_use_case()
-    users = await list_users_use_case.execute(page=page, size=size, access_token=access_token)
+    users = await list_users_use_case.execute(page=page, size=size, branch_code=branch_code, access_token=access_token)
     
     return users
 

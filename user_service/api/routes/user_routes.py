@@ -111,6 +111,7 @@ async def get_user_by_username(
 async def list_users(
     skip: int = 0,
     limit: int = 100,
+    branch_code: str = None,
     current_user=Depends(auth_middleware["require_auth"]),
     db: AsyncSession = Depends(get_db_session)
 ):
@@ -118,7 +119,7 @@ async def list_users(
     # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     list_use_case = container.list_users_use_case()
-    users = await list_use_case.execute(skip=skip, limit=limit)
+    users = await list_use_case.execute(skip=skip, limit=limit, branch_code=branch_code)
     return users
 
 

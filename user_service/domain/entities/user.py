@@ -17,6 +17,7 @@ class User(BaseModel):
     auth_uid: str = Field(..., description="UID del proveedor de autenticación")
     email: str = Field(..., description="Email del usuario")
     username: Optional[str] = Field(None, description="Nombre de usuario")
+    branch_code: Optional[str] = Field(None, description="Código de sucursal")
     first_name: str | None = Field(None, description="Nombre del usuario")
     last_name: str | None = Field(None, description="Apellido del usuario")
     phone: str | None = Field(None, description="Número de teléfono fijo")

@@ -16,6 +16,7 @@ class CreateUserRequest(BaseModel):
     auth_uid: str = Field(..., description="UID del proveedor de autenticación")
     email: EmailStr = Field(..., description="Email del usuario")
     username: Optional[str] = Field(None, description="Nombre de usuario")  # Nuevo campo
+    branch_code: Optional[str] = Field(None, description="Código de sucursal")
     first_name: Optional[str] = Field(None, description="Nombre del usuario")
     last_name: Optional[str] = Field(None, description="Apellido del usuario")
     phone: Optional[str] = Field(None, description="Número de teléfono fijo")
@@ -28,6 +29,7 @@ class CreateUserRequest(BaseModel):
 class UpdateUserRequest(BaseModel):
     """DTO para actualizar un usuario interno"""
     username: Optional[str] = Field(None, description="Nombre de usuario")
+    branch_code: Optional[str] = Field(None, description="Código de sucursal")
     first_name: Optional[str] = Field(None, description="Nombre del usuario")
     last_name: Optional[str] = Field(None, description="Apellido del usuario")
     phone: Optional[str] = Field(None, description="Número de teléfono fijo")

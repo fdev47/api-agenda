@@ -33,8 +33,8 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def list_users(self, skip: int = 0, limit: int = 100) -> List[User]:
-        """Listar usuarios con paginación"""
+    async def list_users(self, skip: int = 0, limit: int = 100, branch_code: Optional[str] = None) -> List[User]:
+        """Listar usuarios con paginación y filtros opcionales"""
         pass
     
     @abstractmethod

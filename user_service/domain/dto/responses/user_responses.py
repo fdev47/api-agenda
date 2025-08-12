@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     auth_uid: str
     email: str
     username: Optional[str]
+    branch_code: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
     phone: Optional[str]

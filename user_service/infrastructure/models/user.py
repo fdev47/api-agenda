@@ -19,6 +19,7 @@ class UserDB(Base):
     auth_uid = Column(String(128), unique=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     username = Column(String(50), unique=True, nullable=True)  # Nuevo campo
+    branch_code = Column(String(20), nullable=True)  # Código de sucursal
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
     phone = Column(String(20), nullable=True)  # Teléfono fijo

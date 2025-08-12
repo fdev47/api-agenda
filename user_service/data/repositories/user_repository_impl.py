@@ -69,6 +69,7 @@ class UserRepositoryImpl(UserRepository):
             auth_uid=user_data.auth_uid,
             email=user_data.email,
             username=user_data.username,  # Agregar username
+            branch_code=user_data.branch_code,  # Agregar branch_code
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             phone=user_data.phone,
@@ -105,9 +106,15 @@ class UserRepositoryImpl(UserRepository):
         
         return User.model_validate(user_db_with_relations)
     
-    async def list_users(self, skip: int = 0, limit: int = 100) -> List[User]:
-        """Listar usuarios con paginación"""
-        query = select(UserDB).options(selectinload(UserDB.profiles)).offset(skip).limit(limit)
+    async def list_users(self, skip: int = 0, limit: int = 100, branch_code: Optional[str] = None) -> List[User]:
+        """Listar usuarios con paginación y filtros opcionales"""
+        query = select(UserDB).options(selectinload(UserDB.profiles))
+        
+        # Aplicar filtros si están presentes
+        if branch_code:
+            query = query.where(UserDB.branch_code == branch_code)
+        
+        query = query.offset(skip).limit(limit)
         result = await self._session.execute(query)
         users_db = result.scalars().all()
         
@@ -125,6 +132,8 @@ class UserRepositoryImpl(UserRepository):
         # Actualizar campos si están presentes
         if user_data.username is not None:
             user_db.username = user_data.username
+        if user_data.branch_code is not None:
+            user_db.branch_code = user_data.branch_code
         if user_data.first_name is not None:
             user_db.first_name = user_data.first_name
         if user_data.last_name is not None:
