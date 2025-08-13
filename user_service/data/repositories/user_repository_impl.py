@@ -76,7 +76,7 @@ class UserRepositoryImpl(UserRepository):
             cellphone_number=user_data.cellphone_number,
             cellphone_country_code=user_data.cellphone_country_code,
             is_active=user_data.is_active,
-            user_type=user_data.user_type.value
+            user_type=user_data.user_type
         )
         
         # Asignar perfiles si se proporcionan
@@ -147,7 +147,7 @@ class UserRepositoryImpl(UserRepository):
         if user_data.is_active is not None:
             user_db.is_active = user_data.is_active
         if user_data.user_type is not None:
-            user_db.user_type = user_data.user_type.value
+            user_db.user_type = user_data.user_type
         
         # Actualizar perfiles si se proporcionan
         if user_data.profile_ids is not None:

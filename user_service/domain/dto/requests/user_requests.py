@@ -2,14 +2,11 @@
 DTOs de requests para usuarios
 """
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Literal
 from uuid import UUID
-from enum import Enum
 
-class UserType(str, Enum):
-    """Tipos de usuario interno disponibles"""
-    ADMIN = "admin"
-    USER = "user"
+# Usar el mismo tipo que la entidad User
+UserType = Literal['admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
 
 class CreateUserRequest(BaseModel):
     """DTO para crear usuario"""

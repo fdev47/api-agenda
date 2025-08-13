@@ -74,6 +74,7 @@ class CreateUserUseCase:
                 "auth_uid": firebase_uid,
                 "email": request.email,
                 "username": request.username,  # Agregar username
+                "branch_code": request.branch_code,  # Agregar branch_code
                 "first_name": request.first_name,
                 "last_name": request.last_name,
                 "phone": request.phone,
