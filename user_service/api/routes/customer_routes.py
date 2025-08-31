@@ -2,7 +2,7 @@
 Rutas para Customer
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...domain.dto.requests.customer_requests import CreateCustomerRequest, UpdateCustomerRequest
@@ -78,14 +78,27 @@ async def create_customer(
 async def get_customers(
     skip: int = Query(0, ge=0, description="Número de elementos a omitir"),
     limit: int = Query(100, ge=1, le=1000, description="Número máximo de elementos"),
+    username: Optional[str] = Query(None, description="Filtrar por username (búsqueda parcial)"),
+    company_name: Optional[str] = Query(None, description="Filtrar por nombre de empresa (búsqueda parcial)"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
+    ruc: Optional[str] = Query(None, description="Filtrar por RUC"),
+    address_id: Optional[UUID] = Query(None, description="Filtrar por ID de dirección"),
     db: AsyncSession = Depends(get_db_session)
 ):
-    """Obtener todos los customers"""
+    """Obtener todos los customers con filtros opcionales"""
     try:
         # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         list_use_case = container.list_customers_use_case()
-        result = await list_use_case.execute(skip=skip, limit=limit)
+        result = await list_use_case.execute(
+            skip=skip, 
+            limit=limit,
+            username=username,
+            company_name=company_name,
+            is_active=is_active,
+            ruc=ruc,
+            address_id=address_id
+        )
         return result
     except UserException as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -31,8 +31,17 @@ class CustomerRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
-        """Obtener todos los customers"""
+    async def get_all(
+        self, 
+        skip: int = 0, 
+        limit: int = 100,
+        username: Optional[str] = None,
+        company_name: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        ruc: Optional[str] = None,
+        address_id: Optional[UUID] = None
+    ) -> List[Customer]:
+        """Obtener todos los customers con filtros opcionales"""
         pass
 
     @abstractmethod

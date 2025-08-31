@@ -121,13 +121,39 @@ class CustomerRepositoryImpl(CustomerRepository):
             is_active=customer_db.is_active
         )
 
-    async def get_all(self, skip: int = 0, limit: int = 100) -> List[Customer]:
-        """Obtener todos los customers"""
-        result = await self.session.execute(
-            select(CustomerDB)
-            .offset(skip)
-            .limit(limit)
-        )
+    async def get_all(
+        self, 
+        skip: int = 0, 
+        limit: int = 100,
+        username: Optional[str] = None,
+        company_name: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        ruc: Optional[str] = None,
+        address_id: Optional[UUID] = None
+    ) -> List[Customer]:
+        """Obtener todos los customers con filtros opcionales"""
+        query = select(CustomerDB)
+        
+        # Aplicar filtros si están presentes
+        if username:
+            # Búsqueda LIKE para username (case insensitive)
+            query = query.where(CustomerDB.username.ilike(f"%{username}%"))
+        
+        if company_name:
+            # Búsqueda LIKE para company_name (case insensitive)
+            query = query.where(CustomerDB.company_name.ilike(f"%{company_name}%"))
+            
+        if is_active is not None:
+            query = query.where(CustomerDB.is_active == is_active)
+            
+        if ruc:
+            query = query.where(CustomerDB.ruc == ruc)
+            
+        if address_id:
+            query = query.where(CustomerDB.address_id == address_id)
+        
+        query = query.offset(skip).limit(limit)
+        result = await self.session.execute(query)
         customers_db = result.scalars().all()
 
         return [

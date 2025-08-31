@@ -71,6 +71,11 @@ async def get_customer_by_username(
 async def list_customers(
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(100, ge=1, le=1000, description="Número de registros por página"),
+    username: Optional[str] = Query(None, description="Filtrar por username (búsqueda parcial)"),
+    company_name: Optional[str] = Query(None, description="Filtrar por nombre de empresa (búsqueda parcial)"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
+    ruc: Optional[str] = Query(None, description="Filtrar por RUC"),
+    address_id: Optional[UUID] = Query(None, description="Filtrar por ID de dirección"),
     container: Container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
@@ -80,7 +85,16 @@ async def list_customers(
     
     # Obtener lista de customers usando el use case
     list_customers_use_case = container.list_customers_use_case()
-    customers = await list_customers_use_case.execute(page=page, size=size, access_token=access_token)
+    customers = await list_customers_use_case.execute(
+        page=page, 
+        size=size,
+        username=username,
+        company_name=company_name,
+        is_active=is_active,
+        ruc=ruc,
+        address_id=address_id,
+        access_token=access_token
+    )
     
     return customers
 
