@@ -7,6 +7,7 @@ from commons.config import config
 from commons.error_codes import ErrorCode
 from commons.error_utils import raise_internal_error
 from ....domain.user.dto.responses.user_responses import UserListResponse
+from ....domain.user.entities.user import UserType
 from ..utils.error_handler import handle_auth_service_error
 
 class ListUsersUseCase:
@@ -15,15 +16,30 @@ class ListUsersUseCase:
     def __init__(self):
         self.user_service_url = config.USER_SERVICE_URL
     
-    async def execute(self, page: int = 1, size: int = 100, branch_code: Optional[str] = None, access_token: str = None) -> UserListResponse:
+    async def execute(
+        self, 
+        page: int = 1, 
+        size: int = 100, 
+        username: Optional[str] = None,
+        user_type: Optional[UserType] = None,
+        branch_code: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        access_token: str = None
+    ) -> UserListResponse:
         """Ejecutar el use case"""
         try:
             # Crear cliente para User Service
             async with APIClient(self.user_service_url, access_token) as client:
                 # Preparar parámetros de consulta
                 params = {"page": page, "size": size}
+                if username:
+                    params["username"] = username
+                if user_type:
+                    params["user_type"] = user_type
                 if branch_code:
                     params["branch_code"] = branch_code
+                if is_active is not None:
+                    params["is_active"] = is_active
                 
                 # Obtener lista de usuarios del User Service
                 response = await client.get(f"{config.API_PREFIX}/users/", params=params)

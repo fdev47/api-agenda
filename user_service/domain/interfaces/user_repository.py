@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from uuid import UUID
-from ..entities.user import User
+from ..entities.user import User, UserType
 from ..dto.requests.user_requests import CreateUserRequest, UpdateUserRequest
 
 class UserRepository(ABC):
@@ -33,7 +33,15 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    async def list_users(self, skip: int = 0, limit: int = 100, branch_code: Optional[str] = None) -> List[User]:
+    async def list_users(
+        self, 
+        skip: int = 0, 
+        limit: int = 100, 
+        username: Optional[str] = None,
+        user_type: Optional[UserType] = None,
+        branch_code: Optional[str] = None,
+        is_active: Optional[bool] = None
+    ) -> List[User]:
         """Listar usuarios con paginación y filtros opcionales"""
         pass
     

@@ -4,13 +4,13 @@ Implementación del repositorio de usuarios
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 
 from ...domain.interfaces.user_repository import UserRepository
-from ...domain.entities.user import User
+from ...domain.entities.user import User, UserType
 from ...domain.dto.requests.user_requests import CreateUserRequest, UpdateUserRequest
 from ...domain.exceptions.user_exceptions import UserAlreadyExistsException
 from ...infrastructure.models.user import UserDB
@@ -106,13 +106,31 @@ class UserRepositoryImpl(UserRepository):
         
         return User.model_validate(user_db_with_relations)
     
-    async def list_users(self, skip: int = 0, limit: int = 100, branch_code: Optional[str] = None) -> List[User]:
+    async def list_users(
+        self, 
+        skip: int = 0, 
+        limit: int = 100, 
+        username: Optional[str] = None,
+        user_type: Optional[UserType] = None,
+        branch_code: Optional[str] = None,
+        is_active: Optional[bool] = None
+    ) -> List[User]:
         """Listar usuarios con paginación y filtros opcionales"""
         query = select(UserDB).options(selectinload(UserDB.profiles))
         
         # Aplicar filtros si están presentes
+        if username:
+            # Búsqueda LIKE para username (case insensitive)
+            query = query.where(UserDB.username.ilike(f"%{username}%"))
+        
+        if user_type:
+            query = query.where(UserDB.user_type == user_type)
+            
         if branch_code:
             query = query.where(UserDB.branch_code == branch_code)
+            
+        if is_active is not None:
+            query = query.where(UserDB.is_active == is_active)
         
         query = query.offset(skip).limit(limit)
         result = await self._session.execute(query)

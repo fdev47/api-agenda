@@ -8,6 +8,7 @@ from ...infrastructure.container import Container
 from ..middleware import auth_middleware
 from ...domain.user.dto.responses.user_responses import UserResponse, UserListResponse, DeleteUserResponse
 from ...domain.user.dto.requests.user_requests import CreateUserRequest, UpdateUserRequest
+from ...domain.user.entities.user import UserType
 
 router = APIRouter()
 
@@ -71,7 +72,10 @@ async def get_user_by_username(
 async def list_users(
     page: int = Query(1, ge=1, description="Número de página"),
     size: int = Query(100, ge=1, le=1000, description="Número de registros por página"),
+    username: Optional[str] = Query(None, description="Filtrar por username (búsqueda parcial)"),
+    user_type: Optional[UserType] = Query(None, description="Filtrar por tipo de usuario"),
     branch_code: Optional[str] = Query(None, description="Filtrar por código de sucursal"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
     container: Container = Depends(get_container),
     current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
@@ -81,7 +85,15 @@ async def list_users(
     
     # Obtener lista de usuarios usando el use case
     list_users_use_case = container.list_users_use_case()
-    users = await list_users_use_case.execute(page=page, size=size, branch_code=branch_code, access_token=access_token)
+    users = await list_users_use_case.execute(
+        page=page, 
+        size=size, 
+        username=username,
+        user_type=user_type,
+        branch_code=branch_code,
+        is_active=is_active,
+        access_token=access_token
+    )
     
     return users
 

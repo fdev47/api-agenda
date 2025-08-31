@@ -1,12 +1,13 @@
 """
 Rutas de usuarios
 """
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
 from ...domain.dto.responses import UserResponse, UserListResponse, SuccessResponse
+from ...domain.entities.user import UserType
 from ...infrastructure.container import container
 from ...infrastructure.connection import get_db_session
 from ..middleware import auth_middleware
@@ -109,9 +110,12 @@ async def get_user_by_username(
 
 @router.get("/", response_model=UserListResponse)
 async def list_users(
-    skip: int = 0,
-    limit: int = 100,
-    branch_code: str = None,
+    skip: int = Query(0, ge=0, description="Número de registros a omitir"),
+    limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
+    username: Optional[str] = Query(None, description="Filtrar por username (búsqueda parcial)"),
+    user_type: Optional[UserType] = Query(None, description="Filtrar por tipo de usuario"),
+    branch_code: Optional[str] = Query(None, description="Filtrar por código de sucursal"),
+    is_active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
     current_user=Depends(auth_middleware["require_auth"]),
     db: AsyncSession = Depends(get_db_session)
 ):
@@ -119,7 +123,14 @@ async def list_users(
     # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     list_use_case = container.list_users_use_case()
-    users = await list_use_case.execute(skip=skip, limit=limit, branch_code=branch_code)
+    users = await list_use_case.execute(
+        skip=skip, 
+        limit=limit, 
+        username=username,
+        user_type=user_type,
+        branch_code=branch_code,
+        is_active=is_active
+    )
     return users
 
 
