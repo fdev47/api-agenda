@@ -69,9 +69,9 @@ class ListReservationsUseCase:
             
             # Filtros por fecha (mapear correctamente)
             if request.start_date:
-                params["reservation_date_from"] = request.start_date.isoformat()
+                params["reservation_date_from"] = request.start_date
             if request.end_date:
-                params["reservation_date_to"] = request.end_date.isoformat()
+                params["reservation_date_to"] = request.end_date
             
             # Filtros por estado (mapear correctamente)
             if request.status:

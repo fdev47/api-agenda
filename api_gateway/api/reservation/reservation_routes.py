@@ -4,7 +4,7 @@ Rutas para reservas en el API Gateway
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Path
 from typing import Optional, List
-from datetime import datetime
+
 from pydantic import ValidationError
 from commons.error_codes import ErrorCode
 from commons.api_client import HTTPError
@@ -183,8 +183,8 @@ async def list_reservations(
     branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
     sector_id: Optional[int] = Query(None, gt=0, description="ID del sector"),
     sector_type_id: Optional[int] = Query(None, gt=0, description="ID del tipo de sector"),
-    start_date: Optional[datetime] = Query(None, description="Fecha de inicio para filtrar"),
-    end_date: Optional[datetime] = Query(None, description="Fecha de fin para filtrar"),
+    start_date: Optional[str] = Query(None, description="Fecha de inicio para filtrar (YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="Fecha de fin para filtrar (YYYY-MM-DDTHH:MM:SS)"),
     status: Optional[str] = Query(None, description="Estado de la reserva"),
     status_list: Optional[str] = Query(None, description="Lista de estados separados por coma"),
     order_code: Optional[str] = Query(None, description="Código de pedido"),

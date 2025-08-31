@@ -153,28 +153,51 @@ async def list_reservations(
         # Convertir fechas si están presentes y no vacías
         date_from = None
         date_to = None
-        if reservation_date_from and reservation_date_from.strip():
+        
+        def parse_date(date_str: str) -> datetime:
+            """Función helper para parsear fechas en diferentes formatos"""
+            if not date_str or not date_str.strip():
+                return None
+                
+            date_str = date_str.strip()
+            
             try:
-                # Intentar diferentes formatos de fecha
-                if len(reservation_date_from) == 10:  # YYYY-MM-DD
-                    date_from = datetime.strptime(reservation_date_from, "%Y-%m-%d")
-                elif len(reservation_date_from) == 19:  # YYYY-MM-DD HH:MM:SS
-                    date_from = datetime.strptime(reservation_date_from, "%Y-%m-%d %H:%M:%S")
+                # Formato YYYY-MM-DD
+                if len(date_str) == 10 and date_str.count('-') == 2:
+                    return datetime.strptime(date_str, "%Y-%m-%d")
+                
+                # Formato YYYY-MM-DD HH:MM:SS
+                elif len(date_str) == 19 and date_str.count('-') == 2 and date_str.count(':') == 2:
+                    return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                
+                # Formato YYYY-MM-DDTHH:MM:SS (ISO sin zona horaria)
+                elif 'T' in date_str and date_str.count(':') == 2:
+                    # Remover la T y convertir a formato estándar
+                    date_str_std = date_str.replace('T', ' ')
+                    return datetime.strptime(date_str_std, "%Y-%m-%d %H:%M:%S")
+                
+                # Formato YYYY-MM-DDTHH:MM:SS.SSS (ISO con milisegundos)
+                elif 'T' in date_str and '.' in date_str:
+                    # Remover la T y convertir a formato estándar
+                    date_str_std = date_str.replace('T', ' ')
+                    return datetime.strptime(date_str_std, "%Y-%m-%d %H:%M:%S.%f")
+                
+                # Intentar formato ISO estándar
                 else:
-                    date_from = datetime.fromisoformat(reservation_date_from)
+                    return datetime.fromisoformat(date_str)
+                    
             except ValueError as e:
-                raise ValueError(f"Formato de fecha inválido para reservation_date_from: {reservation_date_from}")
-        if reservation_date_to and reservation_date_to.strip():
-            try:
-                # Intentar diferentes formatos de fecha
-                if len(reservation_date_to) == 10:  # YYYY-MM-DD
-                    date_to = datetime.strptime(reservation_date_to, "%Y-%m-%d")
-                elif len(reservation_date_to) == 19:  # YYYY-MM-DD HH:MM:SS
-                    date_to = datetime.strptime(reservation_date_to, "%Y-%m-%d %H:%M:%S")
-                else:
-                    date_to = datetime.fromisoformat(reservation_date_to)
-            except ValueError as e:
-                raise ValueError(f"Formato de fecha inválido para reservation_date_to: {reservation_date_to}")
+                raise ValueError(f"Formato de fecha inválido: {date_str}. Formatos soportados: YYYY-MM-DD, YYYY-MM-DD HH:MM:SS, YYYY-MM-DDTHH:MM:SS")
+        
+        # Parsear fechas
+        if reservation_date_from:
+            logger.info(f"🔍 Parseando fecha desde: {reservation_date_from}")
+            date_from = parse_date(reservation_date_from)
+            logger.info(f"✅ Fecha desde parseada: {date_from}")
+        if reservation_date_to:
+            logger.info(f"🔍 Parseando fecha hasta: {reservation_date_to}")
+            date_to = parse_date(reservation_date_to)
+            logger.info(f"✅ Fecha hasta parseada: {date_to}")
         
         request = ReservationFilterRequest(
             user_id=user_id,
@@ -200,9 +223,19 @@ async def list_reservations(
         
         return result
     except ValueError as e:
+        logger.error(f"❌ Error de formato de fecha: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"message": "Formato de fecha inválido", "error_code": "INVALID_DATE_FORMAT"}
+            detail={
+                "message": str(e), 
+                "error_code": "INVALID_DATE_FORMAT",
+                "supported_formats": [
+                    "YYYY-MM-DD",
+                    "YYYY-MM-DD HH:MM:SS", 
+                    "YYYY-MM-DDTHH:MM:SS",
+                    "YYYY-MM-DDTHH:MM:SS.SSS"
+                ]
+            }
         )
     except Exception as e:
         import traceback
