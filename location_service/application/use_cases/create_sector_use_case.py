@@ -6,7 +6,7 @@ from ...domain.entities.sector import Sector
 from ...domain.interfaces.sector_repository import SectorRepository
 from ...domain.interfaces.sector_type_repository import SectorTypeRepository
 from ...domain.dto.requests.sector_requests import CreateSectorRequest
-from ...domain.dto.responses.sector_responses import SectorResponse
+from ...domain.dto.responses.sector_responses import SectorCreatedResponse
 from ...domain.exceptions import SectorTypeNotFoundException
 
 
@@ -17,7 +17,7 @@ class CreateSectorUseCase:
         self.sector_repository = sector_repository
         self.sector_type_repository = sector_type_repository
     
-    async def execute(self, request: CreateSectorRequest) -> SectorResponse:
+    async def execute(self, request: CreateSectorRequest) -> SectorCreatedResponse:
         """Ejecutar el caso de uso"""
         
         # Verificar que el tipo de sector existe
@@ -43,7 +43,7 @@ class CreateSectorUseCase:
         created_sector = await self.sector_repository.create(sector)
         
         # Retornar respuesta
-        return SectorResponse(
+        return SectorCreatedResponse(
             id=created_sector.id,
             name=created_sector.name,
             description=created_sector.description,
@@ -51,6 +51,5 @@ class CreateSectorUseCase:
             sector_type_id=created_sector.sector_type_id,
             measurement_unit=sector_type.measurement_unit.value if sector_type else None,
             is_active=created_sector.is_active,
-            created_at=created_sector.created_at,
-            updated_at=created_sector.updated_at
+            message="Sector creado exitosamente"
         ) 

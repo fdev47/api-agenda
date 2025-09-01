@@ -36,7 +36,7 @@ class CreateSectorUseCase:
             async with APIClient(self.location_service_url, "") as client:
                 response = await client.post(
                     f"{config.API_PREFIX}/sectors/",
-                    json=request.dict(),
+                    data=request.dict(),
                     headers=headers
                 )
 

@@ -94,17 +94,7 @@ async def create_sector(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Crear un nuevo sector"""
-    sector = await use_case.execute(request)
-    return SectorCreatedResponse(
-        id=sector.id,
-        name=sector.name,
-        description=sector.description,
-        branch_id=sector.branch_id,
-        sector_type_id=sector.sector_type_id,
-        measurement_unit=sector.measurement_unit,
-        is_active=sector.is_active,
-        message="Sector creado exitosamente"
-    )
+    return await use_case.execute(request)
 
 
 @router.put("/{sector_id}", response_model=SectorUpdatedResponse)
@@ -115,17 +105,7 @@ async def update_sector(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Actualizar un sector"""
-    sector = await use_case.execute(sector_id, request)
-    return SectorUpdatedResponse(
-        id=sector.id,
-        name=sector.name,
-        description=sector.description,
-        branch_id=sector.branch_id,
-        sector_type_id=sector.sector_type_id,
-        measurement_unit=sector.measurement_unit,
-        is_active=sector.is_active,
-        message="Sector actualizado exitosamente"
-    )
+    return await use_case.execute(sector_id, request)
 
 
 @router.delete("/{sector_id}", response_model=SectorDeletedResponse)
@@ -135,13 +115,4 @@ async def delete_sector(
     current_user=Depends(auth_middleware["require_auth"])
 ):
     """Eliminar un sector"""
-    deleted = await use_case.execute(sector_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sector no encontrado"
-        )
-    return SectorDeletedResponse(
-        id=sector_id,
-        message="Sector eliminado exitosamente"
-    )
+    return await use_case.execute(sector_id)

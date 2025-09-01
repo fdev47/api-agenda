@@ -6,7 +6,7 @@ from ...domain.entities.sector import Sector
 from ...domain.interfaces.sector_repository import SectorRepository
 from ...domain.interfaces.sector_type_repository import SectorTypeRepository
 from ...domain.dto.requests.sector_requests import UpdateSectorRequest
-from ...domain.dto.responses.sector_responses import SectorResponse
+from ...domain.dto.responses.sector_responses import SectorUpdatedResponse
 from ...domain.exceptions import SectorNotFoundException, SectorAlreadyExistsException, SectorTypeNotFoundException
 
 
@@ -17,7 +17,7 @@ class UpdateSectorUseCase:
         self.sector_repository = sector_repository
         self.sector_type_repository = sector_type_repository
     
-    async def execute(self, sector_id: int, request: UpdateSectorRequest) -> SectorResponse:
+    async def execute(self, sector_id: int, request: UpdateSectorRequest) -> SectorUpdatedResponse:
         """Ejecutar el caso de uso"""
         
         # Obtener el sector existente
@@ -73,7 +73,7 @@ class UpdateSectorUseCase:
         sector_type = await self.sector_type_repository.get_by_id(final_sector_type_id)
         
         # Retornar respuesta
-        return SectorResponse(
+        return SectorUpdatedResponse(
             id=saved_sector.id,
             name=saved_sector.name,
             description=saved_sector.description,
@@ -81,6 +81,5 @@ class UpdateSectorUseCase:
             sector_type_id=saved_sector.sector_type_id,
             measurement_unit=sector_type.measurement_unit.value if sector_type else None,
             is_active=saved_sector.is_active,
-            created_at=saved_sector.created_at,
-            updated_at=saved_sector.updated_at
+            message="Sector actualizado exitosamente"
         ) 
