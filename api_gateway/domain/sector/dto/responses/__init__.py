@@ -1,0 +1,3 @@
+"""
+Responses DTOs para sector
+"""
