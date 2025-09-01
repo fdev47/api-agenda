@@ -15,7 +15,8 @@ class SectorResponse(BaseModel):
     description: Optional[str] = Field(None, description="Descripción del sector")
     branch_id: int = Field(..., description="ID de la sucursal")
     sector_type_id: int = Field(..., description="ID del tipo de sector")
-    measurement_unit: str = Field(..., description="Unidad de medida del sector")
+    measurement_unit: Optional[str] = Field(None, description="Unidad de medida del sector")
+    is_active: bool = Field(..., description="Estado activo del sector")
     created_at: datetime = Field(..., description="Fecha de creación")
     updated_at: Optional[datetime] = Field(None, description="Fecha de última actualización")
 
@@ -35,7 +36,8 @@ class SectorCreatedResponse(BaseModel):
     description: Optional[str] = Field(None, description="Descripción del sector")
     branch_id: int = Field(..., description="ID de la sucursal")
     sector_type_id: int = Field(..., description="ID del tipo de sector")
-    measurement_unit: str = Field(..., description="Unidad de medida del sector")
+    measurement_unit: Optional[str] = Field(None, description="Unidad de medida del sector")
+    is_active: bool = Field(..., description="Estado activo del sector")
     message: str = Field(default="Sector creado exitosamente", description="Mensaje de confirmación")
 
 
@@ -46,7 +48,8 @@ class SectorUpdatedResponse(BaseModel):
     description: Optional[str] = Field(None, description="Descripción del sector")
     branch_id: int = Field(..., description="ID de la sucursal")
     sector_type_id: int = Field(..., description="ID del tipo de sector")
-    measurement_unit: str = Field(..., description="Unidad de medida del sector")
+    measurement_unit: Optional[str] = Field(None, description="Unidad de medida del sector")
+    is_active: bool = Field(..., description="Estado activo del sector")
     message: str = Field(default="Sector actualizado exitosamente", description="Mensaje de confirmación")
 
 

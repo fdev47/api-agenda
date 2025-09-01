@@ -361,7 +361,8 @@ class BranchRepositoryImpl(BranchRepository):
                     {
                         "id": sector.id,
                         "name": sector.name,
-                        "sector_type_id": sector.sector_type_id
+                        "sector_type_id": sector.sector_type_id,
+                        "is_active": sector.is_active
                     }
                     for sector in branch_model.sectors
                 ],

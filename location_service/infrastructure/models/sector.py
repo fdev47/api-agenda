@@ -1,7 +1,7 @@
 """
 Modelo de base de datos para sectores
 """
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import Base
@@ -17,6 +17,7 @@ class Sector(Base):
     description = Column(Text, nullable=True)
     branch_id = Column(Integer, ForeignKey("branches.id"), nullable=False, index=True)
     sector_type_id = Column(Integer, ForeignKey("sector_types.id"), nullable=False, index=True)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

@@ -161,6 +161,7 @@ async def populate_sectors(dry_run: bool = False):
                     description=f"Sector {sector_type.name} en sucursal {branch.name}",
                     branch_id=branch.id,
                     sector_type_id=sector_type.id,
+                    is_active=True,
                     created_at=datetime.utcnow(),
                     updated_at=datetime.utcnow(),
                 )

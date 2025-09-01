@@ -16,6 +16,7 @@ class Sector:
     branch_id: int
     sector_type_id: int
     created_at: datetime
+    is_active: bool = True
     updated_at: Optional[datetime] = None
     
     def __post_init__(self):
@@ -55,4 +56,14 @@ class Sector:
             raise ValueError("El ID del tipo de sector debe ser mayor a 0")
         
         self.sector_type_id = new_sector_type_id
+        self.updated_at = datetime.utcnow()
+    
+    def activate(self) -> None:
+        """Activar el sector"""
+        self.is_active = True
+        self.updated_at = datetime.utcnow()
+    
+    def deactivate(self) -> None:
+        """Desactivar el sector"""
+        self.is_active = False
         self.updated_at = datetime.utcnow() 

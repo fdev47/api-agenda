@@ -23,7 +23,8 @@ class SectorRepositoryImpl(SectorRepository):
                 name=sector.name,
                 description=sector.description,
                 branch_id=sector.branch_id,
-                sector_type_id=sector.sector_type_id
+                sector_type_id=sector.sector_type_id,
+                is_active=sector.is_active
             )
             
             session.add(sector_model)
@@ -37,7 +38,7 @@ class SectorRepositoryImpl(SectorRepository):
                 description=sector_model.description,
                 branch_id=sector_model.branch_id,
                 sector_type_id=sector_model.sector_type_id,
-                measurement_unit=sector.measurement_unit,
+                is_active=sector_model.is_active,
                 created_at=sector_model.created_at,
                 updated_at=sector_model.updated_at
             )
@@ -59,6 +60,7 @@ class SectorRepositoryImpl(SectorRepository):
                 description=sector_model.description,
                 branch_id=sector_model.branch_id,
                 sector_type_id=sector_model.sector_type_id,
+                is_active=sector_model.is_active,
                 created_at=sector_model.created_at,
                 updated_at=sector_model.updated_at
             )
@@ -94,8 +96,14 @@ class SectorRepositoryImpl(SectorRepository):
             if filter_request.name:
                 query = query.where(SectorModel.name.ilike(f"%{filter_request.name}%"))
             
+            if filter_request.branch_id:
+                query = query.where(SectorModel.branch_id == filter_request.branch_id)
+            
             if filter_request.sector_type_id:
                 query = query.where(SectorModel.sector_type_id == filter_request.sector_type_id)
+            
+            if filter_request.is_active is not None:
+                query = query.where(SectorModel.is_active == filter_request.is_active)
             
             # Contar total
             count_query = select(func.count()).select_from(query.subquery())
@@ -116,6 +124,7 @@ class SectorRepositoryImpl(SectorRepository):
                     description=model.description,
                     branch_id=model.branch_id,
                     sector_type_id=model.sector_type_id,
+                    is_active=model.is_active,
                     created_at=model.created_at,
                     updated_at=model.updated_at
                 )
@@ -141,6 +150,7 @@ class SectorRepositoryImpl(SectorRepository):
                     description=model.description,
                     branch_id=model.branch_id,
                     sector_type_id=model.sector_type_id,
+                    is_active=model.is_active,
                     created_at=model.created_at,
                     updated_at=model.updated_at
                 )
@@ -163,6 +173,7 @@ class SectorRepositoryImpl(SectorRepository):
             sector_model.description = sector.description
             sector_model.branch_id = sector.branch_id
             sector_model.sector_type_id = sector.sector_type_id
+            sector_model.is_active = sector.is_active
             
             await session.commit()
             await session.refresh(sector_model)
@@ -173,6 +184,7 @@ class SectorRepositoryImpl(SectorRepository):
                 description=sector_model.description,
                 branch_id=sector_model.branch_id,
                 sector_type_id=sector_model.sector_type_id,
+                is_active=sector_model.is_active,
                 created_at=sector_model.created_at,
                 updated_at=sector_model.updated_at
             )

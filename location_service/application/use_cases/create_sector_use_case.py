@@ -35,7 +35,7 @@ class CreateSectorUseCase:
             description=request.description,
             branch_id=request.branch_id,
             sector_type_id=request.sector_type_id,
-            measurement_unit=request.measurement_unit,
+            is_active=request.is_active,
             created_at=datetime.utcnow()
         )
         
@@ -49,7 +49,8 @@ class CreateSectorUseCase:
             description=created_sector.description,
             branch_id=created_sector.branch_id,
             sector_type_id=created_sector.sector_type_id,
-            measurement_unit=created_sector.measurement_unit.value,
+            measurement_unit=sector_type.measurement_unit.value if sector_type else None,
+            is_active=created_sector.is_active,
             created_at=created_sector.created_at,
             updated_at=created_sector.updated_at
         ) 

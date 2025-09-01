@@ -36,6 +36,13 @@ from .list_branches_use_case import ListBranchesUseCase
 from .update_branch_use_case import UpdateBranchUseCase
 from .delete_branch_use_case import DeleteBranchUseCase
 
+# Sector use cases
+from .create_sector_use_case import CreateSectorUseCase
+from .get_sector_use_case import GetSectorUseCase
+from .list_sectors_use_case import ListSectorsUseCase
+from .update_sector_use_case import UpdateSectorUseCase
+from .delete_sector_use_case import DeleteSectorUseCase
+
 # Sector Type use cases
 from .create_sector_type_use_case import CreateSectorTypeUseCase
 from .get_sector_type_use_case import GetSectorTypeUseCase
@@ -85,6 +92,13 @@ __all__ = [
     "ListBranchesUseCase",
     "UpdateBranchUseCase",
     "DeleteBranchUseCase",
+    
+    # Sector use cases
+    "CreateSectorUseCase",
+    "GetSectorUseCase",
+    "ListSectorsUseCase",
+    "UpdateSectorUseCase",
+    "DeleteSectorUseCase",
     
     # Sector Type use cases
     "CreateSectorTypeUseCase",

@@ -60,13 +60,17 @@ class UpdateSectorUseCase:
             description=request.description or existing_sector.description,
             branch_id=request.branch_id or existing_sector.branch_id,
             sector_type_id=request.sector_type_id or existing_sector.sector_type_id,
-            measurement_unit=request.measurement_unit or existing_sector.measurement_unit,
+            is_active=request.is_active if request.is_active is not None else existing_sector.is_active,
             created_at=existing_sector.created_at,
             updated_at=datetime.utcnow()
         )
         
         # Actualizar en el repositorio
         saved_sector = await self.sector_repository.update(updated_sector)
+        
+        # Obtener el tipo de sector para la unidad de medida
+        final_sector_type_id = request.sector_type_id or existing_sector.sector_type_id
+        sector_type = await self.sector_type_repository.get_by_id(final_sector_type_id)
         
         # Retornar respuesta
         return SectorResponse(
@@ -75,7 +79,8 @@ class UpdateSectorUseCase:
             description=saved_sector.description,
             branch_id=saved_sector.branch_id,
             sector_type_id=saved_sector.sector_type_id,
-            measurement_unit=saved_sector.measurement_unit.value,
+            measurement_unit=sector_type.measurement_unit.value if sector_type else None,
+            is_active=saved_sector.is_active,
             created_at=saved_sector.created_at,
             updated_at=saved_sector.updated_at
         ) 

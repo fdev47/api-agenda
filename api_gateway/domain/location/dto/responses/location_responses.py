@@ -132,6 +132,7 @@ class SectorSummaryResponse(BaseModel):
     id: int = Field(..., description="ID del sector")
     name: str = Field(..., description="Nombre del sector")
     sector_type_id: int = Field(..., description="ID del tipo de sector")
+    is_active: bool = Field(..., description="Estado activo del sector")
 
 
 class BranchResponse(BaseModel):
