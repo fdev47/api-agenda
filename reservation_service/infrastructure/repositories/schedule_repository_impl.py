@@ -126,6 +126,7 @@ class ScheduleRepositoryImpl(ScheduleRepository):
                 return False
             
             await session.delete(schedule_model)
+            await session.commit()
             return True
     
     async def exists_by_branch_and_day(self, branch_id: int, day_of_week: DayOfWeek, 
