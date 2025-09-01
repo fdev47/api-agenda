@@ -11,7 +11,10 @@ from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
 from commons.api_client import HTTPError
 from commons.error_codes import ErrorCode
-from . import user_router, profile_router, location_router, customer_router
+from .user.routes import router as user_router
+from .profile.routes import router as profile_router
+from .location.routes import router as location_router
+from .customer.routes import router as customer_router
 from .schedule.schedule_routes import router as schedule_router
 from .reservation.reservation_routes import router as reservation_router
 from .branch.routes import router as branch_router
@@ -20,6 +23,7 @@ from .local.routes import router as local_router
 from .sector_type.routes import router as sector_type_router
 from .sector.routes import router as sector_router
 from .ramp.ramp_routes import router as ramp_router
+from .notification.notification_routes import router as notification_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -57,7 +61,8 @@ def create_api_gateway_app():
         RouterConfig(local_router, prefix="/locals", tags=["Locals"]),
         RouterConfig(sector_type_router, prefix="/sector-types", tags=["Sector Types"]),
         RouterConfig(sector_router, prefix="/sectors", tags=["Sectors"]),
-        RouterConfig(ramp_router, prefix="/ramps", tags=["Ramps"])
+        RouterConfig(ramp_router, prefix="/ramps", tags=["Ramps"]),
+        RouterConfig(notification_router, prefix="/notifications", tags=["Notifications"])
     ]
     
     # Crear aplicación usando factory común
