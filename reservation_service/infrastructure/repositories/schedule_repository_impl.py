@@ -111,6 +111,7 @@ class ScheduleRepositoryImpl(ScheduleRepository):
             
             schedule_model.updated_at = datetime.utcnow()
             await session.flush()
+            await session.commit()
             await session.refresh(schedule_model)
             
             return schedule_model.to_domain()

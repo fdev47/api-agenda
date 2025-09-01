@@ -2,7 +2,7 @@
 DTOs de respuestas para schedule en el API Gateway
 """
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import time, date, datetime
 from enum import Enum
 
@@ -68,6 +68,7 @@ class UpdateBranchScheduleResponse(BaseModel):
     message: str = Field(..., description="Mensaje de la operación")
     requires_confirmation: bool = Field(default=False, description="Requiere confirmación")
     schedule: Optional[BranchScheduleResponse] = Field(None, description="Horario actualizado")
+    impact_analysis: Optional[Dict[str, Any]] = Field(None, description="Análisis de impacto de los cambios")
 
 
 class DeleteBranchScheduleResponse(BaseModel):

@@ -247,7 +247,7 @@ async def delete_branch_schedule(
 
 # ===== ENDPOINTS DE VALIDACIÓN =====
 
-@router.put("/{schedule_id}/update-with-validation", response_model=BranchScheduleResponse, status_code=status.HTTP_200_OK)
+@router.put("/{schedule_id}/update-with-validation", response_model=UpdateBranchScheduleResponse, status_code=status.HTTP_200_OK)
 async def update_branch_schedule_with_validation(
     schedule_id: int,
     request: UpdateBranchScheduleRequest,
@@ -273,15 +273,15 @@ async def update_branch_schedule_with_validation(
         logger.info(f"📊 Resultado: success={result.success}, message={result.message}")
         
         if result.success:
-            logger.info("✅ Actualización exitosa, retornando horario actualizado")
-            return result.schedule
+            logger.info("✅ Actualización exitosa, retornando respuesta completa")
+            return result
         else:
             logger.warning(f"⚠️ Actualización requiere confirmación: {result.message}")
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail={
                     "message": result.message,
-                    "impact_analysis": result.impact_analysis.dict() if result.impact_analysis else None,
+                    "impact_analysis": result.impact_analysis,
                     "requires_confirmation": result.requires_confirmation
                 }
             )

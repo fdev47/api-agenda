@@ -131,9 +131,9 @@ class APIClient:
         """Realizar solicitud POST"""
         return await self._make_request('POST', endpoint, data=data, additional_headers=headers)
     
-    async def put(self, endpoint: str, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    async def put(self, endpoint: str, data: Dict[str, Any], params: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud PUT"""
-        return await self._make_request('PUT', endpoint, data=data, additional_headers=headers)
+        return await self._make_request('PUT', endpoint, data=data, params=params, additional_headers=headers)
     
     async def patch(self, endpoint: str, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud PATCH"""

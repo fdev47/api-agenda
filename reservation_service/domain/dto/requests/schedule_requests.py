@@ -1,5 +1,5 @@
 from datetime import date, time
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, Field, validator
 
 from ...entities.day_of_week import DayOfWeek
@@ -9,10 +9,23 @@ class CreateBranchScheduleRequest(BaseModel):
     """Solicitud para crear un horario de sucursal"""
     branch_id: int = Field(..., gt=0, description="ID de la sucursal")
     day_of_week: DayOfWeek = Field(..., description="Día de la semana")
-    start_time: time = Field(..., description="Hora de inicio")
-    end_time: time = Field(..., description="Hora de fin")
+    start_time: Union[time, str] = Field(..., description="Hora de inicio")
+    end_time: Union[time, str] = Field(..., description="Hora de fin")
     interval_minutes: int = Field(60, gt=0, le=1440, description="Intervalo en minutos (por defecto 60)")
     is_active: bool = Field(True, description="Si el horario está activo")
+    
+    @validator('start_time', 'end_time', pre=True)
+    def parse_time_fields(cls, v):
+        """Convertir strings a objetos time si es necesario"""
+        if isinstance(v, str):
+            try:
+                # Parsear formato HH:MM:SS o HH:MM
+                if len(v.split(':')) == 2:
+                    v += ':00'
+                return time.fromisoformat(v)
+            except ValueError:
+                raise ValueError(f"Formato de tiempo inválido: {v}. Use HH:MM:SS o HH:MM")
+        return v
     
     @validator('end_time')
     def validate_end_time(cls, v, values):
@@ -37,10 +50,23 @@ class CreateBranchScheduleRequest(BaseModel):
 class UpdateBranchScheduleRequest(BaseModel):
     """Solicitud para actualizar un horario de sucursal"""
     day_of_week: Optional[DayOfWeek] = Field(None, description="Día de la semana")
-    start_time: Optional[time] = Field(None, description="Hora de inicio")
-    end_time: Optional[time] = Field(None, description="Hora de fin")
+    start_time: Optional[Union[time, str]] = Field(None, description="Hora de inicio")
+    end_time: Optional[Union[time, str]] = Field(None, description="Hora de fin")
     interval_minutes: Optional[int] = Field(None, gt=0, le=1440, description="Intervalo en minutos")
     is_active: Optional[bool] = Field(None, description="Si el horario está activo")
+    
+    @validator('start_time', 'end_time', pre=True)
+    def parse_time_fields(cls, v):
+        """Convertir strings a objetos time si es necesario"""
+        if isinstance(v, str):
+            try:
+                # Parsear formato HH:MM:SS o HH:MM
+                if len(v.split(':')) == 2:
+                    v += ':00'
+                return time.fromisoformat(v)
+            except ValueError:
+                raise ValueError(f"Formato de tiempo inválido: {v}. Use HH:MM:SS o HH:MM")
+        return v
     
     @validator('end_time')
     def validate_end_time(cls, v, values):

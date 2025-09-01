@@ -35,9 +35,13 @@ class UpdateBranchScheduleUseCase:
             params = {"auto_reschedule": auto_reschedule}
             
             async with APIClient(self.reservation_service_url, "") as client:
+                # Serializar el request a JSON para manejar tipos como time y date
+                import json
+                request_json = json.loads(request.json(exclude_none=True))
+                
                 response = await client.put(
                     f"{config.API_PREFIX}/schedules/{schedule_id}/update-with-validation",
-                    data=request.dict(exclude_none=True),
+                    data=request_json,
                     params=params,
                     headers=headers
                 )
@@ -51,14 +55,16 @@ class UpdateBranchScheduleUseCase:
                         success=response.get("success", True),
                         message=response.get("message", "Horario actualizado exitosamente"),
                         requires_confirmation=response.get("requires_confirmation", False),
-                        schedule=schedule
+                        schedule=schedule,
+                        impact_analysis=response.get("impact_analysis")
                     )
                 
                 return UpdateBranchScheduleResponse(
                     success=False,
                     message="Error actualizando horario",
                     requires_confirmation=False,
-                    schedule=None
+                    schedule=None,
+                    impact_analysis=None
                 )
                 
         except HTTPError as e:
@@ -71,5 +77,6 @@ class UpdateBranchScheduleUseCase:
                 success=False,
                 message=f"Error actualizando horario: {str(e)}",
                 requires_confirmation=False,
-                schedule=None
+                schedule=None,
+                impact_analysis=None
             ) 
