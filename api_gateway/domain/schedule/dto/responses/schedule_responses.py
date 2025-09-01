@@ -59,7 +59,7 @@ class CreateBranchScheduleResponse(BaseModel):
     """DTO para respuesta de creación de horario"""
     success: bool = Field(..., description="Indica si la operación fue exitosa")
     message: str = Field(..., description="Mensaje de la operación")
-    schedule: BranchScheduleResponse = Field(..., description="Horario creado")
+    schedule_id: int = Field(..., description="ID del horario creado")
 
 
 class UpdateBranchScheduleResponse(BaseModel):

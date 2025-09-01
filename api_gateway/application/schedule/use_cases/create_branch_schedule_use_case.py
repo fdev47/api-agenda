@@ -5,7 +5,7 @@ from typing import Optional
 from commons.api_client import APIClient, HTTPError
 from commons.config import config
 from ....domain.schedule.dto.requests.schedule_requests import CreateBranchScheduleRequest
-from ....domain.schedule.dto.responses.schedule_responses import CreateBranchScheduleResponse, BranchScheduleResponse
+from ....domain.schedule.dto.responses.schedule_responses import CreateBranchScheduleResponse
 
 
 class CreateBranchScheduleUseCase:
@@ -31,24 +31,29 @@ class CreateBranchScheduleUseCase:
                 headers["Authorization"] = f"Bearer {access_token}"
             
             async with APIClient(self.reservation_service_url, "") as client:
+                # Serializar el request a JSON para manejar tipos como time y date
+                import json
+                request_json = json.loads(request.json())
+                
                 response = await client.post(
                     f"{config.API_PREFIX}/schedules/",
-                    data=request.dict(),
+                    data=request_json,
                     headers=headers
                 )
                 
                 if response:
-                    schedule = BranchScheduleResponse(**response.get("schedule", {}))
+                    # El reservation service retorna directamente CreateBranchScheduleResponse
+                    # que solo tiene id y message
                     return CreateBranchScheduleResponse(
-                        success=response.get("success", True),
+                        success=True,
                         message=response.get("message", "Horario creado exitosamente"),
-                        schedule=schedule
+                        schedule_id=response.get("id")
                     )
                 
                 return CreateBranchScheduleResponse(
                     success=False,
                     message="Error creando horario",
-                    schedule=None
+                    schedule_id=0
                 )
                 
         except HTTPError as e:
@@ -60,5 +65,5 @@ class CreateBranchScheduleUseCase:
             return CreateBranchScheduleResponse(
                 success=False,
                 message=f"Error creando horario: {str(e)}",
-                schedule=None
+                schedule_id=0
             ) 
