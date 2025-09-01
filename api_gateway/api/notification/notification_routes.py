@@ -18,7 +18,7 @@ from api_gateway.api.middleware import auth_middleware
 logger = logging.getLogger(__name__)
 
 # Crear router
-router = APIRouter(prefix="/notifications", tags=["notifications"])
+router = APIRouter()
 
 
 @router.post("/send-whatsapp", response_model=NotificationResponse, status_code=status.HTTP_200_OK)
