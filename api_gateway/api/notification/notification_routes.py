@@ -10,7 +10,12 @@ import logging
 
 from api_gateway.application.notification.use_cases.send_message_whatsapp_use_case import SendMessageWhatsappUseCase
 from api_gateway.application.notification.use_cases.send_remember_message_whatsapp_use_case import SendRememberMessageWhatsappUseCase
-from api_gateway.domain.notification.dto.requests.notification_requests import SendMessageWhatsappRequest, SendRememberMessageWhatsappRequest
+from api_gateway.application.notification.use_cases.send_cancelation_notification_use_case import SendCancelationNotificationUseCase
+from api_gateway.domain.notification.dto.requests.notification_requests import (
+    SendMessageWhatsappRequest, 
+    SendRememberMessageWhatsappRequest,
+    SendCancelationNotificationRequest
+)
 from api_gateway.domain.notification.dto.responses.notification_responses import NotificationResponse
 from api_gateway.api.middleware import auth_middleware
 
@@ -125,6 +130,61 @@ async def send_remember_message_whatsapp(
         raise
     except Exception as e:
         logger.error(f"❌ Error inesperado en send_remember_message_whatsapp: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": f"Error interno del servidor: {str(e)}"}
+        )
+
+
+@router.post("/send-cancelation-notification", response_model=NotificationResponse, status_code=status.HTTP_200_OK)
+async def send_cancelation_notification(
+    request: SendCancelationNotificationRequest,
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Enviar notificación de cancelación de reserva a administradores
+    
+    Args:
+        request: Datos de la cancelación (reservation_id)
+        current_user: Usuario autenticado
+        authorization: Token de autorización
+        
+    Returns:
+        NotificationResponse: Respuesta con el resultado de la operación
+    """
+    try:
+        logger.info("🚀 Endpoint send_cancelation_notification llamado")
+        logger.info(f"📝 ID de reserva cancelada: {request.reservation_id}")
+        
+        # Obtener use case
+        logger.info("📝 Obteniendo use case...")
+        use_case = SendCancelationNotificationUseCase()
+        logger.info("✅ Use case obtenido correctamente")
+        
+        # Ejecutar envío de notificación
+        logger.info("🔄 Ejecutando envío de notificación de cancelación...")
+        result = await use_case.execute(request, authorization)
+        logger.info("✅ Notificación completada exitosamente")
+        
+        # Log del resultado
+        logger.info(f"📊 Resultado: success={result.success}, message={result.message}")
+        
+        if result.success:
+            logger.info("✅ Notificación de cancelación enviada exitosamente")
+            return result
+        else:
+            logger.warning(f"⚠️ Error enviando notificación de cancelación: {result.message}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"message": result.message}
+            )
+            
+    except HTTPException:
+        # Re-lanzar HTTPExceptions
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en send_cancelation_notification: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": f"Error interno del servidor: {str(e)}"}

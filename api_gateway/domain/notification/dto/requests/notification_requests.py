@@ -24,3 +24,8 @@ class SendMessageWhatsappRequest(BaseModel):
 class SendRememberMessageWhatsappRequest(BaseModel):
     """Solicitud para enviar mensaje recordatorio de WhatsApp"""
     currentDate: str = Field(..., description="Fecha actual para recordatorios")
+
+
+class SendCancelationNotificationRequest(BaseModel):
+    """Solicitud para enviar notificación de cancelación de reserva"""
+    reservation_id: str = Field(..., description="ID de la reserva cancelada")
