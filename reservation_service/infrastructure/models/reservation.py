@@ -81,8 +81,17 @@ class ReservationModel(Base):
             if 'ramp_name' not in branch_data_dict:
                 branch_data_dict['ramp_name'] = 'N/A'  # Valor por defecto
             
+            # Manejar campos faltantes en sector_data (para compatibilidad con datos existentes)
+            sector_data_dict = self.sector_data.copy()
+            if 'pallet_count' not in sector_data_dict:
+                sector_data_dict['pallet_count'] = 0  # Valor por defecto
+            if 'granel_count' not in sector_data_dict:
+                sector_data_dict['granel_count'] = 0  # Valor por defecto
+            if 'boxes_count' not in sector_data_dict:
+                sector_data_dict['boxes_count'] = 0  # Valor por defecto
+            
             branch_data = BranchData(**branch_data_dict)
-            sector_data = SectorData(**self.sector_data)
+            sector_data = SectorData(**sector_data_dict)
             customer_data = CustomerData(**customer_data_dict)
             
             # Convertir números de pedido
@@ -143,7 +152,10 @@ class ReservationModel(Base):
                 "sector_type_name": reservation.sector_data.sector_type_name,
                 "capacity": reservation.sector_data.capacity,
                 "measurement_unit_id": reservation.sector_data.measurement_unit_id,
-                "measurement_unit_name": reservation.sector_data.measurement_unit_name
+                "measurement_unit_name": reservation.sector_data.measurement_unit_name,
+                "pallet_count": getattr(reservation.sector_data, 'pallet_count', 0),
+                "granel_count": getattr(reservation.sector_data, 'granel_count', 0),
+                "boxes_count": getattr(reservation.sector_data, 'boxes_count', 0)
             }
             
             # Convertir UUIDs a strings para serialización JSON

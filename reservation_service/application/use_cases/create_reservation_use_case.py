@@ -74,7 +74,10 @@ class CreateReservationUseCase:
                 sector_type_name=request.sector_data.sector_type_name,
                 measurement_unit_id=request.sector_data.measurement_unit_id,
                 measurement_unit_name=request.sector_data.measurement_unit_name,
-                capacity=request.sector_data.capacity
+                capacity=request.sector_data.capacity,
+                pallet_count=request.pallet_count,
+                granel_count=request.granel_count,
+                boxes_count=request.boxes_count
             )
             
             # Convertir números de pedido
@@ -186,7 +189,10 @@ class CreateReservationUseCase:
             sector_type_name=reservation.sector_data.sector_type_name,
             measurement_unit_id=reservation.sector_data.measurement_unit_id,
             measurement_unit_name=reservation.sector_data.measurement_unit_name,
-            capacity=reservation.sector_data.capacity
+            capacity=reservation.sector_data.capacity,
+            pallet_count=getattr(reservation.sector_data, 'pallet_count', 0),
+            granel_count=getattr(reservation.sector_data, 'granel_count', 0),
+            boxes_count=getattr(reservation.sector_data, 'boxes_count', 0)
         )
         
         # Convertir números de pedido

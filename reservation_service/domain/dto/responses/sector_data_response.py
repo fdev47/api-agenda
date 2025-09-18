@@ -16,4 +16,9 @@ class SectorDataResponse(BaseModel):
     sector_type_name: str = Field(..., description="Nombre del tipo de sector")
     capacity: Optional[float] = Field(None, description="Capacidad del sector")
     measurement_unit_id: int = Field(..., description="ID de la unidad de medida")
-    measurement_unit_name: str = Field(..., description="Nombre de la unidad de medida") 
+    measurement_unit_name: str = Field(..., description="Nombre de la unidad de medida")
+    
+    # Nuevos campos para cantidades (opcionales para compatibilidad con reservas existentes)
+    pallet_count: int = Field(0, description="Cantidad de palets")
+    granel_count: int = Field(0, description="Cantidad de graneles")
+    boxes_count: int = Field(0, description="Cantidad de cajas") 

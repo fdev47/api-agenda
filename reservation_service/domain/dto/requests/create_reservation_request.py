@@ -43,6 +43,11 @@ class CreateReservationRequest(BaseModel):
     
     # Información adicional
     notes: Optional[str] = Field(None, max_length=1000, description="Notas adicionales")
+
+    # Cantidades de carga (se guardarán en sector_data)
+    pallet_count: int = Field(..., ge=0, description="Cantidad de palets")
+    granel_count: int = Field(..., ge=0, description="Cantidad de graneles")
+    boxes_count: int = Field(..., ge=0, description="Cantidad de cajas")
     
     @validator('end_time')
     def validate_end_time(cls, v, values):

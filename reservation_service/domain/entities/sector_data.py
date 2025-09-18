@@ -17,4 +17,9 @@ class SectorData:
     measurement_unit_id: int
     measurement_unit_name: str
     description: Optional[str] = None
-    capacity: Optional[float] = None 
+    capacity: Optional[float] = None
+    
+    # Nuevos campos para cantidades
+    pallet_count: int = 0
+    granel_count: int = 0
+    boxes_count: int = 0 
