@@ -34,7 +34,17 @@ class UpdateUserUseCase:
         """
         try:
             user = self.auth_provider.update_user(user_id, request)
-            return UserInfoResponse.model_validate(user)
+            # Convertir AuthenticatedUser a UserInfoResponse manualmente
+            return UserInfoResponse(
+                user_id=user.user_id,
+                email=user.email,
+                display_name=user.display_name,
+                phone_number=user.phone_number,
+                email_verified=user.email_verified,
+                custom_claims=user.custom_claims,
+                created_at=user.created_at,
+                last_sign_in=user.last_sign_in
+            )
         except UserNotFoundException:
             raise
         except AuthError:
