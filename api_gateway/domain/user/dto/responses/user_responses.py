@@ -64,7 +64,7 @@ class UserResponse(BaseModel):
     cellphone_number: Optional[str] = None
     cellphone_country_code: Optional[str] = None
     is_active: bool
-    user_type: str  # 'admin' | 'user'
+    user_type: str
     profiles: List[ProfileResponse] = []
     customer: Optional[CustomerResponse] = None
 

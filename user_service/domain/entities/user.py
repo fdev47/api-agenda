@@ -7,7 +7,7 @@ from typing import List, Literal, Optional
 from .profile import ProfileSimple
 
 # Definir el tipo como variable para mejor mantenibilidad
-UserType = Literal['admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
+UserType = Literal['root', 'admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
 
 class User(BaseModel):
     """Entidad User del dominio - Usuarios internos del sistema"""

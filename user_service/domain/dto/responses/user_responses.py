@@ -8,6 +8,7 @@ from enum import Enum
 
 class UserType(str, Enum):
     """Tipos de usuario interno disponibles"""
+    ROOT = "root"
     ADMIN = "admin"
     USER = "user"
     RECEPCIONISTA = "recepcionista"

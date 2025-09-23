@@ -6,7 +6,7 @@ from typing import List, Optional, Literal
 from uuid import UUID
 
 # Usar el mismo tipo que la entidad User
-UserType = Literal['admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
+UserType = Literal['root', 'admin', 'user', 'recepcionista', 'recepcionista_rampa', 'recepcionista_rampa_frio']
 
 class CreateUserRequest(BaseModel):
     """DTO para crear usuario"""
