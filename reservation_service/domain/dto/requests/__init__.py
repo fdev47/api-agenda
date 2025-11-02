@@ -10,6 +10,8 @@ from .sector_data_request import SectorDataRequest
 from .create_reservation_request import CreateReservationRequest
 from .update_reservation_request import UpdateReservationRequest
 from .reservation_filter_request import ReservationFilterRequest
+from .create_main_reservation_request import CreateMainReservationRequest
+from .update_main_reservation_request import UpdateMainReservationRequest
 
 # Schedule DTOs (from existing file)
 from .schedule_requests import (
@@ -29,6 +31,8 @@ __all__ = [
     "CreateReservationRequest",
     "UpdateReservationRequest", 
     "ReservationFilterRequest",
+    "CreateMainReservationRequest",
+    "UpdateMainReservationRequest",
     # Schedule DTOs
     "CreateBranchScheduleRequest",
     "UpdateBranchScheduleRequest",

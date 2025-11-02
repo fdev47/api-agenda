@@ -20,6 +20,13 @@ from commons.service_factory import create_service_factory, ServiceConfig, Route
 from .routes import schedule_routes, reservation_routes
 from ..infrastructure.models.base import Base
 from ..infrastructure.container import container
+# Importar todos los modelos para que SQLAlchemy los registre
+from ..infrastructure.models import (
+    ReservationModel,
+    ReservationOrderNumberModel,
+    BranchScheduleModel,
+    MainReservationModel
+)
 
 
 def create_reservation_service() -> ServiceConfig:

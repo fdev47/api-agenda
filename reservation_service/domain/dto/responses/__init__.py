@@ -11,6 +11,7 @@ from .reservation_response import ReservationResponse
 from .reservation_list_response import ReservationListResponse
 from .reservation_summary_response import ReservationSummaryResponse
 from .reservation_summary_list_response import ReservationSummaryListResponse
+from .main_reservation_response import MainReservationResponse
 
 # Schedule DTOs (from existing file)
 from .schedule_responses import (
@@ -34,6 +35,7 @@ __all__ = [
     "ReservationListResponse",
     "ReservationSummaryResponse",
     "ReservationSummaryListResponse",
+    "MainReservationResponse",
     # Schedule DTOs
     "TimeSlotResponse",
     "BranchScheduleResponse",

@@ -17,6 +17,12 @@ from .delete_reservation_use_case import DeleteReservationUseCase
 from .complete_reservation_use_case import CompleteReservationUseCase
 from .reject_reservation_use_case import RejectReservationUseCase
 
+# Casos de uso para main_reservations
+from .create_main_reservation_use_case import CreateMainReservationUseCase
+from .get_main_reservation_use_case import GetMainReservationUseCase
+from .update_main_reservation_use_case import UpdateMainReservationUseCase
+from .delete_main_reservation_use_case import DeleteMainReservationUseCase
+
 __all__ = [
     # Horarios
     "CreateBranchScheduleUseCase",
@@ -34,5 +40,10 @@ __all__ = [
     "UpdateReservationUseCase",
     "DeleteReservationUseCase",
     "CompleteReservationUseCase",
-    "RejectReservationUseCase"
+    "RejectReservationUseCase",
+    # Main Reservations
+    "CreateMainReservationUseCase",
+    "GetMainReservationUseCase",
+    "UpdateMainReservationUseCase",
+    "DeleteMainReservationUseCase"
 ]

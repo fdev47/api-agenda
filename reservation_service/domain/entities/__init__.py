@@ -5,6 +5,7 @@ from .customer_data import CustomerData
 from .branch_data import BranchData
 from .sector_data import SectorData
 from .reservation import Reservation
+from .main_reservation import MainReservation
 
 # Entidades de schedule
 from .day_of_week import DayOfWeek
@@ -15,6 +16,7 @@ from .available_slots_response import AvailableSlotsResponse
 __all__ = [
     # Reserva
     "Reservation",
+    "MainReservation",
     "ReservationStatus",
     "OrderNumber",
     "CustomerData",
