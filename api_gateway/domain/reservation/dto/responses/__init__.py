@@ -10,6 +10,7 @@ from .order_number_response import OrderNumberResponse
 from .customer_data_response import CustomerDataResponse
 from .sector_data_response import SectorDataResponse
 from .branch_data_response import BranchDataResponse
+from .main_reservation_response import MainReservationResponse
 
 __all__ = [
     "AvailableRampResponse",
@@ -20,5 +21,6 @@ __all__ = [
     "OrderNumberResponse",
     "CustomerDataResponse",
     "SectorDataResponse",
-    "BranchDataResponse"
+    "BranchDataResponse",
+    "MainReservationResponse"
 ] 

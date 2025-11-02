@@ -17,6 +17,7 @@ from .location.routes import router as location_router
 from .customer.routes import router as customer_router
 from .schedule.schedule_routes import router as schedule_router
 from .reservation.reservation_routes import router as reservation_router
+from .reservation.main_reservation_routes import router as main_reservation_router
 from .branch.routes import router as branch_router
 from .measurement_unit.routes import router as measurement_unit_router
 from .local.routes import router as local_router
@@ -56,6 +57,7 @@ def create_api_gateway_app():
         RouterConfig(customer_router, prefix="/customers", tags=["Customers"]),
         RouterConfig(schedule_router, prefix="/schedules", tags=["Schedules"]),
         RouterConfig(reservation_router, prefix="/reservations", tags=["Reservations"]),
+        RouterConfig(main_reservation_router, prefix="/main-reservations", tags=["Main Reservations"]),
         RouterConfig(branch_router, prefix="/branches", tags=["Branches"]),
         RouterConfig(measurement_unit_router, prefix="/measurement-units", tags=["Measurement Units"]),
         RouterConfig(local_router, prefix="/locals", tags=["Locals"]),

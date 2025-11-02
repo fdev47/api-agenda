@@ -9,6 +9,8 @@ from .order_number_request import OrderNumberRequest
 from .customer_data_request import CustomerDataRequest
 from .sector_data_request import SectorDataRequest
 from .branch_data_request import BranchDataRequest
+from .create_main_reservation_request import CreateMainReservationRequest
+from .update_main_reservation_request import UpdateMainReservationRequest
 
 __all__ = [
     "AvailableRampRequest",
@@ -18,5 +20,7 @@ __all__ = [
     "OrderNumberRequest",
     "CustomerDataRequest",
     "SectorDataRequest",
-    "BranchDataRequest"
+    "BranchDataRequest",
+    "CreateMainReservationRequest",
+    "UpdateMainReservationRequest"
 ] 
