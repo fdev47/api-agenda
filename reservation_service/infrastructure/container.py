@@ -3,7 +3,7 @@ from dependency_injector import containers, providers
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from commons.database import get_db_session
-from .repositories import ReservationRepositoryImpl, ScheduleRepositoryImpl
+from .repositories import ReservationRepositoryImpl, ScheduleRepositoryImpl, MainReservationRepositoryImpl
 from ..application.use_cases import (
     # Casos de uso de horarios
     CreateBranchScheduleUseCase,
@@ -21,7 +21,12 @@ from ..application.use_cases import (
     UpdateReservationUseCase,
     DeleteReservationUseCase,
     CompleteReservationUseCase,
-    RejectReservationUseCase
+    RejectReservationUseCase,
+    # Casos de uso de main_reservations
+    CreateMainReservationUseCase,
+    GetMainReservationUseCase,
+    UpdateMainReservationUseCase,
+    DeleteMainReservationUseCase
 )
 
 
@@ -41,6 +46,10 @@ class Container(containers.DeclarativeContainer):
     
     schedule_repository = providers.Factory(
         ScheduleRepositoryImpl
+    )
+    
+    main_reservation_repository = providers.Factory(
+        MainReservationRepositoryImpl
     )
     
     # Casos de uso de horarios
@@ -124,6 +133,27 @@ class Container(containers.DeclarativeContainer):
     reject_reservation_use_case = providers.Factory(
         RejectReservationUseCase,
         reservation_repository=reservation_repository
+    )
+    
+    # Casos de uso de main_reservations
+    create_main_reservation_use_case = providers.Factory(
+        CreateMainReservationUseCase,
+        main_reservation_repository=main_reservation_repository
+    )
+    
+    get_main_reservation_use_case = providers.Factory(
+        GetMainReservationUseCase,
+        main_reservation_repository=main_reservation_repository
+    )
+    
+    update_main_reservation_use_case = providers.Factory(
+        UpdateMainReservationUseCase,
+        main_reservation_repository=main_reservation_repository
+    )
+    
+    delete_main_reservation_use_case = providers.Factory(
+        DeleteMainReservationUseCase,
+        main_reservation_repository=main_reservation_repository
     )
 
 

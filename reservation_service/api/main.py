@@ -17,7 +17,7 @@ load_dotenv()
 
 from commons.config import config
 from commons.service_factory import create_service_factory, ServiceConfig, RouterConfig, run_service
-from .routes import schedule_routes, reservation_routes
+from .routes import schedule_routes, reservation_routes, main_reservation_routes
 from ..infrastructure.models.base import Base
 from ..infrastructure.container import container
 # Importar todos los modelos para que SQLAlchemy los registre
@@ -51,7 +51,8 @@ def create_reservation_app():
     # ⭐ INICIALIZAR EL CONTAINER
     container.wire(modules=[
         "reservation_service.api.routes.reservation_routes",
-        "reservation_service.api.routes.schedule_routes"
+        "reservation_service.api.routes.schedule_routes",
+        "reservation_service.api.routes.main_reservation_routes"
     ])
     
     # Inicializar el container
@@ -63,7 +64,8 @@ def create_reservation_app():
     # Configurar routers con tags personalizados (sin prefijos duplicados)
     routers = [
         RouterConfig(schedule_routes.router, tags=["Schedules"]),
-        RouterConfig(reservation_routes.router, tags=["Reservations"])
+        RouterConfig(reservation_routes.router, tags=["Reservations"]),
+        RouterConfig(main_reservation_routes.router, tags=["Main Reservations"])
     ]
     
     # Crear aplicación usando factory común
