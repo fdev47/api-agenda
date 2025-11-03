@@ -69,7 +69,6 @@ class GetMainReservationUseCase:
                 id=main_reservation.id,
                 sector_id=main_reservation.sector_id,
                 reservation_id=main_reservation.reservation_id,
-                ramp_id=main_reservation.ramp_id,
                 sector_data=sector_data_response,
                 reservation_date=main_reservation.reservation_date,
                 start_time=main_reservation.start_time,

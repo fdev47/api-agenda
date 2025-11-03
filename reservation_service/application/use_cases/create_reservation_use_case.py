@@ -148,7 +148,6 @@ class CreateReservationUseCase:
                 main_reservation = MainReservation(
                     sector_id=sector_item.sector_id,
                     reservation_id=saved_reservation.id,
-                    ramp_id=sector_item.ramp_id,
                     sector_data=sector_data_entity,
                     reservation_date=request.reservation_date,
                     start_time=request.start_time,
@@ -218,7 +217,6 @@ class CreateReservationUseCase:
                 id=main_res.id,
                 sector_id=main_res.sector_id,
                 reservation_id=main_res.reservation_id,
-                ramp_id=main_res.ramp_id,
                 sector_data=sector_data_response,
                 reservation_date=main_res.reservation_date,
                 start_time=main_res.start_time,

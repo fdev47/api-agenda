@@ -39,8 +39,10 @@ def get_container():
 def get_list_reservations_use_case():
     """Obtener el use case para listar reservas"""
     from ...infrastructure.repositories.reservation_repository_impl import ReservationRepositoryImpl
+    from ...infrastructure.repositories.main_reservation_repository_impl import MainReservationRepositoryImpl
     return ListReservationsUseCase(
-        reservation_repository=ReservationRepositoryImpl()
+        reservation_repository=ReservationRepositoryImpl(),
+        main_reservation_repository=MainReservationRepositoryImpl()
     )
 
 

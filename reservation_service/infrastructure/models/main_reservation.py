@@ -56,7 +56,6 @@ class MainReservationModel(Base):
                 id=self.id,
                 sector_id=self.sector_id,
                 reservation_id=self.reservation_id,
-                ramp_id=self.ramp_id,
                 sector_data=sector_data,
                 reservation_date=self.reservation_date,
                 start_time=self.start_time,
@@ -90,11 +89,14 @@ class MainReservationModel(Base):
                 "ramp_name": main_reservation.sector_data.ramp_name
             }
             
+            # ramp_id en la columna se obtiene de sector_data
+            ramp_id = main_reservation.sector_data.ramp_id or 0
+            
             return cls(
                 id=main_reservation.id,
                 sector_id=main_reservation.sector_id,
                 reservation_id=main_reservation.reservation_id,
-                ramp_id=main_reservation.ramp_id,
+                ramp_id=ramp_id,
                 sector_data=sector_data,
                 reservation_date=main_reservation.reservation_date,
                 start_time=main_reservation.start_time,

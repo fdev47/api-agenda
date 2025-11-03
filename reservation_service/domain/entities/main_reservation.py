@@ -15,9 +15,8 @@ class MainReservation:
     # IDs de referencia
     sector_id: int
     reservation_id: int
-    ramp_id: int
     
-    # Datos del sector (completos, no solo ID)
+    # Datos del sector (completos, no solo ID - incluye ramp_id y ramp_name)
     sector_data: SectorData
     
     # Horario de la reserva
@@ -50,9 +49,6 @@ class MainReservation:
         if self.reservation_id <= 0:
             raise ValueError("El reservation_id debe ser mayor a 0")
         
-        if self.ramp_id <= 0:
-            raise ValueError("El ramp_id debe ser mayor a 0")
-        
         # Asignar timestamps si no están definidos
         if not self.created_at:
             self.created_at = datetime.utcnow()
@@ -62,6 +58,6 @@ class MainReservation:
     def __repr__(self):
         return (
             f"<MainReservation(id={self.id}, reservation_id={self.reservation_id}, "
-            f"sector_id={self.sector_id}, ramp_id={self.ramp_id})>"
+            f"sector_id={self.sector_id}, ramp_id={self.sector_data.ramp_id if self.sector_data else 'N/A'})>"
         )
 

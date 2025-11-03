@@ -6,13 +6,19 @@ from ...domain.dto.requests.reservation_filter_request import ReservationFilterR
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.interfaces.main_reservation_repository import MainReservationRepository
 
 
 class ListReservationsUseCase:
     """Caso de uso para listar reservas con filtros y paginación"""
     
-    def __init__(self, reservation_repository: ReservationRepository):
+    def __init__(
+        self, 
+        reservation_repository: ReservationRepository,
+        main_reservation_repository: MainReservationRepository
+    ):
         self.reservation_repository = reservation_repository
+        self.main_reservation_repository = main_reservation_repository
     
     async def execute(self, request: ReservationFilterRequest) -> ReservationListResponse:
         """Ejecutar el caso de uso"""
@@ -21,7 +27,14 @@ class ListReservationsUseCase:
         reservations, total = await self.reservation_repository.list(request)
         
         # Convertir a DTOs de respuesta
-        reservation_responses = [self.to_response(reservation) for reservation in reservations]
+        reservation_responses = []
+        for reservation in reservations:
+            # Obtener las main_reservations asociadas
+            main_reservations, _ = await self.main_reservation_repository.list(
+                reservation_id=reservation.id
+            )
+            reservation_response = await self.to_response(reservation, main_reservations)
+            reservation_responses.append(reservation_response)
         
         # Calcular páginas
         pages = (total + request.limit - 1) // request.limit
@@ -34,12 +47,11 @@ class ListReservationsUseCase:
             pages=pages
         )
     
-    def to_response(self, reservation) -> ReservationResponse:
+    async def to_response(self, reservation, main_reservations: List) -> ReservationResponse:
         """Convertir entidad a DTO de respuesta completa"""
         from ...domain.dto.responses.customer_data_response import CustomerDataResponse
-        from ...domain.dto.responses.branch_data_response import BranchDataResponse
+        from ...domain.dto.responses.main_reservation_response import MainReservationResponse
         from ...domain.dto.responses.sector_data_response import SectorDataResponse
-        from ...domain.dto.responses.order_number_response import OrderNumberResponse
         
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
@@ -57,26 +69,45 @@ class ListReservationsUseCase:
             is_active=reservation.customer_data.is_active
         )
         
-        # Convertir datos de la sucursal
-        branch_response = BranchDataResponse(
-            branch_id=reservation.branch_data.branch_id,
-            name=reservation.branch_data.name,
-            code=reservation.branch_data.code,
-            address=reservation.branch_data.address,
-            country_id=reservation.branch_data.country_id,
-            country_name=reservation.branch_data.country_name,
-            state_id=reservation.branch_data.state_id,
-            state_name=reservation.branch_data.state_name,
-            city_id=reservation.branch_data.city_id,
-            city_name=reservation.branch_data.city_name
-        )
+        # Convertir main_reservations a DTOs
+        main_reservations_response = []
+        for main_res in main_reservations:
+            sector_data_response = SectorDataResponse(
+                sector_id=main_res.sector_data.sector_id,
+                name=main_res.sector_data.name,
+                description=main_res.sector_data.description,
+                sector_type_id=main_res.sector_data.sector_type_id,
+                sector_type_name=main_res.sector_data.sector_type_name,
+                capacity=main_res.sector_data.capacity,
+                measurement_unit_id=main_res.sector_data.measurement_unit_id,
+                measurement_unit_name=main_res.sector_data.measurement_unit_name,
+                pallet_count=main_res.sector_data.pallet_count,
+                granel_count=main_res.sector_data.granel_count,
+                boxes_count=main_res.sector_data.boxes_count,
+                order_numbers=main_res.sector_data.order_numbers,
+                ramp_id=main_res.sector_data.ramp_id,
+                ramp_name=main_res.sector_data.ramp_name
+            )
+            
+            main_res_response = MainReservationResponse(
+                id=main_res.id,
+                sector_id=main_res.sector_id,
+                reservation_id=main_res.reservation_id,
+                sector_data=sector_data_response,
+                reservation_date=main_res.reservation_date,
+                start_time=main_res.start_time,
+                end_time=main_res.end_time,
+                created_at=main_res.created_at,
+                updated_at=main_res.updated_at
+            )
+            main_reservations_response.append(main_res_response)
         
         return ReservationResponse(
             id=reservation.id,
             user_id=reservation.user_id,
             customer_id=reservation.customer_id,
-            branch_data=branch_response,
-            sector_id=reservation.sector_data.sector_id,
+            branch_id=reservation.branch_data.branch_id,
+            main_reservations=main_reservations_response,
             customer_data=customer_response,
             unloading_time_minutes=reservation.unloading_time_minutes,
             unloading_time_hours=reservation.get_total_unloading_time_hours(),
