@@ -5,10 +5,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
-from .order_number_response import OrderNumberResponse
 from .customer_data_response import CustomerDataResponse
-from .branch_data_response import BranchDataResponse
-from .sector_data_response import SectorDataResponse
+from .main_reservation_response import MainReservationResponse
 
 
 class ReservationResponse(BaseModel):
@@ -19,11 +17,11 @@ class ReservationResponse(BaseModel):
     user_id: Optional[int] = Field(None, description="ID del usuario que hizo la reserva")
     customer_id: Optional[int] = Field(None, description="ID del cliente en el sistema")
     
-    # Datos de la sucursal (completos)
-    branch_data: Optional[BranchDataResponse] = Field(None, description="Datos completos de la sucursal")
+    # ID de la sucursal (sin datos completos)
+    branch_id: Optional[int] = Field(None, description="ID de la sucursal")
     
-    # Datos del sector (completos)
-    sector_data: Optional[SectorDataResponse] = Field(None, description="Datos completos del sector")
+    # Main reservations (sectores con rampa)
+    main_reservations: Optional[List[MainReservationResponse]] = Field(None, description="Lista de main_reservations creadas")
     
     # Datos del cliente (completos)
     customer_data: Optional[CustomerDataResponse] = Field(None, description="Datos completos del cliente")
@@ -33,10 +31,6 @@ class ReservationResponse(BaseModel):
     unloading_time_hours: Optional[float] = Field(None, description="Tiempo de descarga en horas")
     reason: Optional[str] = Field(None, description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
-    ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
-    
-    # Números de pedidos
-    order_numbers: Optional[List[OrderNumberResponse]] = Field(None, description="Lista de números de pedido")
     
     # Horario de la reserva
     reservation_date: Optional[datetime] = Field(None, description="Fecha de la reserva")
@@ -62,8 +56,3 @@ class ReservationResponse(BaseModel):
         """Verifica si la reserva está completada"""
         return self.status == "completed" if self.status else False
     
-    def get_order_codes(self) -> List[str]:
-        """Obtiene la lista de códigos de pedidos"""
-        if self.order_numbers:
-            return [order.code for order in self.order_numbers if order and order.code]
-        return [] 

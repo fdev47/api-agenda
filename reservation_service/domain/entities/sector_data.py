@@ -25,4 +25,8 @@ class SectorData:
     boxes_count: int = 0
     
     # Números de pedido asociados
-    order_numbers: Optional[List[str]] = None 
+    order_numbers: Optional[List[str]] = None
+    
+    # Información de la rampa
+    ramp_id: Optional[int] = None
+    ramp_name: Optional[str] = None 

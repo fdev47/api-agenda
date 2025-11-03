@@ -74,24 +74,64 @@ class ReservationModel(Base):
             if customer_data_dict.get('address_id'):
                 customer_data_dict['address_id'] = uuid.UUID(customer_data_dict['address_id'])
             
-            # Manejar campos faltantes en branch_data (para compatibilidad con datos existentes)
-            branch_data_dict = self.branch_data.copy()
-            if 'ramp_id' not in branch_data_dict:
-                branch_data_dict['ramp_id'] = 0  # Valor por defecto
-            if 'ramp_name' not in branch_data_dict:
-                branch_data_dict['ramp_name'] = 'N/A'  # Valor por defecto
+            # Manejar branch_data (puede ser null en nuevas reservas)
+            if self.branch_data is None:
+                # Crear BranchData básico si es null
+                branch_data = BranchData(
+                    branch_id=self.branch_id,
+                    name=f"Sucursal {self.branch_id}",
+                    code="N/A",
+                    address="N/A",
+                    country_id=0,
+                    country_name="N/A",
+                    state_id=0,
+                    state_name="N/A",
+                    city_id=0,
+                    city_name="N/A",
+                    ramp_id=0,
+                    ramp_name="N/A"
+                )
+            else:
+                # Manejar campos faltantes en branch_data (para compatibilidad con datos existentes)
+                branch_data_dict = self.branch_data.copy()
+                if 'ramp_id' not in branch_data_dict:
+                    branch_data_dict['ramp_id'] = 0  # Valor por defecto
+                if 'ramp_name' not in branch_data_dict:
+                    branch_data_dict['ramp_name'] = 'N/A'  # Valor por defecto
+                
+                branch_data = BranchData(**branch_data_dict)
             
-            # Manejar campos faltantes en sector_data (para compatibilidad con datos existentes)
-            sector_data_dict = self.sector_data.copy()
-            if 'pallet_count' not in sector_data_dict:
-                sector_data_dict['pallet_count'] = 0  # Valor por defecto
-            if 'granel_count' not in sector_data_dict:
-                sector_data_dict['granel_count'] = 0  # Valor por defecto
-            if 'boxes_count' not in sector_data_dict:
-                sector_data_dict['boxes_count'] = 0  # Valor por defecto
+            # Manejar sector_data (puede ser null en nuevas reservas)
+            if self.sector_data is None:
+                # Crear SectorData básico si es null
+                sector_data = SectorData(
+                    sector_id=self.sector_id,
+                    name=f"Sector {self.sector_id}",
+                    description=None,
+                    sector_type_id=0,
+                    sector_type_name="N/A",
+                    measurement_unit_id=0,
+                    measurement_unit_name="N/A",
+                    capacity=None,
+                    pallet_count=0,
+                    granel_count=0,
+                    boxes_count=0,
+                    order_numbers=None
+                )
+            else:
+                # Manejar campos faltantes en sector_data (para compatibilidad con datos existentes)
+                sector_data_dict = self.sector_data.copy()
+                if 'pallet_count' not in sector_data_dict:
+                    sector_data_dict['pallet_count'] = 0  # Valor por defecto
+                if 'granel_count' not in sector_data_dict:
+                    sector_data_dict['granel_count'] = 0  # Valor por defecto
+                if 'boxes_count' not in sector_data_dict:
+                    sector_data_dict['boxes_count'] = 0  # Valor por defecto
+                if 'order_numbers' not in sector_data_dict:
+                    sector_data_dict['order_numbers'] = None  # Valor por defecto
+                
+                sector_data = SectorData(**sector_data_dict)
             
-            branch_data = BranchData(**branch_data_dict)
-            sector_data = SectorData(**sector_data_dict)
             customer_data = CustomerData(**customer_data_dict)
             
             # Convertir números de pedido
@@ -128,7 +168,7 @@ class ReservationModel(Base):
     def from_domain(cls, reservation: 'Reservation') -> 'ReservationModel':
         """Convierte la entidad de dominio a modelo de BD"""
         try:
-            # Convertir objetos de dominio a JSON
+            # Convertir branch_data a JSON (sin ramp_id ni ramp_name)
             branch_data = {
                 "branch_id": reservation.branch_data.branch_id,
                 "name": reservation.branch_data.name,
@@ -139,24 +179,11 @@ class ReservationModel(Base):
                 "state_id": reservation.branch_data.state_id,
                 "state_name": reservation.branch_data.state_name,
                 "city_id": reservation.branch_data.city_id,
-                "city_name": reservation.branch_data.city_name,
-                "ramp_id": reservation.branch_data.ramp_id,
-                "ramp_name": reservation.branch_data.ramp_name
+                "city_name": reservation.branch_data.city_name
             }
             
-            sector_data = {
-                "sector_id": reservation.sector_data.sector_id,
-                "name": reservation.sector_data.name,
-                "description": reservation.sector_data.description,
-                "sector_type_id": reservation.sector_data.sector_type_id,
-                "sector_type_name": reservation.sector_data.sector_type_name,
-                "capacity": reservation.sector_data.capacity,
-                "measurement_unit_id": reservation.sector_data.measurement_unit_id,
-                "measurement_unit_name": reservation.sector_data.measurement_unit_name,
-                "pallet_count": getattr(reservation.sector_data, 'pallet_count', 0),
-                "granel_count": getattr(reservation.sector_data, 'granel_count', 0),
-                "boxes_count": getattr(reservation.sector_data, 'boxes_count', 0)
-            }
+            # sector_data se deja como null (ya no se usa)
+            sector_data = None
             
             # Convertir UUIDs a strings para serialización JSON
             customer_data = {

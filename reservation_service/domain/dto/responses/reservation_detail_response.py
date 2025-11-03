@@ -8,10 +8,8 @@ from enum import Enum
 
 from .complete_reservation_response import CompleteReservationResponse
 from .reject_reservation_response import RejectReservationResponse
-from .order_number_response import OrderNumberResponse
 from .customer_data_response import CustomerDataResponse
 from .branch_data_response import BranchDataResponse
-from .sector_data_response import SectorDataResponse
 
 
 class ReservationStatus(str, Enum):
@@ -41,8 +39,8 @@ class ReservationDetailResponse(BaseModel):
     # Datos de la sucursal (completos)
     branch_data: BranchDataResponse = Field(..., description="Datos completos de la sucursal")
     
-    # Datos del sector (completos)
-    sector_data: SectorDataResponse = Field(..., description="Datos completos del sector")
+    # ID del sector (sin datos completos)
+    sector_id: int = Field(..., description="ID del sector")
     
     # Datos del cliente (completos)
     customer_data: CustomerDataResponse = Field(..., description="Datos completos del cliente")
@@ -53,9 +51,6 @@ class ReservationDetailResponse(BaseModel):
     reason: str = Field(..., description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
     ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
-    
-    # Números de pedidos
-    order_numbers: List[OrderNumberResponse] = Field(..., description="Lista de números de pedido")
     
     # Horario de la reserva
     reservation_date: datetime = Field(..., description="Fecha de la reserva")

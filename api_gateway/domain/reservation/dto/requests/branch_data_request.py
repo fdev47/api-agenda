@@ -18,6 +18,4 @@ class BranchDataRequest(BaseModel):
     state_id: int = Field(..., gt=0, description="ID del estado")
     state_name: str = Field(..., min_length=2, max_length=50, description="Nombre del estado")
     city_id: int = Field(..., gt=0, description="ID de la ciudad")
-    city_name: str = Field(..., min_length=2, max_length=50, description="Nombre de la ciudad")
-    ramp_id: int = Field(..., gt=0, description="ID de la rampa")
-    ramp_name: str = Field(..., min_length=2, max_length=100, description="Nombre de la rampa") 
+    city_name: str = Field(..., min_length=2, max_length=50, description="Nombre de la ciudad") 

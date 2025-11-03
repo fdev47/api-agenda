@@ -5,10 +5,8 @@ from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 from datetime import datetime
 
-from .order_number_request import OrderNumberRequest
 from .customer_data_request import CustomerDataRequest
 from .branch_data_request import BranchDataRequest
-from .sector_data_request import SectorDataRequest
 
 
 class UpdateReservationRequest(BaseModel):
@@ -21,9 +19,6 @@ class UpdateReservationRequest(BaseModel):
     # Datos de la sucursal (opcional)
     branch_data: Optional[BranchDataRequest] = Field(None, description="Datos completos de la sucursal")
     
-    # Datos del sector (opcional)
-    sector_data: Optional[SectorDataRequest] = Field(None, description="Datos completos del sector")
-    
     # Datos del cliente (opcional)
     customer_data: Optional[CustomerDataRequest] = Field(None, description="Datos completos del cliente")
     
@@ -32,9 +27,6 @@ class UpdateReservationRequest(BaseModel):
     reason: Optional[str] = Field(None, min_length=10, max_length=500, description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, max_length=100, description="Tipo de carga")
     ramp_id: Optional[int] = Field(None, gt=0, description="ID de la rampa asignada")
-    
-    # Números de pedidos (opcional)
-    order_numbers: Optional[List[OrderNumberRequest]] = Field(None, min_items=1, max_items=50, description="Lista de números de pedido")
     
     # Horario de la reserva (opcional)
     reservation_date: Optional[datetime] = Field(None, description="Fecha de la reserva")

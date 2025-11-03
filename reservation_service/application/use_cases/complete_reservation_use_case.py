@@ -11,9 +11,7 @@ from ...domain.interfaces.reservation_repository import ReservationRepository
 from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.dto.responses.branch_data_response import BranchDataResponse
-from ...domain.dto.responses.sector_data_response import SectorDataResponse
 from ...domain.dto.responses.customer_data_response import CustomerDataResponse
-from ...domain.dto.responses.order_number_response import OrderNumberResponse
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationStatusException
@@ -78,20 +76,9 @@ class CompleteReservationUseCase:
                 state_id=updated_reservation.branch_data.state_id,
                 state_name=updated_reservation.branch_data.state_name,
                 city_id=updated_reservation.branch_data.city_id,
-                city_name=updated_reservation.branch_data.city_name,
-                ramp_id=updated_reservation.branch_data.ramp_id,
-                ramp_name=updated_reservation.branch_data.ramp_name
+                city_name=updated_reservation.branch_data.city_name
             ),
-            sector_data=SectorDataResponse(
-                sector_id=updated_reservation.sector_data.sector_id,
-                name=updated_reservation.sector_data.name,
-                description=updated_reservation.sector_data.description,
-                sector_type_id=updated_reservation.sector_data.sector_type_id,
-                sector_type_name=updated_reservation.sector_data.sector_type_name,
-                capacity=updated_reservation.sector_data.capacity,
-                measurement_unit_id=updated_reservation.sector_data.measurement_unit_id,
-                measurement_unit_name=updated_reservation.sector_data.measurement_unit_name
-            ),
+            sector_id=updated_reservation.sector_data.sector_id,
             customer_data=CustomerDataResponse(
                 customer_id=updated_reservation.customer_data.customer_id,
                 id=updated_reservation.customer_data.id,
@@ -110,12 +97,6 @@ class CompleteReservationUseCase:
             unloading_time_hours=updated_reservation.get_total_unloading_time_hours(),
             reason=updated_reservation.reason,
             cargo_type=updated_reservation.cargo_type,
-            order_numbers=[
-                OrderNumberResponse(
-                    code=order.code,
-                    description=order.description
-                ) for order in updated_reservation.order_numbers
-            ],
             reservation_date=updated_reservation.reservation_date,
             start_time=updated_reservation.start_time,
             end_time=updated_reservation.end_time,

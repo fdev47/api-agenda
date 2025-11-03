@@ -5,6 +5,7 @@ from .order_number_request import OrderNumberRequest
 from .customer_data_request import CustomerDataRequest
 from .branch_data_request import BranchDataRequest
 from .sector_data_request import SectorDataRequest
+from .sector_data_with_ramp_request import SectorDataWithRampRequest
 
 # Main reservation DTOs
 from .create_reservation_request import CreateReservationRequest
@@ -27,6 +28,7 @@ __all__ = [
     "CustomerDataRequest",
     "BranchDataRequest",
     "SectorDataRequest",
+    "SectorDataWithRampRequest",
     # Main reservation DTOs
     "CreateReservationRequest",
     "UpdateReservationRequest", 

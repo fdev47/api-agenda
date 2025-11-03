@@ -60,7 +60,9 @@ class GetMainReservationUseCase:
                 pallet_count=main_reservation.sector_data.pallet_count,
                 granel_count=main_reservation.sector_data.granel_count,
                 boxes_count=main_reservation.sector_data.boxes_count,
-                order_numbers=main_reservation.sector_data.order_numbers
+                order_numbers=main_reservation.sector_data.order_numbers,
+                ramp_id=main_reservation.sector_data.ramp_id,
+                ramp_name=main_reservation.sector_data.ramp_name
             )
             
             return MainReservationResponse(

@@ -24,4 +24,8 @@ class SectorDataRequest(BaseModel):
     boxes_count: Optional[int] = Field(0, description="Cantidad de cajas")
     
     # Números de pedido asociados
-    order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido") 
+    order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido")
+    
+    # Información de la rampa
+    ramp_id: Optional[int] = Field(None, description="ID de la rampa")
+    ramp_name: Optional[str] = Field(None, description="Nombre de la rampa") 

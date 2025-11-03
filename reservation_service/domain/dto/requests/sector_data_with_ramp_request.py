@@ -1,12 +1,12 @@
 """
-Request DTO para datos de sector
+Request DTO para datos de sector con rampa (para MainReservation)
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
 
-class SectorDataRequest(BaseModel):
-    """Request para datos del sector"""
+class SectorDataWithRampRequest(BaseModel):
+    """Request para datos del sector con información de rampa"""
     # ID de referencia en location_service
     sector_id: int = Field(..., gt=0, description="ID del sector")
     # Datos completos al momento de la reserva
@@ -27,5 +27,6 @@ class SectorDataRequest(BaseModel):
     order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido")
     
     # Información de la rampa
-    ramp_id: Optional[int] = Field(None, description="ID de la rampa")
-    ramp_name: Optional[str] = Field(None, description="Nombre de la rampa") 
+    ramp_id: int = Field(..., gt=0, description="ID de la rampa")
+    ramp_name: str = Field(..., min_length=2, max_length=100, description="Nombre de la rampa")
+

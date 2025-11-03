@@ -5,10 +5,9 @@ from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 from datetime import datetime
 
-from .order_number_request import OrderNumberRequest
 from .customer_data_request import CustomerDataRequest
 from .branch_data_request import BranchDataRequest
-from .sector_data_request import SectorDataRequest
+from .sector_data_with_ramp_request import SectorDataWithRampRequest
 
 
 class CreateReservationRequest(BaseModel):
@@ -21,8 +20,8 @@ class CreateReservationRequest(BaseModel):
     # Datos de la sucursal (completos)
     branch_data: BranchDataRequest = Field(..., description="Datos completos de la sucursal")
     
-    # Datos del sector (completos)
-    sector_data: SectorDataRequest = Field(..., description="Datos completos del sector")
+    # Array de sectores con rampa (se crearán main_reservations)
+    sector_data: List[SectorDataWithRampRequest] = Field(..., min_items=1, description="Lista de sectores con rampa")
     
     # Datos del cliente (completos)
     customer_data: CustomerDataRequest = Field(..., description="Datos completos del cliente")
@@ -31,10 +30,6 @@ class CreateReservationRequest(BaseModel):
     unloading_time_minutes: int = Field(..., gt=0, le=1440, description="Tiempo de descarga en minutos (máximo 24 horas)")
     reason: str = Field(..., min_length=10, max_length=500, description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, max_length=100, description="Tipo de carga")
-    ramp_id: int = Field(..., gt=0, description="ID de la rampa asignada")
-    
-    # Números de pedidos
-    order_numbers: List[OrderNumberRequest] = Field(..., min_items=1, max_items=50, description="Lista de números de pedido")
     
     # Horario de la reserva
     reservation_date: datetime = Field(..., description="Fecha de la reserva")
@@ -43,11 +38,6 @@ class CreateReservationRequest(BaseModel):
     
     # Información adicional
     notes: Optional[str] = Field(None, max_length=1000, description="Notas adicionales")
-
-    # Cantidades de carga (se guardarán en sector_data)
-    pallet_count: int = Field(..., ge=0, description="Cantidad de palets")
-    granel_count: int = Field(..., ge=0, description="Cantidad de graneles")
-    boxes_count: int = Field(..., ge=0, description="Cantidad de cajas")
     
     @validator('end_time')
     def validate_end_time(cls, v, values):

@@ -17,6 +17,4 @@ class BranchDataResponse(BaseModel):
     state_id: int = Field(..., description="ID del estado")
     state_name: str = Field(..., description="Nombre del estado")
     city_id: int = Field(..., description="ID de la ciudad")
-    city_name: str = Field(..., description="Nombre de la ciudad")
-    ramp_id: int = Field(..., description="ID de la rampa")
-    ramp_name: str = Field(..., description="Nombre de la rampa") 
+    city_name: str = Field(..., description="Nombre de la ciudad") 
