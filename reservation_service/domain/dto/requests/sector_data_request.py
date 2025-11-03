@@ -18,5 +18,10 @@ class SectorDataRequest(BaseModel):
     measurement_unit_id: int = Field(..., gt=0, description="ID de la unidad de medida")
     measurement_unit_name: str = Field(..., min_length=1, max_length=20, description="Nombre de la unidad de medida")
     
+    # Nuevos campos para cantidades (opcionales)
+    pallet_count: Optional[int] = Field(0, description="Cantidad de palets")
+    granel_count: Optional[int] = Field(0, description="Cantidad de graneles")
+    boxes_count: Optional[int] = Field(0, description="Cantidad de cajas")
+    
     # Números de pedido asociados
     order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido") 
