@@ -74,7 +74,8 @@ class DeleteMainReservationUseCase:
             measurement_unit_name=main_reservation.sector_data.measurement_unit_name,
             pallet_count=main_reservation.sector_data.pallet_count,
             granel_count=main_reservation.sector_data.granel_count,
-            boxes_count=main_reservation.sector_data.boxes_count
+            boxes_count=main_reservation.sector_data.boxes_count,
+            order_numbers=main_reservation.sector_data.order_numbers
         )
         
         return MainReservationResponse(

@@ -54,7 +54,8 @@ class UpdateMainReservationUseCase:
                 measurement_unit_name=request.sector_data.measurement_unit_name,
                 pallet_count=getattr(request.sector_data, 'pallet_count', 0),
                 granel_count=getattr(request.sector_data, 'granel_count', 0),
-                boxes_count=getattr(request.sector_data, 'boxes_count', 0)
+                boxes_count=getattr(request.sector_data, 'boxes_count', 0),
+                order_numbers=getattr(request.sector_data, 'order_numbers', None)
             )
             
             # Crear la entidad main_reservation actualizada
@@ -106,7 +107,8 @@ class UpdateMainReservationUseCase:
             measurement_unit_name=main_reservation.sector_data.measurement_unit_name,
             pallet_count=main_reservation.sector_data.pallet_count,
             granel_count=main_reservation.sector_data.granel_count,
-            boxes_count=main_reservation.sector_data.boxes_count
+            boxes_count=main_reservation.sector_data.boxes_count,
+            order_numbers=main_reservation.sector_data.order_numbers
         )
         
         return MainReservationResponse(

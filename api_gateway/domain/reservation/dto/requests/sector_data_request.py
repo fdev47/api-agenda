@@ -2,7 +2,7 @@
 DTO de request para datos de sector en el API Gateway
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class SectorDataRequest(BaseModel):
@@ -16,4 +16,7 @@ class SectorDataRequest(BaseModel):
     sector_type_name: str = Field(..., min_length=2, max_length=50, description="Nombre del tipo de sector")
     capacity: Optional[float] = Field(None, gt=0, description="Capacidad del sector")
     measurement_unit_id: int = Field(..., gt=0, description="ID de la unidad de medida")
-    measurement_unit_name: str = Field(..., min_length=1, max_length=20, description="Nombre de la unidad de medida") 
+    measurement_unit_name: str = Field(..., min_length=1, max_length=20, description="Nombre de la unidad de medida")
+    
+    # Números de pedido asociados
+    order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido") 

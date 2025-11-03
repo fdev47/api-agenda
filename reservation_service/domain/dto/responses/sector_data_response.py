@@ -2,7 +2,7 @@
 Response DTO para datos de sector
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 
 class SectorDataResponse(BaseModel):
@@ -21,4 +21,7 @@ class SectorDataResponse(BaseModel):
     # Nuevos campos para cantidades (opcionales para compatibilidad con reservas existentes)
     pallet_count: int = Field(0, description="Cantidad de palets")
     granel_count: int = Field(0, description="Cantidad de graneles")
-    boxes_count: int = Field(0, description="Cantidad de cajas") 
+    boxes_count: int = Field(0, description="Cantidad de cajas")
+    
+    # Números de pedido asociados
+    order_numbers: Optional[List[str]] = Field(None, description="Lista de números de pedido") 

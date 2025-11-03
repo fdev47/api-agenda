@@ -2,7 +2,7 @@
 Entidad para datos de sector
 """
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 
 @dataclass
@@ -22,4 +22,7 @@ class SectorData:
     # Nuevos campos para cantidades
     pallet_count: int = 0
     granel_count: int = 0
-    boxes_count: int = 0 
+    boxes_count: int = 0
+    
+    # Números de pedido asociados
+    order_numbers: Optional[List[str]] = None 
