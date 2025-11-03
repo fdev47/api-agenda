@@ -12,12 +12,14 @@ class AvailableRampRequest(BaseModel):
     branch_id: int = Field(..., gt=0, description="ID de la sucursal")
     start_date: str = Field(..., description="Fecha y hora de inicio (YYYY-MM-DD HH:MM:SS)")
     end_date: str = Field(..., description="Fecha y hora de fin (YYYY-MM-DD HH:MM:SS)")
+    cargo_type: str = Field(..., description="Tipo de carga")
     
     class Config:
         json_schema_extra = {
             "example": {
                 "branch_id": 1,
                 "start_date": "2025-12-08 10:00:00",
-                "end_date": "2025-12-08 11:30:00"
+                "end_date": "2025-12-08 11:30:00",
+                "cargo_type": "SECO"
             }
         } 

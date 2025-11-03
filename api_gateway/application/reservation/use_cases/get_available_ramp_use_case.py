@@ -3,7 +3,7 @@ Caso de uso para obtener una rampa disponible
 """
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from commons.api_client import HTTPError, APIClient
 from commons.config import config
 from ....domain.reservation.dto.requests.available_ramp_request import AvailableRampRequest
@@ -20,7 +20,7 @@ class GetAvailableRampUseCase:
         self.location_client = APIClient(base_url=config.LOCATION_SERVICE_URL)
         self.reservation_client = APIClient(base_url=config.RESERVATION_SERVICE_URL)
     
-    async def execute(self, request: AvailableRampRequest, access_token: str = "") -> AvailableRampResponse:
+    async def execute(self, request: AvailableRampRequest, access_token: str = "") -> List[AvailableRampResponse]:
         """Ejecutar el caso de uso"""
         
         try:
@@ -74,18 +74,21 @@ class GetAvailableRampUseCase:
                 if not available_ramps:
                     raise ValueError(f"No hay rampas disponibles en la sucursal {request.branch_id} para el horario especificado")
                 
-                # 4. Retornar la primera rampa disponible
+                # 4. Retornar la primera rampa disponible en un array
                 selected_ramp = available_ramps[0]
                 logger.info(f"✅ Rampa disponible encontrada: {selected_ramp['name']} (ID: {selected_ramp['id']})")
                 
-                return AvailableRampResponse(
-                    ramp_id=selected_ramp["id"],
-                    ramp_name=selected_ramp["name"],
-                    branch_id=selected_ramp["branch_id"],
-                    is_available=True,
-                    start_date=start_datetime,
-                    end_date=end_datetime
-                )
+                return [
+                    AvailableRampResponse(
+                        ramp_id=selected_ramp["id"],
+                        ramp_name=selected_ramp["name"],
+                        branch_id=selected_ramp["branch_id"],
+                        is_available=True,
+                        start_date=start_datetime,
+                        end_date=end_datetime,
+                        cargo_type=request.cargo_type
+                    )
+                ]
             
         except ValueError as e:
             logger.error(f"❌ Error de validación: {str(e)}")

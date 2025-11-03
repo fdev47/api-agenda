@@ -15,6 +15,7 @@ class AvailableRampResponse(BaseModel):
     is_available: bool = Field(..., description="Indica si la rampa está disponible")
     start_date: datetime = Field(..., description="Fecha y hora de inicio")
     end_date: datetime = Field(..., description="Fecha y hora de fin")
+    cargo_type: str = Field(..., description="Tipo de carga")
     
     class Config:
         json_schema_extra = {
@@ -24,6 +25,7 @@ class AvailableRampResponse(BaseModel):
                 "branch_id": 1,
                 "is_available": True,
                 "start_date": "2025-12-08T10:00:00",
-                "end_date": "2025-12-08T11:30:00"
+                "end_date": "2025-12-08T11:30:00",
+                "cargo_type": "SECO"
             }
         } 

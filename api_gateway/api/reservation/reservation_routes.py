@@ -80,15 +80,16 @@ async def create_reservation(
         )
 
 
-@router.get("/available-ramp", response_model=AvailableRampResponse)
+@router.get("/available-ramp", response_model=List[AvailableRampResponse])
 async def get_available_ramp(
     branch_id: int = Query(..., gt=0, description="ID de la sucursal"),
     start_date: str = Query(..., description="Fecha y hora de inicio (YYYY-MM-DD HH:MM:SS)"),
     end_date: str = Query(..., description="Fecha y hora de fin (YYYY-MM-DD HH:MM:SS)"),
+    cargo_type: str = Query(..., description="Tipo de carga"),
     current_user=Depends(auth_middleware["require_auth"]),
     authorization: Optional[str] = Header(None)
 ):
-    """Obtener una rampa disponible para una sucursal en un rango de fechas"""
+    """Obtener rampas disponibles para una sucursal en un rango de fechas"""
     try:
         access_token = authorization.replace("Bearer ", "") if authorization else ""
         
@@ -96,7 +97,8 @@ async def get_available_ramp(
         request = AvailableRampRequest(
             branch_id=branch_id,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            cargo_type=cargo_type
         )
         
         use_case = GetAvailableRampUseCase()
