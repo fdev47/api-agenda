@@ -23,6 +23,7 @@ class CreateSectorTypeUseCase:
             name=request.name,
             code=request.code,
             measurement_unit=request.measurement_unit,
+            merchandise_type=request.merchandise_type,
             created_at=datetime.utcnow()
         )
         
@@ -36,6 +37,7 @@ class CreateSectorTypeUseCase:
             code=created_sector_type.code,
             description=created_sector_type.description,
             measurement_unit=created_sector_type.measurement_unit.value,
+            merchandise_type=created_sector_type.merchandise_type,
             is_active=created_sector_type.is_active,
             created_at=created_sector_type.created_at,
             updated_at=created_sector_type.updated_at

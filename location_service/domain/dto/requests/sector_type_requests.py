@@ -11,6 +11,7 @@ class CreateSectorTypeRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, description="Nombre del tipo de sector")
     code: str = Field(..., min_length=1, max_length=20, description="Código único del tipo de sector")
     measurement_unit: MeasurementUnit = Field(..., description="Unidad de medida del tipo de sector")
+    merchandise_type: str = Field(..., min_length=1, max_length=50, description="Tipo de mercadería")
     
     @validator('name')
     def validate_name(cls, v):
@@ -23,6 +24,12 @@ class CreateSectorTypeRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError('El código del tipo de sector no puede estar vacío')
         return v.strip().upper()
+    
+    @validator('merchandise_type')
+    def validate_merchandise_type(cls, v):
+        if not v or not v.strip():
+            raise ValueError('El tipo de mercadería no puede estar vacío')
+        return v.strip()
 
 
 class UpdateSectorTypeRequest(BaseModel):
@@ -30,6 +37,7 @@ class UpdateSectorTypeRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100, description="Nombre del tipo de sector")
     code: Optional[str] = Field(None, min_length=1, max_length=20, description="Código único del tipo de sector")
     measurement_unit: Optional[MeasurementUnit] = Field(None, description="Unidad de medida del tipo de sector")
+    merchandise_type: Optional[str] = Field(None, min_length=1, max_length=50, description="Tipo de mercadería")
     
     @validator('name')
     def validate_name(cls, v):
@@ -45,6 +53,14 @@ class UpdateSectorTypeRequest(BaseModel):
             if not v or not v.strip():
                 raise ValueError('El código del tipo de sector no puede estar vacío')
             return v.strip().upper()
+        return v
+    
+    @validator('merchandise_type')
+    def validate_merchandise_type(cls, v):
+        if v is not None:
+            if not v or not v.strip():
+                raise ValueError('El tipo de mercadería no puede estar vacío')
+            return v.strip()
         return v
 
 

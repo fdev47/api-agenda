@@ -105,16 +105,20 @@ class DeleteReservationUseCase:
             city_name=reservation.branch_data.city_name
         )
         
+        # Lista vacía de main_reservations para el response
+        main_reservations_response = []
+        
         return ReservationResponse(
             id=reservation.id,
             user_id=reservation.user_id,
             customer_id=reservation.customer_id,
             branch_data=branch_response,
-            sector_id=reservation.sector_data.sector_id,
+            main_reservations=main_reservations_response,
             customer_data=customer_response,
             unloading_time_minutes=reservation.unloading_time_minutes,
             unloading_time_hours=reservation.get_total_unloading_time_hours(),
             reason=reservation.reason,
+            cargo_type=reservation.cargo_type,
             reservation_date=reservation.reservation_date,
             start_time=reservation.start_time,
             end_time=reservation.end_time,

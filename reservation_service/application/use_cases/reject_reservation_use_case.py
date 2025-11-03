@@ -79,6 +79,9 @@ class RejectReservationUseCase:
         logger.info(f"✅ Reserva {reservation_id} rechazada exitosamente")
         
         # 6. Convertir a DTO de respuesta
+        # Lista vacía de main_reservations para el response
+        main_reservations_response = []
+        
         return ReservationResponse(
             id=updated_reservation.id,
             user_id=updated_reservation.user_id,
@@ -95,7 +98,7 @@ class RejectReservationUseCase:
                 city_id=updated_reservation.branch_data.city_id,
                 city_name=updated_reservation.branch_data.city_name
             ),
-            sector_id=updated_reservation.sector_data.sector_id,
+            main_reservations=main_reservations_response,
             customer_data=CustomerDataResponse(
                 customer_id=updated_reservation.customer_data.customer_id,
                 id=updated_reservation.customer_data.id,

@@ -7,6 +7,7 @@ from datetime import datetime
 
 from .customer_data_response import CustomerDataResponse
 from .main_reservation_response import MainReservationResponse
+from .branch_data_response import BranchDataResponse
 
 
 class ReservationResponse(BaseModel):
@@ -17,8 +18,8 @@ class ReservationResponse(BaseModel):
     user_id: Optional[int] = Field(None, description="ID del usuario que hizo la reserva")
     customer_id: Optional[int] = Field(None, description="ID del cliente en el sistema")
     
-    # ID de la sucursal (sin datos completos)
-    branch_id: Optional[int] = Field(None, description="ID de la sucursal")
+    # Datos de la sucursal (completos)
+    branch_data: Optional[BranchDataResponse] = Field(None, description="Datos completos de la sucursal")
     
     # Main reservations (sectores con rampa)
     main_reservations: Optional[List[MainReservationResponse]] = Field(None, description="Lista de main_reservations creadas")

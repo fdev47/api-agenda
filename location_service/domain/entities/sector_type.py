@@ -16,6 +16,7 @@ class SectorType:
     code: str
     created_at: datetime
     measurement_unit: MeasurementUnit
+    merchandise_type: str
     description: Optional[str] = None
     is_active: bool = True
     updated_at: Optional[datetime] = None
@@ -47,4 +48,12 @@ class SectorType:
     def update_measurement_unit(self, new_measurement_unit: MeasurementUnit) -> None:
         """Actualizar la unidad de medida del tipo de sector"""
         self.measurement_unit = new_measurement_unit
+        self.updated_at = datetime.utcnow()
+    
+    def update_merchandise_type(self, new_merchandise_type: str) -> None:
+        """Actualizar el tipo de mercadería del tipo de sector"""
+        if not new_merchandise_type or not new_merchandise_type.strip():
+            raise ValueError("El tipo de mercadería no puede estar vacío")
+        
+        self.merchandise_type = new_merchandise_type.strip()
         self.updated_at = datetime.utcnow() 

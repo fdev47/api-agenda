@@ -52,6 +52,7 @@ class ListReservationsUseCase:
         from ...domain.dto.responses.customer_data_response import CustomerDataResponse
         from ...domain.dto.responses.main_reservation_response import MainReservationResponse
         from ...domain.dto.responses.sector_data_response import SectorDataResponse
+        from ...domain.dto.responses.branch_data_response import BranchDataResponse
         
         # Convertir datos del cliente
         customer_response = CustomerDataResponse(
@@ -67,6 +68,20 @@ class ListReservationsUseCase:
             cellphone_country_code=reservation.customer_data.cellphone_country_code,
             address_id=reservation.customer_data.address_id,
             is_active=reservation.customer_data.is_active
+        )
+        
+        # Convertir datos de la sucursal
+        branch_response = BranchDataResponse(
+            branch_id=reservation.branch_data.branch_id,
+            name=reservation.branch_data.name,
+            code=reservation.branch_data.code,
+            address=reservation.branch_data.address,
+            country_id=reservation.branch_data.country_id,
+            country_name=reservation.branch_data.country_name,
+            state_id=reservation.branch_data.state_id,
+            state_name=reservation.branch_data.state_name,
+            city_id=reservation.branch_data.city_id,
+            city_name=reservation.branch_data.city_name
         )
         
         # Convertir main_reservations a DTOs
@@ -106,7 +121,7 @@ class ListReservationsUseCase:
             id=reservation.id,
             user_id=reservation.user_id,
             customer_id=reservation.customer_id,
-            branch_id=reservation.branch_data.branch_id,
+            branch_data=branch_response,
             main_reservations=main_reservations_response,
             customer_data=customer_response,
             unloading_time_minutes=reservation.unloading_time_minutes,

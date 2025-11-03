@@ -4,6 +4,7 @@ Use case para obtener una reserva
 import logging
 from ...domain.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.interfaces.reservation_repository import ReservationRepository
+from ...domain.interfaces.main_reservation_repository import MainReservationRepository
 from ...domain.exceptions.reservation_exceptions import ReservationNotFoundException
 
 logger = logging.getLogger(__name__)
@@ -12,8 +13,13 @@ logger = logging.getLogger(__name__)
 class GetReservationUseCase:
     """Caso de uso para obtener una reserva por ID"""
     
-    def __init__(self, reservation_repository: ReservationRepository):
+    def __init__(
+        self, 
+        reservation_repository: ReservationRepository,
+        main_reservation_repository: MainReservationRepository
+    ):
         self.reservation_repository = reservation_repository
+        self.main_reservation_repository = main_reservation_repository
     
     async def execute(self, reservation_id: int) -> ReservationDetailResponse:
         """Ejecutar el caso de uso"""
@@ -32,10 +38,18 @@ class GetReservationUseCase:
                 )
             
             logger.info(f"✅ Reserva encontrada: {reservation.id}")
+            
+            # Obtener las main_reservations asociadas
+            logger.info(f"🔍 Buscando main_reservations para reservation_id: {reservation_id}")
+            main_reservations, _ = await self.main_reservation_repository.list(
+                reservation_id=reservation_id
+            )
+            logger.info(f"✅ Se encontraron {len(main_reservations)} main_reservations")
+            
             logger.info("🔄 Convirtiendo a DTO de respuesta...")
             
             # Convertir a DTO de respuesta
-            result = self.to_response(reservation)
+            result = await self.to_response(reservation, main_reservations)
             logger.info("✅ Conversión completada exitosamente")
             return result
             
@@ -43,15 +57,15 @@ class GetReservationUseCase:
             logger.error(f"❌ Error en GetReservationUseCase.execute(): {str(e)}", exc_info=True)
             raise
     
-    def to_response(self, reservation) -> ReservationDetailResponse:
+    async def to_response(self, reservation, main_reservations) -> ReservationDetailResponse:
         """Convertir entidad a DTO de respuesta"""
         try:
             logger.info("🔄 Iniciando conversión a DTO...")
             
             from ...domain.dto.responses.customer_data_response import CustomerDataResponse
-            from ...domain.dto.responses.branch_data_response import BranchDataResponse
+            from ...domain.dto.responses.main_reservation_response import MainReservationResponse
             from ...domain.dto.responses.sector_data_response import SectorDataResponse
-            from ...domain.dto.responses.order_number_response import OrderNumberResponse
+            from ...domain.dto.responses.branch_data_response import BranchDataResponse
             
             logger.info("✅ Imports completados")
             
@@ -89,6 +103,41 @@ class GetReservationUseCase:
             )
             logger.info("✅ BranchDataResponse creado")
             
+            # Convertir main_reservations a DTOs
+            logger.info("🔄 Convirtiendo main_reservations...")
+            main_reservations_response = []
+            for main_res in main_reservations:
+                sector_data_response = SectorDataResponse(
+                    sector_id=main_res.sector_data.sector_id,
+                    name=main_res.sector_data.name,
+                    description=main_res.sector_data.description,
+                    sector_type_id=main_res.sector_data.sector_type_id,
+                    sector_type_name=main_res.sector_data.sector_type_name,
+                    capacity=main_res.sector_data.capacity,
+                    measurement_unit_id=main_res.sector_data.measurement_unit_id,
+                    measurement_unit_name=main_res.sector_data.measurement_unit_name,
+                    pallet_count=main_res.sector_data.pallet_count,
+                    granel_count=main_res.sector_data.granel_count,
+                    boxes_count=main_res.sector_data.boxes_count,
+                    order_numbers=main_res.sector_data.order_numbers,
+                    ramp_id=main_res.sector_data.ramp_id,
+                    ramp_name=main_res.sector_data.ramp_name
+                )
+                
+                main_res_response = MainReservationResponse(
+                    id=main_res.id,
+                    sector_id=main_res.sector_id,
+                    reservation_id=main_res.reservation_id,
+                    sector_data=sector_data_response,
+                    reservation_date=main_res.reservation_date,
+                    start_time=main_res.start_time,
+                    end_time=main_res.end_time,
+                    created_at=main_res.created_at,
+                    updated_at=main_res.updated_at
+                )
+                main_reservations_response.append(main_res_response)
+            logger.info("✅ MainReservations convertidas")
+            
             # Crear ReservationDetailResponse
             logger.info("🔄 Creando ReservationDetailResponse...")
             
@@ -111,13 +160,12 @@ class GetReservationUseCase:
                 user_id=reservation.user_id,
                 customer_id=reservation.customer_id,
                 branch_data=branch_response,
-                sector_id=reservation.sector_data.sector_id,
+                main_reservations=main_reservations_response,
                 customer_data=customer_response,
                 unloading_time_minutes=reservation.unloading_time_minutes,
                 unloading_time_hours=reservation.get_total_unloading_time_hours(),
                 reason=reservation.reason,
                 cargo_type=reservation.cargo_type,
-                ramp_id=reservation.ramp_id,
                 reservation_date=reservation.reservation_date,
                 start_time=reservation.start_time,
                 end_time=reservation.end_time,

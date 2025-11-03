@@ -34,6 +34,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 code=sector_type.code,
                 description=sector_type.description,
                 measurement_unit=sector_type.measurement_unit,
+                merchandise_type=sector_type.merchandise_type,
                 is_active=sector_type.is_active
             )
             
@@ -48,6 +49,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 code=sector_type_model.code,
                 description=sector_type_model.description,
                 measurement_unit=sector_type_model.measurement_unit,
+                merchandise_type=sector_type_model.merchandise_type,
                 is_active=sector_type_model.is_active,
                 created_at=sector_type_model.created_at,
                 updated_at=sector_type_model.updated_at
@@ -70,6 +72,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 code=sector_type_model.code,
                 description=sector_type_model.description,
                 measurement_unit=sector_type_model.measurement_unit,
+                merchandise_type=sector_type_model.merchandise_type,
                 is_active=sector_type_model.is_active,
                 created_at=sector_type_model.created_at,
                 updated_at=sector_type_model.updated_at
@@ -92,6 +95,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 code=sector_type_model.code,
                 description=sector_type_model.description,
                 measurement_unit=sector_type_model.measurement_unit,
+                merchandise_type=sector_type_model.merchandise_type,
                 is_active=sector_type_model.is_active,
                 created_at=sector_type_model.created_at,
                 updated_at=sector_type_model.updated_at
@@ -131,6 +135,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                     code=model.code,
                     description=model.description,
                     measurement_unit=model.measurement_unit,
+                    merchandise_type=model.merchandise_type,
                     is_active=model.is_active,
                     created_at=model.created_at,
                     updated_at=model.updated_at
@@ -164,6 +169,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
             sector_type_model.code = sector_type.code
             sector_type_model.description = sector_type.description
             sector_type_model.measurement_unit = sector_type.measurement_unit
+            sector_type_model.merchandise_type = sector_type.merchandise_type
             sector_type_model.is_active = sector_type.is_active
             
             await session.commit()
@@ -175,6 +181,7 @@ class SectorTypeRepositoryImpl(SectorTypeRepository):
                 code=sector_type_model.code,
                 description=sector_type_model.description,
                 measurement_unit=sector_type_model.measurement_unit,
+                merchandise_type=sector_type_model.merchandise_type,
                 is_active=sector_type_model.is_active,
                 created_at=sector_type_model.created_at,
                 updated_at=sector_type_model.updated_at

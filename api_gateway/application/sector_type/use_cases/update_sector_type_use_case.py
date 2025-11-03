@@ -49,6 +49,7 @@ class UpdateSectorTypeUseCase:
                         name=response["name"],
                         code=response["code"],
                         measurement_unit=response["measurement_unit"],
+                        merchandise_type=response["merchandise_type"],
                         message="Tipo de sector actualizado exitosamente"
                     )
 

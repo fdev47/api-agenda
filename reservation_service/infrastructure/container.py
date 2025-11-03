@@ -106,7 +106,8 @@ class Container(containers.DeclarativeContainer):
     
     get_reservation_use_case = providers.Factory(
         GetReservationUseCase,
-        reservation_repository=reservation_repository
+        reservation_repository=reservation_repository,
+        main_reservation_repository=main_reservation_repository
     )
     
     list_reservations_use_case = providers.Factory(

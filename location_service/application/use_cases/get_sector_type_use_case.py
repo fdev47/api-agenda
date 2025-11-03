@@ -31,6 +31,7 @@ class GetSectorTypeUseCase:
             code=sector_type.code,
             description=sector_type.description,
             measurement_unit=sector_type.measurement_unit.value,
+            merchandise_type=sector_type.merchandise_type,
             is_active=sector_type.is_active,
             created_at=sector_type.created_at,
             updated_at=sector_type.updated_at

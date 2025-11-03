@@ -13,9 +13,10 @@ class SectorType(Base):
     code = Column(String(20), nullable=False, unique=True)
     description = Column(String(200), nullable=True)
     measurement_unit = Column(SqlEnum(MeasurementUnit), nullable=False)
+    merchandise_type = Column(String(50), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     def __repr__(self):
-        return f"<SectorType(id={self.id}, name='{self.name}', code='{self.code}')>" 
+        return f"<SectorType(id={self.id}, name='{self.name}', code='{self.code}', merchandise_type='{self.merchandise_type}')>" 

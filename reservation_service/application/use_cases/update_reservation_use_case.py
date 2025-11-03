@@ -250,12 +250,17 @@ class UpdateReservationUseCase:
             )
             logger.info("✅ BranchDataResponse creado")
             
+            # Obtener las main_reservations asociadas (para el response completo)
+            # Aquí debemos importar y usar el repositorio si queremos incluirlas
+            # Por ahora devolvemos una lista vacía ya que update no modifica main_reservations
+            main_reservations_response = []
+            
             response = ReservationResponse(
                 id=reservation.id,
                 user_id=reservation.user_id,
                 customer_id=reservation.customer_id,
                 branch_data=branch_response,
-                sector_id=reservation.sector_data.sector_id,
+                main_reservations=main_reservations_response,
                 customer_data=customer_response,
                 unloading_time_minutes=reservation.unloading_time_minutes,
                 unloading_time_hours=reservation.get_total_unloading_time_hours(),

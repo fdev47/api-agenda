@@ -10,6 +10,7 @@ from .complete_reservation_response import CompleteReservationResponse
 from .reject_reservation_response import RejectReservationResponse
 from .customer_data_response import CustomerDataResponse
 from .branch_data_response import BranchDataResponse
+from .main_reservation_response import MainReservationResponse
 
 
 class ReservationStatus(str, Enum):
@@ -39,8 +40,8 @@ class ReservationDetailResponse(BaseModel):
     # Datos de la sucursal (completos)
     branch_data: BranchDataResponse = Field(..., description="Datos completos de la sucursal")
     
-    # ID del sector (sin datos completos)
-    sector_id: int = Field(..., description="ID del sector")
+    # Main reservations (sectores con rampa)
+    main_reservations: List[MainReservationResponse] = Field(..., description="Lista de main_reservations creadas")
     
     # Datos del cliente (completos)
     customer_data: CustomerDataResponse = Field(..., description="Datos completos del cliente")
@@ -50,7 +51,6 @@ class ReservationDetailResponse(BaseModel):
     unloading_time_hours: float = Field(..., description="Tiempo de descarga en horas")
     reason: str = Field(..., description="Motivo de la reserva")
     cargo_type: Optional[str] = Field(None, description="Tipo de carga")
-    ramp_id: Optional[int] = Field(None, description="ID de la rampa asignada")
     
     # Horario de la reserva
     reservation_date: datetime = Field(..., description="Fecha de la reserva")
@@ -136,20 +136,36 @@ class ReservationDetailResponse(BaseModel):
                     "state_id": 1,
                     "state_name": "Asunción",
                     "city_id": 1,
-                    "city_name": "Asunción",
-                    "ramp_id": 1,
-                    "ramp_name": "Rampa 1"
+                    "city_name": "Asunción"
                 },
-                "sector_data": {
-                    "sector_id": 1,
-                    "name": "Sector A",
-                    "description": "Sector de descarga",
-                    "sector_type_id": 1,
-                    "sector_type_name": "Descarga",
-                    "capacity": 100.0,
-                    "measurement_unit_id": 1,
-                    "measurement_unit_name": "minutos"
-                },
+                "main_reservations": [
+                    {
+                        "id": 1,
+                        "sector_id": 1,
+                        "reservation_id": 1,
+                        "sector_data": {
+                            "sector_id": 1,
+                            "name": "Sector A",
+                            "description": "Sector de descarga",
+                            "sector_type_id": 1,
+                            "sector_type_name": "Descarga",
+                            "capacity": 100.0,
+                            "measurement_unit_id": 1,
+                            "measurement_unit_name": "minutos",
+                            "pallet_count": 10,
+                            "granel_count": 5,
+                            "boxes_count": 20,
+                            "order_numbers": ["ORD-001", "ORD-002"],
+                            "ramp_id": 1,
+                            "ramp_name": "Rampa 1"
+                        },
+                        "reservation_date": "2025-08-03T00:00:00",
+                        "start_time": "2025-08-03T10:00:00",
+                        "end_time": "2025-08-03T12:00:00",
+                        "created_at": "2025-08-03T10:00:00",
+                        "updated_at": "2025-08-03T12:00:00"
+                    }
+                ],
                 "customer_data": {
                     "customer_id": 456,
                     "auth_uid": "firebase_uid_123",
@@ -167,19 +183,6 @@ class ReservationDetailResponse(BaseModel):
                 "unloading_time_hours": 2.0,
                 "reason": "Descarga de productos",
                 "cargo_type": "PESADO",
-                "ramp_id": 1,
-                "order_numbers": [
-                    {
-                        "id": 1,
-                        "code": "ORD-001",
-                        "reservation_id": 1
-                    },
-                    {
-                        "id": 2,
-                        "code": "ORD-002",
-                        "reservation_id": 1
-                    }
-                ],
                 "reservation_date": "2025-08-03T00:00:00",
                 "start_time": "2025-08-03T10:00:00",
                 "end_time": "2025-08-03T12:00:00",
@@ -213,6 +216,3 @@ class ReservationDetailResponse(BaseModel):
         """Verifica si la reserva está completada"""
         return self.status == "completed"
     
-    def get_order_codes(self) -> List[str]:
-        """Obtiene la lista de códigos de pedidos"""
-        return [order.code for order in self.order_numbers] 
