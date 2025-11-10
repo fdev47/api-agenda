@@ -7,6 +7,7 @@ from .list_reservations_use_case import ListReservationsUseCase
 from .update_reservation_use_case import UpdateReservationUseCase
 from .cancel_reservation_use_case import CancelReservationUseCase
 from .get_available_ramp_use_case import GetAvailableRampUseCase
+from .get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
 from .create_main_reservation_use_case import CreateMainReservationUseCase
 from .get_main_reservation_use_case import GetMainReservationUseCase
 from .update_main_reservation_use_case import UpdateMainReservationUseCase
@@ -19,6 +20,7 @@ __all__ = [
     "UpdateReservationUseCase",
     "CancelReservationUseCase",
     "GetAvailableRampUseCase",
+    "GetReservationsByPeriodUseCase",
     "CreateMainReservationUseCase",
     "GetMainReservationUseCase",
     "UpdateMainReservationUseCase",

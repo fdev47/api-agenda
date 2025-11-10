@@ -4,6 +4,7 @@ Rutas para reservas en el API Gateway
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Path
 from typing import Optional, List
+from datetime import datetime
 
 from pydantic import ValidationError
 from commons.error_codes import ErrorCode
@@ -20,6 +21,8 @@ from ...domain.reservation.dto.responses.reservation_summary_response import Res
 from ...domain.reservation.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
 from ...domain.reservation.dto.requests.available_ramp_request import AvailableRampRequest
 from ...domain.reservation.dto.responses.available_ramp_response import AvailableRampResponse
+from ...domain.reservation.dto.requests.reservation_period_request import ReservationPeriodRequest
+from ...domain.reservation.dto.responses.reservation_period_response import ReservationPeriodResponse
 from ...application.reservation.use_cases.create_reservation_use_case import CreateReservationUseCase
 from ...application.reservation.use_cases.get_reservation_use_case import GetReservationUseCase
 from ...application.reservation.use_cases.list_reservations_use_case import ListReservationsUseCase
@@ -28,6 +31,7 @@ from ...application.reservation.use_cases.cancel_reservation_use_case import Can
 from ...application.reservation.use_cases.reject_reservation_use_case import RejectReservationUseCase
 from ...application.reservation.use_cases.complete_reservation_use_case import CompleteReservationUseCase
 from ...application.reservation.use_cases.get_available_ramp_use_case import GetAvailableRampUseCase
+from ...application.reservation.use_cases.get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
 from ..middleware import auth_middleware
 
 # Configurar logging
@@ -131,6 +135,78 @@ async def get_available_ramp(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en get_available_ramp: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/period", response_model=ReservationPeriodResponse)
+async def get_reservations_by_period(
+    branch_id: int = Query(..., gt=0, description="ID de la sucursal"),
+    start_time: datetime = Query(..., description="Fecha y hora de inicio (YYYY-MM-DD HH:MM:SS)"),
+    end_time: datetime = Query(..., description="Fecha y hora de fin (YYYY-MM-DD HH:MM:SS)"),
+    status: Optional[str] = Query(None, description="Estado de las reservas (PENDING, CONFIRMED, COMPLETED, CANCELLED)"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Obtener todas las reservas en un período de tiempo para una sucursal.
+    
+    Args:
+        branch_id: ID de la sucursal
+        start_time: Fecha y hora de inicio del período
+        end_time: Fecha y hora de fin del período
+        status: Estado opcional para filtrar las reservas
+    
+    Returns:
+        ReservationPeriodResponse: Lista de reservas con start_time, end_time y reservation_id
+    """
+    try:
+        logger.info(f"📅 API Gateway - GET /reservations/period - branch_id: {branch_id}, start_time: {start_time}, end_time: {end_time}")
+        
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        
+        # Crear el request DTO
+        request = ReservationPeriodRequest(
+            branch_id=branch_id,
+            start_time=start_time,
+            end_time=end_time,
+            status=status
+        )
+        
+        # Ejecutar el use case
+        use_case = GetReservationsByPeriodUseCase()
+        result = await use_case.execute(request, access_token)
+        
+        logger.info(f"✅ Se obtuvieron {result.total} reservas del período")
+        return result
+        
+    except ValueError as e:
+        logger.warning(f"⚠️ Error de validación: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": "VALIDATION_ERROR"}
+        )
+    except HTTPError as e:
+        logger.error(f"❌ Error HTTP obteniendo reservas por período: {str(e)}")
+        
+        # Intentar parsear el mensaje de error
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "SERVICE_ERROR"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en get_reservations_by_period: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
