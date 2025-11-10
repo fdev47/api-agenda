@@ -15,6 +15,7 @@ from location_service.populate_data.local_data import populate_local_data
 from location_service.populate_data.sector_data import populate_sector_data
 from location_service.populate_data.branch_data import populate_branch_data
 from location_service.populate_data.ramp_data import populate_ramp_data
+from location_service.populate_data.ramp_schedule_data import populate_ramp_schedule_data
 
 
 async def start_populate_location_data(dry_run: bool = False):
@@ -98,6 +99,22 @@ async def start_populate_ramp_data(dry_run: bool = False):
         raise
 
 
+async def start_populate_ramp_schedule_data(dry_run: bool = False):
+    """Poblar horarios para cada rampa"""
+    print("\n📅 POBLACIÓN DE HORARIOS DE RAMPAS")
+    print("-" * 40)
+    try:
+        results = await populate_ramp_schedule_data(dry_run)
+        if dry_run:
+            print(f"✅ Simulación de horarios completada")
+        else:
+            print(f"✅ Horarios poblados exitosamente")
+        return results
+    except Exception as e:
+        print(f"❌ Error poblando horarios: {e}")
+        raise
+
+
 def print_summary(results, dry_run: bool = False):
     """Imprimir resumen final de la población"""
     print("\n" + "=" * 50)
@@ -119,6 +136,7 @@ def print_summary(results, dry_run: bool = False):
     total_measurement_units = 0
     total_sector_types = 0
     total_ramps = 0
+    total_schedules = 0
     
     if "location" in results:
         location = results["location"]
@@ -157,6 +175,15 @@ def print_summary(results, dry_run: bool = False):
         total_sectors += sectors.get("sectors", 0)
         print(f"🏭 Sectores: {sectors['measurement_units']} unidades, {sectors['sector_types']} tipos, {sectors['sectors']} sectores")
     
+    if "ramp_schedules" in results:
+        ramp_schedules = results["ramp_schedules"]
+        if isinstance(ramp_schedules, dict):
+            total_schedules += ramp_schedules.get("schedules", 0)
+            print(f"📅 Horarios de rampas: {ramp_schedules['schedules']} horarios")
+        else:
+            total_schedules += ramp_schedules
+            print(f"📅 Horarios de rampas: {ramp_schedules} horarios")
+    
     print(f"\n📈 TOTALES:")
     print(f"   🌍 Países: {total_countries}")
     print(f"   🏛️ Estados: {total_states}")
@@ -165,8 +192,9 @@ def print_summary(results, dry_run: bool = False):
     print(f"   🚚 Rampas: {total_ramps}")
     print(f"   📏 Unidades de medida: {total_measurement_units}")
     print(f"   🏭 Tipos de sector: {total_sector_types}")
-    print(f"   🛣️ Rampas: {total_ramps}")
+    print(f"   🚚 Rampas: {total_ramps}")
     print(f"   🏭 Sectores: {total_sectors}")
+    print(f"   📅 Horarios de rampas: {total_schedules}")
 
 
 async def main():
@@ -210,6 +238,10 @@ async def main():
         # Poblar datos de sectores
         sector_results = await start_populate_sector_data(dry_run)
         results["sectors"] = sector_results
+
+        # Poblar horarios de rampas
+        ramp_schedule_results = await start_populate_ramp_schedule_data(dry_run)
+        results["ramp_schedules"] = ramp_schedule_results
 
         # Imprimir resumen final
         print_summary(results, dry_run)
