@@ -22,7 +22,7 @@ from ...domain.exceptions.ramp_schedule_exceptions import (
 )
 from ..middleware import auth_middleware
 
-router = APIRouter(prefix="/ramp-schedules", tags=["Horarios de Rampas"])
+router = APIRouter()
 
 # Obtener contenedor
 def get_container():
@@ -30,13 +30,7 @@ def get_container():
     return container
 
 
-@router.post(
-    "",
-    response_model=RampScheduleCreatedResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Crear un horario de rampa",
-    description="Crea un nuevo horario para una rampa específica"
-)
+@router.post("/", response_model=RampScheduleCreatedResponse, status_code=status.HTTP_201_CREATED)
 async def create_ramp_schedule(
     request: CreateRampScheduleRequest,
     current_user=Depends(auth_middleware["require_auth"]),
@@ -64,12 +58,26 @@ async def create_ramp_schedule(
         )
 
 
-@router.get(
-    "/{schedule_id}",
-    response_model=RampScheduleResponse,
-    summary="Obtener un horario de rampa",
-    description="Obtiene un horario de rampa por su ID"
-)
+# IMPORTANTE: Ruta específica ANTES de la genérica
+@router.get("/ramp/{ramp_id}", response_model=List[RampScheduleResponse])
+async def get_ramp_schedules_by_ramp(
+    ramp_id: int = Path(..., gt=0, description="ID de la rampa"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    container = Depends(get_container)
+):
+    """Obtener todos los horarios de una rampa"""
+    try:
+        use_case = container.get_ramp_schedules_by_ramp_use_case()
+        result = await use_case.execute(ramp_id)
+        return result
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+
+@router.get("/{schedule_id}", response_model=RampScheduleResponse)
 async def get_ramp_schedule(
     schedule_id: int = Path(..., gt=0, description="ID del horario"),
     current_user=Depends(auth_middleware["require_auth"]),
@@ -92,12 +100,7 @@ async def get_ramp_schedule(
         )
 
 
-@router.get(
-    "",
-    response_model=RampScheduleListResponse,
-    summary="Listar horarios de rampas",
-    description="Lista horarios de rampas con filtros opcionales"
-)
+@router.get("/", response_model=RampScheduleListResponse)
 async def list_ramp_schedules(
     current_user=Depends(auth_middleware["require_auth"]),
     container = Depends(get_container),
@@ -129,12 +132,7 @@ async def list_ramp_schedules(
         )
 
 
-@router.put(
-    "/{schedule_id}",
-    response_model=RampScheduleUpdatedResponse,
-    summary="Actualizar un horario de rampa",
-    description="Actualiza un horario de rampa existente"
-)
+@router.put("/{schedule_id}", response_model=RampScheduleUpdatedResponse)
 async def update_ramp_schedule(
     request: UpdateRampScheduleRequest,
     schedule_id: int = Path(..., gt=0, description="ID del horario"),
@@ -168,12 +166,7 @@ async def update_ramp_schedule(
         )
 
 
-@router.delete(
-    "/{schedule_id}",
-    response_model=RampScheduleDeletedResponse,
-    summary="Eliminar un horario de rampa",
-    description="Elimina un horario de rampa existente"
-)
+@router.delete("/{schedule_id}", response_model=RampScheduleDeletedResponse)
 async def delete_ramp_schedule(
     schedule_id: int = Path(..., gt=0, description="ID del horario"),
     current_user=Depends(auth_middleware["require_auth"]),
@@ -194,27 +187,3 @@ async def delete_ramp_schedule(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno del servidor: {str(e)}"
         )
-
-
-@router.get(
-    "/ramp/{ramp_id}",
-    response_model=List[RampScheduleResponse],
-    summary="Obtener horarios por rampa",
-    description="Obtiene todos los horarios de una rampa específica"
-)
-async def get_ramp_schedules_by_ramp(
-    ramp_id: int = Path(..., gt=0, description="ID de la rampa"),
-    current_user=Depends(auth_middleware["require_auth"]),
-    container = Depends(get_container)
-):
-    """Obtener todos los horarios de una rampa"""
-    try:
-        use_case = container.get_ramp_schedules_by_ramp_use_case()
-        result = await use_case.execute(ramp_id)
-        return result
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno del servidor: {str(e)}"
-        )
-

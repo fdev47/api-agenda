@@ -24,6 +24,7 @@ from .local.routes import router as local_router
 from .sector_type.routes import router as sector_type_router
 from .sector.routes import router as sector_router
 from .ramp.ramp_routes import router as ramp_router
+from .ramp_schedule.ramp_schedule_routes import router as ramp_schedule_router
 from .notification.notification_routes import router as notification_router
 
 
@@ -64,6 +65,7 @@ def create_api_gateway_app():
         RouterConfig(sector_type_router, prefix="/sector-types", tags=["Sector Types"]),
         RouterConfig(sector_router, prefix="/sectors", tags=["Sectors"]),
         RouterConfig(ramp_router, prefix="/ramps", tags=["Ramps"]),
+        RouterConfig(ramp_schedule_router, prefix="/ramp-schedules", tags=["Ramp Schedules"]),
         RouterConfig(notification_router, prefix="/notifications", tags=["Notifications"])
     ]
     

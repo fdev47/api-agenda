@@ -15,6 +15,14 @@ from ..application.reservation.use_cases.list_reservations_use_case import ListR
 from ..application.reservation.use_cases.update_reservation_use_case import UpdateReservationUseCase
 from ..application.reservation.use_cases.cancel_reservation_use_case import CancelReservationUseCase
 
+# Ramp Schedule
+from ..application.ramp_schedule.use_cases.create_ramp_schedule_use_case import CreateRampScheduleUseCase
+from ..application.ramp_schedule.use_cases.get_ramp_schedule_use_case import GetRampScheduleUseCase
+from ..application.ramp_schedule.use_cases.list_ramp_schedules_use_case import ListRampSchedulesUseCase
+from ..application.ramp_schedule.use_cases.update_ramp_schedule_use_case import UpdateRampScheduleUseCase
+from ..application.ramp_schedule.use_cases.delete_ramp_schedule_use_case import DeleteRampScheduleUseCase
+from ..application.ramp_schedule.use_cases.get_ramp_schedules_by_ramp_use_case import GetRampSchedulesByRampUseCase
+
 
 class Container(containers.DeclarativeContainer):
     """Container de dependencias para el API Gateway"""
@@ -44,4 +52,12 @@ class Container(containers.DeclarativeContainer):
     get_reservation_use_case = providers.Factory(GetReservationUseCase)
     list_reservations_use_case = providers.Factory(ListReservationsUseCase)
     update_reservation_use_case = providers.Factory(UpdateReservationUseCase)
-    cancel_reservation_use_case = providers.Factory(CancelReservationUseCase) 
+    cancel_reservation_use_case = providers.Factory(CancelReservationUseCase)
+    
+    # Ramp Schedule
+    create_ramp_schedule_use_case = providers.Factory(CreateRampScheduleUseCase)
+    get_ramp_schedule_use_case = providers.Factory(GetRampScheduleUseCase)
+    list_ramp_schedules_use_case = providers.Factory(ListRampSchedulesUseCase)
+    update_ramp_schedule_use_case = providers.Factory(UpdateRampScheduleUseCase)
+    delete_ramp_schedule_use_case = providers.Factory(DeleteRampScheduleUseCase)
+    get_ramp_schedules_by_ramp_use_case = providers.Factory(GetRampSchedulesByRampUseCase) 
