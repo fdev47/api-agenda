@@ -14,6 +14,7 @@ from .repositories.ramp_repository_impl import RampRepositoryImpl
 from .repositories.sector_repository_impl import SectorRepositoryImpl
 from .repositories.sector_type_repository_impl import SectorTypeRepositoryImpl
 from .repositories.measurement_unit_repository_impl import MeasurementUnitRepositoryImpl
+from .repositories.ramp_schedule_repository_impl import RampScheduleRepositoryImpl
 
 # Casos de uso
 from ..application.use_cases.create_country_use_case import CreateCountryUseCase
@@ -70,6 +71,13 @@ from ..application.use_cases.list_measurement_units_use_case import ListMeasurem
 from ..application.use_cases.update_measurement_unit_use_case import UpdateMeasurementUnitUseCase
 from ..application.use_cases.delete_measurement_unit_use_case import DeleteMeasurementUnitUseCase
 
+from ..application.use_cases.create_ramp_schedule_use_case import CreateRampScheduleUseCase
+from ..application.use_cases.get_ramp_schedule_use_case import GetRampScheduleUseCase
+from ..application.use_cases.list_ramp_schedules_use_case import ListRampSchedulesUseCase
+from ..application.use_cases.update_ramp_schedule_use_case import UpdateRampScheduleUseCase
+from ..application.use_cases.delete_ramp_schedule_use_case import DeleteRampScheduleUseCase
+from ..application.use_cases.get_ramp_schedules_by_ramp_use_case import GetRampSchedulesByRampUseCase
+
 
 class Container(containers.DeclarativeContainer):
     """Container de dependencias"""
@@ -112,6 +120,10 @@ class Container(containers.DeclarativeContainer):
     
     measurement_unit_repository = providers.Factory(
         MeasurementUnitRepositoryImpl
+    )
+    
+    ramp_schedule_repository = providers.Factory(
+        RampScheduleRepositoryImpl
     )
     
     # Casos de uso para países
@@ -371,6 +383,37 @@ class Container(containers.DeclarativeContainer):
     delete_measurement_unit_use_case = providers.Factory(
         DeleteMeasurementUnitUseCase,
         measurement_unit_repository=measurement_unit_repository
+    )
+    
+    # Casos de uso para horarios de rampas
+    create_ramp_schedule_use_case = providers.Factory(
+        CreateRampScheduleUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
+    )
+    
+    get_ramp_schedule_use_case = providers.Factory(
+        GetRampScheduleUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
+    )
+    
+    list_ramp_schedules_use_case = providers.Factory(
+        ListRampSchedulesUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
+    )
+    
+    update_ramp_schedule_use_case = providers.Factory(
+        UpdateRampScheduleUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
+    )
+    
+    delete_ramp_schedule_use_case = providers.Factory(
+        DeleteRampScheduleUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
+    )
+    
+    get_ramp_schedules_by_ramp_use_case = providers.Factory(
+        GetRampSchedulesByRampUseCase,
+        ramp_schedule_repository=ramp_schedule_repository
     )
 
 

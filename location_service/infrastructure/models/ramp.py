@@ -21,6 +21,7 @@ class Ramp(Base):
     
     # Relaciones
     branch = relationship("Branch", back_populates="ramps")
+    schedules = relationship("RampSchedule", back_populates="ramp", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Ramp(id={self.id}, name='{self.name}', branch_id={self.branch_id})>" 
