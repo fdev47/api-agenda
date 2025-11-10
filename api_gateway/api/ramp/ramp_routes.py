@@ -13,11 +13,14 @@ from ...domain.ramp.dto.requests.update_ramp_request import UpdateRampRequest
 from ...domain.ramp.dto.requests.ramp_filter_request import RampFilterRequest
 from ...domain.ramp.dto.responses.ramp_response import RampResponse
 from ...domain.ramp.dto.responses.ramp_list_response import RampListResponse
+from ...domain.ramp.dto.requests.ramp_slots_request import RampSlotsRequest
+from ...domain.ramp.dto.responses.ramp_slots_response import RampSlotsResponse
 from ...application.ramp.use_cases.create_ramp_use_case import CreateRampUseCase
 from ...application.ramp.use_cases.get_ramp_use_case import GetRampUseCase
 from ...application.ramp.use_cases.list_ramps_use_case import ListRampsUseCase
 from ...application.ramp.use_cases.update_ramp_use_case import UpdateRampUseCase
 from ...application.ramp.use_cases.delete_ramp_use_case import DeleteRampUseCase
+from ...application.ramp.use_cases.get_ramp_slots_use_case import GetRampSlotsUseCase
 from ..middleware import auth_middleware
 
 # Configurar logging
@@ -65,6 +68,64 @@ async def create_ramp(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en create_ramp: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/slots", response_model=RampSlotsResponse, status_code=status.HTTP_200_OK)
+async def get_ramp_slots(
+    type: str = Query(..., description="Tipo de carga (SECO, FRIO, FLV)"),
+    branch_id: int = Query(..., gt=0, description="ID de la sucursal"),
+    schedule_date: str = Query(..., description="Fecha para consultar slots (YYYY-MM-DD)"),
+    interval_time: int = Query(..., gt=0, description="Intervalo de tiempo en minutos para cada slot"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Obtener slots disponibles para rampas
+    
+    Args:
+        type: Tipo de carga (SECO, FRIO, FLV)
+        branch_id: ID de la sucursal
+        schedule_date: Fecha en formato YYYY-MM-DD
+        interval_time: Intervalo de tiempo en minutos para cada slot
+        
+    Returns:
+        RampSlotsResponse con los slots disponibles
+    """
+    try:
+        # Crear el request object desde los query parameters
+        request = RampSlotsRequest(
+            type=type,
+            branch_id=branch_id,
+            schedule_date=schedule_date,
+            interval_time=interval_time
+        )
+        
+        logger.info(f"📅 Obteniendo slots para tipo={request.type}, branch_id={request.branch_id}, fecha={request.schedule_date}, intervalo={request.interval_time}min")
+        
+        # Extraer access_token del header de autorización
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        
+        use_case = GetRampSlotsUseCase()
+        result = await use_case.execute(request, access_token)
+        return result
+    except ValidationError as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
+        )
+    except ValueError as e:
+        logger.warning(f"⚠️ Error de validación: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": ErrorCode.VALIDATION_ERROR.value}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado obteniendo slots: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
