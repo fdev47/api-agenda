@@ -22,6 +22,7 @@ from ..application.use_cases import (
     DeleteReservationUseCase,
     CompleteReservationUseCase,
     RejectReservationUseCase,
+    GetReservationsByPeriodUseCase,
     # Casos de uso de main_reservations
     CreateMainReservationUseCase,
     GetMainReservationUseCase,
@@ -134,6 +135,11 @@ class Container(containers.DeclarativeContainer):
     
     reject_reservation_use_case = providers.Factory(
         RejectReservationUseCase,
+        reservation_repository=reservation_repository
+    )
+    
+    get_reservations_by_period_use_case = providers.Factory(
+        GetReservationsByPeriodUseCase,
         reservation_repository=reservation_repository
     )
     

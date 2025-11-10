@@ -4,17 +4,20 @@ Rutas para reservas
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from typing import List, Optional
+from datetime import datetime
 
 from ...domain.dto.requests.create_reservation_request import CreateReservationRequest
 from ...domain.dto.requests.update_reservation_request import UpdateReservationRequest
 from ...domain.dto.requests.reservation_filter_request import ReservationFilterRequest
 from ...domain.dto.requests.reject_reservation_request import RejectReservationRequest
 from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
+from ...domain.dto.requests.reservation_period_request import ReservationPeriodRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
 from ...domain.dto.responses.reservation_summary_response import ReservationSummaryResponse
 from ...domain.dto.responses.reservation_summary_list_response import ReservationSummaryListResponse
+from ...domain.dto.responses.reservation_period_response import ReservationPeriodResponse
 from ...domain.exceptions.reservation_exceptions import (
     ReservationNotFoundException,
     ReservationAlreadyExistsException,
@@ -22,7 +25,7 @@ from ...domain.exceptions.reservation_exceptions import (
     ReservationConflictException,
     ReservationStatusException
 )
-from ...infrastructure.container import container
+from ...infrastructure.container import container, Container
 from ..middleware import auth_middleware
 from ...application.use_cases.list_reservations_use_case import ListReservationsUseCase
 
@@ -80,6 +83,61 @@ async def create_reservation(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en create_reservation: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/period", response_model=ReservationPeriodResponse)
+async def get_reservations_by_period(
+    branch_id: int = Query(..., description="ID de la sucursal"),
+    start_time: datetime = Query(..., description="Fecha y hora de inicio (YYYY-MM-DD HH:MM:SS)"),
+    end_time: datetime = Query(..., description="Fecha y hora de fin (YYYY-MM-DD HH:MM:SS)"),
+    status: Optional[str] = Query(None, description="Estado de las reservas (PENDING, CONFIRMED, COMPLETED, CANCELLED)"),
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
+):
+    """
+    Obtener todas las reservas en un período de tiempo para una sucursal.
+    
+    Args:
+        branch_id: ID de la sucursal
+        start_time: Fecha y hora de inicio del período
+        end_time: Fecha y hora de fin del período
+        status: Estado opcional para filtrar las reservas
+    
+    Returns:
+        ReservationPeriodResponse: Lista de reservas con start_time, end_time y reservation_id
+    """
+    try:
+        logger.info(f"📅 GET /reservations/period - branch_id: {branch_id}, start_time: {start_time}, end_time: {end_time}, status: {status}")
+        
+        # Crear el request DTO
+        request = ReservationPeriodRequest(
+            branch_id=branch_id,
+            start_time=start_time,
+            end_time=end_time,
+            status=status
+        )
+        
+        # Obtener el use case del container
+        use_case = container.get_reservations_by_period_use_case()
+        
+        # Ejecutar el use case
+        result = await use_case.execute(request)
+        
+        logger.info(f"✅ Se obtuvieron {result.total} reservas en el período")
+        return result
+        
+    except ValueError as e:
+        logger.warning(f"⚠️ Datos de entrada inválidos: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "error_code": "INVALID_INPUT"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en get_reservations_by_period: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

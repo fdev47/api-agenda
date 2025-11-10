@@ -16,6 +16,7 @@ from .update_reservation_use_case import UpdateReservationUseCase
 from .delete_reservation_use_case import DeleteReservationUseCase
 from .complete_reservation_use_case import CompleteReservationUseCase
 from .reject_reservation_use_case import RejectReservationUseCase
+from .get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
 
 # Casos de uso para main_reservations
 from .create_main_reservation_use_case import CreateMainReservationUseCase
@@ -41,6 +42,7 @@ __all__ = [
     "DeleteReservationUseCase",
     "CompleteReservationUseCase",
     "RejectReservationUseCase",
+    "GetReservationsByPeriodUseCase",
     # Main Reservations
     "CreateMainReservationUseCase",
     "GetMainReservationUseCase",

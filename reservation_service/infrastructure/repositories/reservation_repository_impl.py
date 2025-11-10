@@ -526,4 +526,40 @@ class ReservationRepositoryImpl(ReservationRepository):
             
             await session.commit()
             
-            return True 
+            return True
+    
+    async def get_by_period(self, branch_id: int, start_time: datetime, end_time: datetime, status: Optional[str] = None) -> List[Reservation]:
+        """Obtener reservas por período de tiempo en una sucursal"""
+        logger.info(f"📅 Obteniendo reservas para sucursal {branch_id} entre {start_time} y {end_time}")
+        
+        async for session in get_db_session():
+            # Construir la consulta base
+            query = select(ReservationModel).where(
+                and_(
+                    ReservationModel.branch_id == branch_id,
+                    # Verificar que haya solapamiento de períodos
+                    # Una reserva se solapa si:
+                    # - Su start_time es antes del end_time del período buscado Y
+                    # - Su end_time es después del start_time del período buscado
+                    ReservationModel.start_time < end_time,
+                    ReservationModel.end_time > start_time
+                )
+            )
+            
+            # Filtrar por estado si se especifica
+            if status:
+                query = query.where(ReservationModel.status == ReservationStatus(status))
+            
+            # Ordenar por fecha y hora de inicio
+            query = query.order_by(ReservationModel.start_time)
+            
+            result = await session.execute(query)
+            reservation_models = result.scalars().all()
+            
+            logger.info(f"✅ Se encontraron {len(reservation_models)} reservas en el período")
+            
+            # Cargar explícitamente las relaciones para cada modelo
+            for model in reservation_models:
+                await session.refresh(model, attribute_names=['order_numbers'])
+            
+            return [model.to_domain() for model in reservation_models] 

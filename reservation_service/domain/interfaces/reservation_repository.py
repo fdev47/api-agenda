@@ -79,4 +79,9 @@ class ReservationRepository(ABC):
     @abstractmethod
     async def update_status(self, reservation_id: int, status: str) -> bool:
         """Actualizar solo el estado de una reserva"""
+        pass
+    
+    @abstractmethod
+    async def get_by_period(self, branch_id: int, start_time: datetime, end_time: datetime, status: Optional[str] = None) -> List[Reservation]:
+        """Obtener reservas por período de tiempo en una sucursal"""
         pass 
