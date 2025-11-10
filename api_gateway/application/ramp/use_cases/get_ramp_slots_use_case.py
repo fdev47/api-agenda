@@ -10,8 +10,10 @@ from ....domain.ramp.dto.requests.ramp_slots_request import RampSlotsRequest
 from ....domain.ramp.dto.responses.ramp_slots_response import RampSlotsResponse, SlotInfo
 from ....domain.ramp.dto.requests.ramp_filter_request import RampFilterRequest
 from ....domain.ramp_schedule.dto.requests.ramp_schedule_requests import RampScheduleFilterRequest
+from ....domain.reservation.dto.requests.reservation_period_request import ReservationPeriodRequest
 from .list_ramps_use_case import ListRampsUseCase
 from ...ramp_schedule.use_cases.list_ramp_schedules_use_case import ListRampSchedulesUseCase
+from ...reservation.use_cases.get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class GetRampSlotsUseCase:
     def __init__(self):
         self.list_ramps_use_case = ListRampsUseCase()
         self.list_schedules_use_case = ListRampSchedulesUseCase()
+        self.get_reservations_by_period_use_case = GetReservationsByPeriodUseCase()
     
     async def execute(self, request: RampSlotsRequest, access_token: str = "") -> RampSlotsResponse:
         """
@@ -119,15 +122,54 @@ class GetRampSlotsUseCase:
             # 4. Generar slots basados en interval_time para cada rango
             # NO combinar rangos, generar slots por separado para cada rango
             all_slots = self._generate_slots_with_ramps(time_ranges_to_ramps, request.interval_time)
-            logger.info(f"✅ {len(all_slots)} slots generados (antes de deduplicar)")
+            logger.info(f"✅ {len(all_slots)} slots generados (antes de verificar reservas)")
             
-            # 5. Eliminar slots duplicados (mismo start_time y end_time)
+            # 5. Verificar contra reservas existentes y eliminar slots ocupados
+            if all_slots:
+                # Determinar el rango de tiempo para buscar reservas
+                min_start_time = min(slot.start_time for slot in all_slots)
+                max_end_time = max(slot.end_time for slot in all_slots)
+                
+                # Crear datetime completos para la búsqueda
+                start_datetime = datetime.combine(request.schedule_date, min_start_time)
+                end_datetime = datetime.combine(request.schedule_date, max_end_time)
+                
+                logger.info(f"🔍 Verificando reservas entre {start_datetime} y {end_datetime}")
+                
+                # Obtener reservas existentes con estado PENDING o CONFIRMED
+                try:
+                    reservation_request = ReservationPeriodRequest(
+                        branch_id=request.branch_id,
+                        start_time=start_datetime,
+                        end_time=end_datetime,
+                        status="PENDING"  # Solo verificar reservas confirmadas
+                    )
+                    reservations_response = await self.get_reservations_by_period_use_case.execute(
+                        reservation_request, 
+                        access_token
+                    )
+                    
+                    logger.info(f"📋 Se encontraron {reservations_response.total} reservas confirmadas en el período")
+                    
+                    # Eliminar slots que tienen conflicto con reservas
+                    all_slots = self._remove_conflicting_slots(
+                        all_slots, 
+                        reservations_response.reservations,
+                        request.schedule_date,
+                        request.interval_time
+                    )
+                    logger.info(f"✅ {len(all_slots)} slots después de eliminar conflictos")
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Error obteniendo reservas: {str(e)}. Continuando sin verificar conflictos.")
+            
+            # 6. Eliminar slots duplicados (mismo start_time y end_time)
             # Preservar el primero encontrado
             slots = self._deduplicate_slots(all_slots)
             logger.info(f"✅ {len(slots)} slots únicos después de deduplicar")
             
-            # 6. Por ahora, todos los slots están disponibles (TODO: verificar reservas existentes)
-            available_count = len(slots)
+            # 7. Contar slots disponibles
+            available_count = len([s for s in slots if s.is_available])
             
             response = RampSlotsResponse(
                 schedule_date=request.schedule_date,
@@ -284,4 +326,77 @@ class GetRampSlotsUseCase:
                 logger.debug(f"   ⏭️ Slot duplicado ignorado: {slot.start_time} - {slot.end_time} (Rampa: {slot.ramp_name})")
         
         return unique_slots
+    
+    def _remove_conflicting_slots(
+        self,
+        slots: List[SlotInfo],
+        reservations: List,
+        schedule_date: datetime.date,
+        interval_minutes: int
+    ) -> List[SlotInfo]:
+        """
+        Eliminar slots que tienen conflicto con reservas existentes.
+        
+        Para cada reserva, elimina SOLO UNA ocurrencia de cada slot conflictivo.
+        Si hay múltiples slots con el mismo horario, solo elimina el primero encontrado.
+        
+        Args:
+            slots: Lista de slots a verificar
+            reservations: Lista de reservas existentes
+            schedule_date: Fecha de los slots
+            interval_minutes: Duración de cada slot en minutos
+            
+        Returns:
+            Lista de slots sin los que tienen conflicto (se eliminan una sola vez por reserva)
+        """
+        if not reservations:
+            return slots
+        
+        # Crear una lista de índices de slots a eliminar
+        slots_to_remove = set()
+        
+        for reservation in reservations:
+            logger.info(f"🔍 Verificando conflictos con reserva ID: {reservation.reservation_id}")
+            logger.info(f"   📅 Reserva: {reservation.start_time} - {reservation.end_time}")
+            
+            # Extraer solo la hora de la reserva (ignorar la fecha)
+            reservation_start_time = reservation.start_time.time() if isinstance(reservation.start_time, datetime) else reservation.start_time
+            reservation_end_time = reservation.end_time.time() if isinstance(reservation.end_time, datetime) else reservation.end_time
+            
+            # Contador para rastrear cuántos slots se eliminaron por esta reserva (para cada combinación única)
+            removed_per_time = {}
+            
+            # Verificar cada slot
+            for idx, slot in enumerate(slots):
+                # Si este slot ya fue marcado para eliminar, saltar
+                if idx in slots_to_remove:
+                    continue
+                
+                # Calcular el end_time del slot basado en el interval
+                slot_start_datetime = datetime.combine(schedule_date, slot.start_time)
+                slot_end_datetime = datetime.combine(schedule_date, slot.end_time)
+                
+                # Verificar si hay solapamiento entre el slot y la reserva
+                # Hay solapamiento si:
+                # - El slot empieza antes de que termine la reserva Y
+                # - El slot termina después de que empiece la reserva
+                if slot.start_time < reservation_end_time and slot.end_time > reservation_start_time:
+                    # Crear una clave única para este horario
+                    time_key = (slot.start_time, slot.end_time)
+                    
+                    # Solo eliminar el PRIMERO de cada horario único
+                    if time_key not in removed_per_time:
+                        slots_to_remove.add(idx)
+                        removed_per_time[time_key] = True
+                        logger.info(f"   ❌ Slot {slot.start_time} - {slot.end_time} (Rampa: {slot.ramp_name}) tiene conflicto y será eliminado")
+                    else:
+                        logger.debug(f"   ⏭️ Slot {slot.start_time} - {slot.end_time} (Rampa: {slot.ramp_name}) ya fue eliminado para esta reserva, manteniendo duplicado")
+        
+        # Filtrar los slots, eliminando los que están en slots_to_remove
+        filtered_slots = [slot for idx, slot in enumerate(slots) if idx not in slots_to_remove]
+        
+        logger.info(f"📊 Slots eliminados por conflictos: {len(slots_to_remove)}")
+        logger.info(f"📊 Slots restantes: {len(filtered_slots)}")
+        
+        return filtered_slots
 
