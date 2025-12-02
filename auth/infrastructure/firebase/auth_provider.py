@@ -339,6 +339,40 @@ class FirebaseAuthProvider(IAuthProvider):
             logger.error(f"❌ Error eliminando usuario: {e}")
             raise self._map_firebase_error(e)
     
+    def change_password(self, user_id: str, new_password: str) -> bool:
+        """
+        Cambiar contraseña de un usuario en Firebase Auth
+        
+        Args:
+            user_id: ID del usuario en Firebase
+            new_password: Nueva contraseña
+            
+        Returns:
+            bool: True si la contraseña fue actualizada exitosamente
+            
+        Raises:
+            UserNotFoundException: Si el usuario no existe
+            AuthError: Si hay un error al cambiar la contraseña
+        """
+        try:
+            logger.info(f"🔄 Cambiando contraseña para usuario: {user_id}")
+            
+            # Verificar que el usuario existe
+            firebase_auth.get_user(user_id)
+            
+            # Actualizar contraseña en Firebase
+            firebase_auth.update_user(user_id, password=new_password)
+            
+            logger.info(f"✅ Contraseña actualizada exitosamente para usuario: {user_id}")
+            return True
+            
+        except firebase_auth.UserNotFoundError:
+            logger.warning(f"⚠️ Usuario no encontrado para cambiar contraseña: {user_id}")
+            raise UserNotFoundException(user_id)
+        except FirebaseError as e:
+            logger.error(f"❌ Error cambiando contraseña: {e}")
+            raise self._map_firebase_error(e)
+    
     def _map_firebase_user_to_domain(self, user_record) -> AuthenticatedUser:
         return AuthenticatedUser(
             user_id=user_record.uid,

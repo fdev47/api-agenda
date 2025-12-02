@@ -10,6 +10,7 @@ from .assign_permission_use_case import AssignPermissionUseCase
 from .get_user_roles_use_case import GetUserRolesUseCase
 from .update_user_use_case import UpdateUserUseCase
 from .delete_user_use_case import DeleteUserUseCase
+from .change_password_use_case import ChangePasswordUseCase
 
 __all__ = [
     "LoginUserUseCase",
@@ -20,5 +21,6 @@ __all__ = [
     "AssignPermissionUseCase",
     "GetUserRolesUseCase",
     "UpdateUserUseCase",
-    "DeleteUserUseCase"
+    "DeleteUserUseCase",
+    "ChangePasswordUseCase"
 ] 

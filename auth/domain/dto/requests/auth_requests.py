@@ -41,4 +41,10 @@ class UpdateUserRequest(BaseModel):
     phone_number: Optional[str] = Field(None, description="Número de teléfono")
     password: Optional[str] = Field(None, min_length=6, description="Nueva contraseña del usuario")
     two_factor_enabled: Optional[bool] = Field(None, description="Habilitar autenticación de dos factores")
-    email_verified: Optional[bool] = Field(None, description="Marcar email como verificado") 
+    email_verified: Optional[bool] = Field(None, description="Marcar email como verificado")
+
+
+class ChangePasswordRequest(BaseModel):
+    """Request para cambiar contraseña de usuario"""
+    email: EmailStr = Field(..., description="Email del usuario")
+    new_password: str = Field(..., min_length=6, description="Nueva contraseña del usuario") 

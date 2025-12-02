@@ -57,4 +57,9 @@ class IAuthProvider(ABC):
     @abstractmethod
     def delete_user(self, user_id: str) -> None:
         """Eliminar un usuario"""
+        pass
+    
+    @abstractmethod
+    def change_password(self, user_id: str, new_password: str) -> bool:
+        """Cambiar contraseña de un usuario"""
         pass 

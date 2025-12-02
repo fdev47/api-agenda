@@ -4,7 +4,7 @@ Rutas de autenticación para Firebase Auth
 import logging
 from fastapi import APIRouter, Depends, Header
 from typing import Optional
-from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest
+from ...domain.dto.requests import CreateUserRequest, UpdateUserRequest, ChangePasswordRequest
 from ...domain.dto.responses import UserInfoResponse
 from ...domain.models import UserRegistration, AuthError, AuthErrorCode
 from ...domain.exceptions.auth_exceptions import UserNotFoundException
@@ -248,4 +248,44 @@ async def get_user_info(authorization: Optional[str] = Header(None)):
             "valid": False,
             "message": str(e),
             "user": None
-        } 
+        }
+
+
+@router.post("/change-password")
+async def change_password(request: ChangePasswordRequest):
+    """
+    Cambiar contraseña de un usuario por su email
+    Endpoint para cambiar contraseña de usuario en Firebase
+    """
+    try:
+        logger.info(f"🔄 Solicitud de cambio de contraseña para: {request.email}")
+        
+        change_password_use_case = container.change_password_use_case()
+        result = change_password_use_case.execute(request)
+        
+        return result
+        
+    except UserNotFoundException as e:
+        logger.warning(f"⚠️ Usuario no encontrado: {request.email}")
+        raise_not_found_error(
+            message=f"Usuario con email '{request.email}' no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    except AuthError as e:
+        # Manejar errores específicos de autenticación
+        if e.error_code == AuthErrorCode.WEAK_PASSWORD.value:
+            raise_validation_error(
+                message="La contraseña es demasiado débil",
+                error_code=ErrorCode.VALIDATION_ERROR.value
+            )
+        else:
+            raise_internal_error(
+                message=f"Error al cambiar contraseña: {str(e)}",
+                error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+            )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado cambiando contraseña: {str(e)}")
+        raise_internal_error(
+            message=f"Error interno del servidor: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        ) 
