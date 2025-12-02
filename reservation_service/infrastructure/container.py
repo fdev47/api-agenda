@@ -23,6 +23,8 @@ from ..application.use_cases import (
     CompleteReservationUseCase,
     RejectReservationUseCase,
     GetReservationsByPeriodUseCase,
+    ExportReservationsCsvUseCase,
+    ExportReservationsXlsxUseCase,
     # Casos de uso de main_reservations
     CreateMainReservationUseCase,
     GetMainReservationUseCase,
@@ -141,6 +143,18 @@ class Container(containers.DeclarativeContainer):
     get_reservations_by_period_use_case = providers.Factory(
         GetReservationsByPeriodUseCase,
         reservation_repository=reservation_repository
+    )
+    
+    export_reservations_csv_use_case = providers.Factory(
+        ExportReservationsCsvUseCase,
+        reservation_repository=reservation_repository,
+        main_reservation_repository=main_reservation_repository
+    )
+    
+    export_reservations_xlsx_use_case = providers.Factory(
+        ExportReservationsXlsxUseCase,
+        reservation_repository=reservation_repository,
+        main_reservation_repository=main_reservation_repository
     )
     
     # Casos de uso de main_reservations

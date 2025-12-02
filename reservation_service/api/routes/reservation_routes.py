@@ -2,8 +2,8 @@
 Rutas para reservas
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Response
+from typing import Optional
 from datetime import datetime
 
 from ...domain.dto.requests.create_reservation_request import CreateReservationRequest
@@ -12,6 +12,7 @@ from ...domain.dto.requests.reservation_filter_request import ReservationFilterR
 from ...domain.dto.requests.reject_reservation_request import RejectReservationRequest
 from ...domain.dto.requests.complete_reservation_request import CompleteReservationRequest
 from ...domain.dto.requests.reservation_period_request import ReservationPeriodRequest
+from ...domain.dto.requests.export_reservations_request import ExportReservationsRequest
 from ...domain.dto.responses.reservation_response import ReservationResponse
 from ...domain.dto.responses.reservation_detail_response import ReservationDetailResponse
 from ...domain.dto.responses.reservation_list_response import ReservationListResponse
@@ -47,6 +48,8 @@ def get_list_reservations_use_case():
         reservation_repository=ReservationRepositoryImpl(),
         main_reservation_repository=MainReservationRepositoryImpl()
     )
+
+
 
 
 @router.post("/", response_model=ReservationResponse, status_code=status.HTTP_201_CREATED)
@@ -267,8 +270,8 @@ async def list_reservations(
             branch_code=branch_code,
             sector_id=sector_id,
             sector_name=sector_name,
-            customer_ruc=customer_ruc,
-            company_name=company_name,
+            customer_name=company_name,  # Mapear company_name a customer_name (el repositorio usa customer_name para filtrar company_name)
+            customer_email=None,
             reservation_date_from=date_from,
             reservation_date_to=date_to,
             status=reservation_status,
@@ -462,6 +465,192 @@ async def cancel_reservation(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en cancel_reservation: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+
+
+@router.get("/export/csv")
+async def export_reservations_csv(
+    # Filtros por usuario/cliente
+    user_id: Optional[int] = Query(None, description="ID del usuario"),
+    customer_id: Optional[int] = Query(None, description="ID del cliente"),
+    
+    # Filtros por sucursal
+    branch_id: Optional[int] = Query(None, description="ID de la sucursal"),
+    branch_name: Optional[str] = Query(None, description="Nombre de la sucursal"),
+    branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
+    
+    # Filtros por sector
+    sector_id: Optional[int] = Query(None, description="ID del sector"),
+    sector_name: Optional[str] = Query(None, description="Nombre del sector"),
+    
+    # Filtros por cliente
+    customer_ruc: Optional[str] = Query(None, description="RUC del cliente"),
+    company_name: Optional[str] = Query(None, description="Nombre de la empresa"),
+    
+    # Filtros por fecha
+    reservation_date_from: Optional[str] = Query(None, description="Fecha de reserva desde (YYYY-MM-DD)"),
+    reservation_date_to: Optional[str] = Query(None, description="Fecha de reserva hasta (YYYY-MM-DD)"),
+    
+    # Filtros por estado
+    reservation_status: Optional[str] = Query(None, description="Estado de la reserva"),
+    
+    # Filtros por pedido
+    order_code: Optional[str] = Query(None, description="Código del pedido"),
+    
+    # Filtros por tipo de carga
+    cargo_type: Optional[str] = Query(None, description="Tipo de carga"),
+    
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
+):
+    """Exportar reservas a formato CSV"""
+    try:
+        request = ExportReservationsRequest(
+            user_id=user_id,
+            customer_id=customer_id,
+            branch_id=branch_id,
+            branch_name=branch_name,
+            branch_code=branch_code,
+            sector_id=sector_id,
+            sector_name=sector_name,
+            customer_ruc=customer_ruc,
+            company_name=company_name,
+            reservation_date_from=reservation_date_from,
+            reservation_date_to=reservation_date_to,
+            reservation_status=reservation_status,
+            order_code=order_code,
+            cargo_type=cargo_type
+        )
+        
+        use_case = container.export_reservations_csv_use_case()
+        csv_bytes = await use_case.execute(request)
+        
+        return Response(
+            content=csv_bytes,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": "attachment; filename=reservas.csv"
+            }
+        )
+    except ValueError as e:
+        logger.error(f"❌ Error de formato de fecha: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": str(e), 
+                "error_code": "INVALID_DATE_FORMAT",
+                "supported_formats": [
+                    "YYYY-MM-DD",
+                    "YYYY-MM-DD HH:MM:SS", 
+                    "YYYY-MM-DDTHH:MM:SS",
+                    "YYYY-MM-DDTHH:MM:SS.SSS"
+                ]
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error al exportar reservas a CSV: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/export/xlsx")
+async def export_reservations_xlsx(
+    # Filtros por usuario/cliente
+    user_id: Optional[int] = Query(None, description="ID del usuario"),
+    customer_id: Optional[int] = Query(None, description="ID del cliente"),
+    
+    # Filtros por sucursal
+    branch_id: Optional[int] = Query(None, description="ID de la sucursal"),
+    branch_name: Optional[str] = Query(None, description="Nombre de la sucursal"),
+    branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
+    
+    # Filtros por sector
+    sector_id: Optional[int] = Query(None, description="ID del sector"),
+    sector_name: Optional[str] = Query(None, description="Nombre del sector"),
+    
+    # Filtros por cliente
+    customer_ruc: Optional[str] = Query(None, description="RUC del cliente"),
+    company_name: Optional[str] = Query(None, description="Nombre de la empresa"),
+    
+    # Filtros por fecha
+    reservation_date_from: Optional[str] = Query(None, description="Fecha de reserva desde (YYYY-MM-DD)"),
+    reservation_date_to: Optional[str] = Query(None, description="Fecha de reserva hasta (YYYY-MM-DD)"),
+    
+    # Filtros por estado
+    reservation_status: Optional[str] = Query(None, description="Estado de la reserva"),
+    
+    # Filtros por pedido
+    order_code: Optional[str] = Query(None, description="Código del pedido"),
+    
+    # Filtros por tipo de carga
+    cargo_type: Optional[str] = Query(None, description="Tipo de carga"),
+    
+    container: Container = Depends(get_container),
+    current_user=Depends(auth_middleware["require_auth"])
+):
+    """Exportar reservas a formato XLSX"""
+    try:
+        request = ExportReservationsRequest(
+            user_id=user_id,
+            customer_id=customer_id,
+            branch_id=branch_id,
+            branch_name=branch_name,
+            branch_code=branch_code,
+            sector_id=sector_id,
+            sector_name=sector_name,
+            customer_ruc=customer_ruc,
+            company_name=company_name,
+            reservation_date_from=reservation_date_from,
+            reservation_date_to=reservation_date_to,
+            reservation_status=reservation_status,
+            order_code=order_code,
+            cargo_type=cargo_type
+        )
+        
+        use_case = container.export_reservations_xlsx_use_case()
+        xlsx_bytes = await use_case.execute(request)
+        
+        return Response(
+            content=xlsx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": "attachment; filename=reservas.xlsx"
+            }
+        )
+    except ValueError as e:
+        logger.error(f"❌ Error de formato de fecha: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": str(e), 
+                "error_code": "INVALID_DATE_FORMAT",
+                "supported_formats": [
+                    "YYYY-MM-DD",
+                    "YYYY-MM-DD HH:MM:SS", 
+                    "YYYY-MM-DDTHH:MM:SS",
+                    "YYYY-MM-DDTHH:MM:SS.SSS"
+                ]
+            }
+        )
+    except ImportError as e:
+        logger.error("❌ xlsxwriter no está instalado")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "xlsxwriter no está instalado. Ejecute: pip install xlsxwriter", "error_code": "MISSING_DEPENDENCY"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error al exportar reservas a XLSX: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}

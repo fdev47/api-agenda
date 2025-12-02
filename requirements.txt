@@ -25,6 +25,9 @@ aiohttp>=3.8.0
 google-auth[urllib3]>=2.23.0
 packaging>=23.0
 
+# Excel export
+xlsxwriter>=3.1.0
+
 # TODO: Testing dependencies
 # pytest>=7.4.0
 # pytest-asyncio>=0.21.0
