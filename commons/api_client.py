@@ -127,6 +127,59 @@ class APIClient:
         """Realizar solicitud GET"""
         return await self._make_request('GET', endpoint, params=params, additional_headers=headers)
     
+    async def get_bytes(self, endpoint: str, params: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None) -> bytes:
+        """Realizar solicitud GET y retornar bytes (para archivos binarios)"""
+        if not self.session:
+            raise RuntimeError("APIClient debe usarse como context manager")
+        
+        # Construir URL con parámetros codificados correctamente
+        url = urljoin(self.base_url, endpoint)
+        
+        # Codificar parámetros de query si existen
+        if params:
+            # Filtrar parámetros None y convertir a string
+            filtered_params = {}
+            for k, v in params.items():
+                if v is not None:
+                    # Manejar diferentes tipos de datos
+                    if isinstance(v, (list, tuple)):
+                        filtered_params[k] = v
+                    elif isinstance(v, bool):
+                        filtered_params[k] = str(v).lower()
+                    elif isinstance(v, (int, float)):
+                        filtered_params[k] = str(v)
+                    else:
+                        filtered_params[k] = str(v)
+            
+            if filtered_params:
+                encoded_params = urlencode(filtered_params, doseq=True, safe='T')
+                separator = '&' if '?' in url else '?'
+                url = f"{url}{separator}{encoded_params}"
+        
+        request_headers = self._get_headers(headers)
+        
+        try:
+            async with self.session.request(
+                method='GET',
+                url=url,
+                headers=request_headers
+            ) as response:
+                if response.status >= 400:
+                    error_text = await response.text()
+                    print(f"❌ Error HTTP {response.status}: {error_text}")
+                    raise HTTPError(
+                        status_code=response.status,
+                        message=error_text,
+                        url=url
+                    )
+                
+                # Leer la respuesta como bytes
+                return await response.read()
+                
+        except aiohttp.ClientError as e:
+            print(f"❌ Error de conexión: {e}")
+            raise ConnectionError(f"Error de conexión a {url}: {e}")
+    
     async def post(self, endpoint: str, data: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """Realizar solicitud POST"""
         return await self._make_request('POST', endpoint, data=data, additional_headers=headers)

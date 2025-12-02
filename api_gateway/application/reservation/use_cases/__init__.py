@@ -8,6 +8,8 @@ from .update_reservation_use_case import UpdateReservationUseCase
 from .cancel_reservation_use_case import CancelReservationUseCase
 from .get_available_ramp_use_case import GetAvailableRampUseCase
 from .get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
+from .export_reservations_csv_use_case import ExportReservationsCsvUseCase
+from .export_reservations_xlsx_use_case import ExportReservationsXlsxUseCase
 from .create_main_reservation_use_case import CreateMainReservationUseCase
 from .get_main_reservation_use_case import GetMainReservationUseCase
 from .update_main_reservation_use_case import UpdateMainReservationUseCase
@@ -21,6 +23,8 @@ __all__ = [
     "CancelReservationUseCase",
     "GetAvailableRampUseCase",
     "GetReservationsByPeriodUseCase",
+    "ExportReservationsCsvUseCase",
+    "ExportReservationsXlsxUseCase",
     "CreateMainReservationUseCase",
     "GetMainReservationUseCase",
     "UpdateMainReservationUseCase",

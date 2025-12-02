@@ -2,7 +2,7 @@
 Rutas para reservas en el API Gateway
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Path, Response
 from typing import Optional, List
 from datetime import datetime
 
@@ -32,6 +32,8 @@ from ...application.reservation.use_cases.reject_reservation_use_case import Rej
 from ...application.reservation.use_cases.complete_reservation_use_case import CompleteReservationUseCase
 from ...application.reservation.use_cases.get_available_ramp_use_case import GetAvailableRampUseCase
 from ...application.reservation.use_cases.get_reservations_by_period_use_case import GetReservationsByPeriodUseCase
+from ...application.reservation.use_cases.export_reservations_csv_use_case import ExportReservationsCsvUseCase
+from ...application.reservation.use_cases.export_reservations_xlsx_use_case import ExportReservationsXlsxUseCase
 from ..middleware import auth_middleware
 
 # Configurar logging
@@ -520,6 +522,172 @@ async def complete_reservation(
         )
     except Exception as e:
         logger.error(f"❌ Error inesperado en complete_reservation: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/export/csv")
+async def export_reservations_csv(
+    user_id: Optional[int] = Query(None, gt=0, description="ID del usuario"),
+    customer_id: Optional[int] = Query(None, gt=0, description="ID del cliente"),
+    branch_id: Optional[int] = Query(None, gt=0, description="ID de la sucursal"),
+    branch_name: Optional[str] = Query(None, description="Nombre de la sucursal"),
+    branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
+    sector_id: Optional[int] = Query(None, gt=0, description="ID del sector"),
+    sector_name: Optional[str] = Query(None, description="Nombre del sector"),
+    start_date: Optional[str] = Query(None, description="Fecha de inicio para filtrar (YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="Fecha de fin para filtrar (YYYY-MM-DDTHH:MM:SS)"),
+    status: Optional[str] = Query(None, description="Estado de la reserva"),
+    status_list: Optional[str] = Query(None, description="Lista de estados separados por coma"),
+    order_code: Optional[str] = Query(None, description="Código de pedido"),
+    cargo_type: Optional[str] = Query(None, description="Tipo de carga"),
+    customer_ruc: Optional[str] = Query(None, description="RUC del cliente"),
+    company_name: Optional[str] = Query(None, description="Nombre de la empresa"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Exportar reservas a formato CSV"""
+    try:
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        
+        # Procesar status_list
+        status_list_parsed = None
+        if status_list:
+            status_list_parsed = [s.strip() for s in status_list.split(",")]
+        
+        request = ReservationFilterRequest(
+            user_id=user_id,
+            customer_id=customer_id,
+            branch_id=branch_id,
+            branch_name=branch_name,
+            branch_code=branch_code,
+            sector_id=sector_id,
+            sector_name=sector_name,
+            start_date=start_date,
+            end_date=end_date,
+            status=status,
+            status_list=status_list_parsed,
+            order_code=order_code,
+            cargo_type=cargo_type,
+            customer_ruc=customer_ruc,
+            company_name=company_name,
+            skip=0,
+            limit=100
+        )
+        
+        use_case = ExportReservationsCsvUseCase()
+        csv_bytes = await use_case.execute(request, access_token)
+        
+        return Response(
+            content=csv_bytes,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": "attachment; filename=reservas.csv"
+            }
+        )
+    except HTTPError as e:
+        logger.error(f"❌ Error HTTP exportando reservas a CSV: {str(e)}")
+        
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado exportando reservas a CSV: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
+        )
+
+
+@router.get("/export/xlsx")
+async def export_reservations_xlsx(
+    user_id: Optional[int] = Query(None, gt=0, description="ID del usuario"),
+    customer_id: Optional[int] = Query(None, gt=0, description="ID del cliente"),
+    branch_id: Optional[int] = Query(None, gt=0, description="ID de la sucursal"),
+    branch_name: Optional[str] = Query(None, description="Nombre de la sucursal"),
+    branch_code: Optional[str] = Query(None, description="Código de la sucursal"),
+    sector_id: Optional[int] = Query(None, gt=0, description="ID del sector"),
+    sector_name: Optional[str] = Query(None, description="Nombre del sector"),
+    start_date: Optional[str] = Query(None, description="Fecha de inicio para filtrar (YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="Fecha de fin para filtrar (YYYY-MM-DDTHH:MM:SS)"),
+    status: Optional[str] = Query(None, description="Estado de la reserva"),
+    status_list: Optional[str] = Query(None, description="Lista de estados separados por coma"),
+    order_code: Optional[str] = Query(None, description="Código de pedido"),
+    cargo_type: Optional[str] = Query(None, description="Tipo de carga"),
+    customer_ruc: Optional[str] = Query(None, description="RUC del cliente"),
+    company_name: Optional[str] = Query(None, description="Nombre de la empresa"),
+    current_user=Depends(auth_middleware["require_auth"]),
+    authorization: Optional[str] = Header(None)
+):
+    """Exportar reservas a formato XLSX"""
+    try:
+        access_token = authorization.replace("Bearer ", "") if authorization else ""
+        
+        # Procesar status_list
+        status_list_parsed = None
+        if status_list:
+            status_list_parsed = [s.strip() for s in status_list.split(",")]
+        
+        request = ReservationFilterRequest(
+            user_id=user_id,
+            customer_id=customer_id,
+            branch_id=branch_id,
+            branch_name=branch_name,
+            branch_code=branch_code,
+            sector_id=sector_id,
+            sector_name=sector_name,
+            start_date=start_date,
+            end_date=end_date,
+            status=status,
+            status_list=status_list_parsed,
+            order_code=order_code,
+            cargo_type=cargo_type,
+            customer_ruc=customer_ruc,
+            company_name=company_name,
+            skip=0,
+            limit=100
+        )
+        
+        use_case = ExportReservationsXlsxUseCase()
+        xlsx_bytes = await use_case.execute(request, access_token)
+        
+        return Response(
+            content=xlsx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": "attachment; filename=reservas.xlsx"
+            }
+        )
+    except HTTPError as e:
+        logger.error(f"❌ Error HTTP exportando reservas a XLSX: {str(e)}")
+        
+        error_message = e.message
+        try:
+            import json
+            error_data = json.loads(e.message)
+            if isinstance(error_data, dict) and "message" in error_data:
+                error_message = error_data["message"]
+        except (json.JSONDecodeError, KeyError):
+            pass
+        
+        raise HTTPException(
+            status_code=e.status_code,
+            detail={"message": error_message, "error_code": "RESERVATION_SERVICE_ERROR"}
+        )
+    except Exception as e:
+        logger.error(f"❌ Error inesperado exportando reservas a XLSX: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"message": "Error interno del servidor", "error_code": "INTERNAL_ERROR"}
