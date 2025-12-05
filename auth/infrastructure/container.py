@@ -12,7 +12,7 @@ from ..application.use_cases import (
     CreateUserUseCase, ValidateTokenUseCase, LoginUserUseCase, RefreshTokenUseCase,
     # Nuevos casos de uso separados
     AssignRoleUseCase, AssignPermissionUseCase, GetUserRolesUseCase,
-    UpdateUserUseCase, DeleteUserUseCase, ChangePasswordUseCase
+    UpdateUserUseCase, DeleteUserUseCase, ChangePasswordUseCase, ChangePasswordByUserIdUseCase
 )
 
 
@@ -106,6 +106,12 @@ class AuthServiceContainer(containers.DeclarativeContainer):
     # Caso de uso para cambiar contraseña
     change_password_use_case = providers.Factory(
         ChangePasswordUseCase,
+        auth_provider=auth_provider
+    )
+    
+    # Caso de uso para cambiar contraseña por user_id
+    change_password_by_user_id_use_case = providers.Factory(
+        ChangePasswordByUserIdUseCase,
         auth_provider=auth_provider
     )
 

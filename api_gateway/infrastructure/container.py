@@ -24,7 +24,11 @@ from ..application.ramp_schedule.use_cases.delete_ramp_schedule_use_case import 
 from ..application.ramp_schedule.use_cases.get_ramp_schedules_by_ramp_use_case import GetRampSchedulesByRampUseCase
 
 # Auth
-from ..application.auth.use_cases import ChangePasswordUseCase
+from ..application.auth.use_cases import (
+    ChangePasswordUseCase,
+    ChangePasswordByUsernameUserUseCase,
+    ChangePasswordByUsernameCustomerUseCase
+)
 
 
 class Container(containers.DeclarativeContainer):
@@ -66,4 +70,6 @@ class Container(containers.DeclarativeContainer):
     get_ramp_schedules_by_ramp_use_case = providers.Factory(GetRampSchedulesByRampUseCase)
     
     # Auth
-    change_password_use_case = providers.Factory(ChangePasswordUseCase) 
+    change_password_use_case = providers.Factory(ChangePasswordUseCase)
+    change_password_by_username_user_use_case = providers.Factory(ChangePasswordByUsernameUserUseCase)
+    change_password_by_username_customer_use_case = providers.Factory(ChangePasswordByUsernameCustomerUseCase) 

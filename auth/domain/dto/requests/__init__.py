@@ -1,7 +1,7 @@
 """
 DTOs de requests para el dominio de autenticación
 """
-from .auth_requests import LoginRequest, RegisterRequest, RefreshTokenRequest, CreateUserRequest, UpdateUserRequest, ChangePasswordRequest
+from .auth_requests import LoginRequest, RegisterRequest, RefreshTokenRequest, CreateUserRequest, UpdateUserRequest, ChangePasswordRequest, ChangePasswordByUserIdRequest
 
 __all__ = [
     'LoginRequest',
@@ -9,5 +9,6 @@ __all__ = [
     'RefreshTokenRequest',
     'CreateUserRequest',
     'UpdateUserRequest',
-    'ChangePasswordRequest'
+    'ChangePasswordRequest',
+    'ChangePasswordByUserIdRequest'
 ] 

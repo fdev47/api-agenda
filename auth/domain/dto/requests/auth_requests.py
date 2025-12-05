@@ -45,6 +45,12 @@ class UpdateUserRequest(BaseModel):
 
 
 class ChangePasswordRequest(BaseModel):
-    """Request para cambiar contraseña de usuario"""
+    """Request para cambiar contraseña de usuario por email"""
     email: EmailStr = Field(..., description="Email del usuario")
+    new_password: str = Field(..., min_length=6, description="Nueva contraseña del usuario")
+
+
+class ChangePasswordByUserIdRequest(BaseModel):
+    """Request para cambiar contraseña de usuario por user_id (auth_uid)"""
+    user_id: str = Field(..., description="ID del usuario en Firebase (auth_uid)")
     new_password: str = Field(..., min_length=6, description="Nueva contraseña del usuario") 
