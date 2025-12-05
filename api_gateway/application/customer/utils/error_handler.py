@@ -50,7 +50,7 @@ def handle_auth_service_error(error: Exception) -> None:
             )
         elif error_code == ErrorCode.USER_ALREADY_EXISTS.value:
             raise_conflict_error(
-                message="El proveedor ya existe en el sistema.",
+                message="El proveedor ya existe en el sistema. Intente con otro email o número de teléfono.",
                 error_code=ErrorCode.USER_ALREADY_EXISTS.value
             )
         # Mapear errores de Customer del User Service

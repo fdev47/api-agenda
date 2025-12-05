@@ -26,7 +26,7 @@ class UserDB(Base):
     cellphone_number = Column(String(20), nullable=True)  # Número de celular
     cellphone_country_code = Column(String(5), nullable=True)  # Código de país del celular
     is_active = Column(Boolean, default=True)
-    user_type = Column(String(20), nullable=False)
+    user_type = Column(String(50), nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     profiles = relationship("ProfileDB", secondary=user_profiles, backref="users")
