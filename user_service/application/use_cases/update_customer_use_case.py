@@ -8,7 +8,14 @@ from ...domain.entities.customer import Customer
 from ...domain.entities.address import Address
 from ...domain.dto.requests.customer_requests import UpdateCustomerRequest
 from ...domain.dto.responses.customer_responses import CustomerUpdatedResponse, CustomerResponse
-from ...domain.exceptions.user_exceptions import UserException, UserNotFoundException
+from ...domain.exceptions.user_exceptions import (
+    UserException, 
+    UserNotFoundException,
+    CustomerAuthUidAlreadyExistsException,
+    CustomerRucAlreadyExistsException,
+    CustomerEmailAlreadyExistsException,
+    CustomerUsernameAlreadyExistsException
+)
 
 class UpdateCustomerUseCase:
     """Caso de uso para actualizar un customer"""
@@ -52,7 +59,15 @@ class UpdateCustomerUseCase:
                 customer=CustomerResponse.model_validate(updated_customer),
                 message="Customer actualizado exitosamente"
             )
-            
+        
+        except (
+            CustomerAuthUidAlreadyExistsException,
+            CustomerRucAlreadyExistsException,
+            CustomerEmailAlreadyExistsException,
+            CustomerUsernameAlreadyExistsException
+        ):
+            # Re-lanzar las excepciones de duplicidad para que sean manejadas por la capa de API
+            raise
         except UserException:
             raise
         except Exception as e:

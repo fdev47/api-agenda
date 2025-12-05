@@ -70,4 +70,43 @@ class RoleAlreadyExistsException(UserException):
 class UserInactiveException(UserException):
     """Excepción cuando el usuario está inactivo"""
     def __init__(self, user_id: str):
-        super().__init__(f"Usuario con ID {user_id} está inactivo", "USER_INACTIVE") 
+        super().__init__(f"Usuario con ID {user_id} está inactivo", "USER_INACTIVE")
+
+
+# Excepciones para Customer
+class CustomerAlreadyExistsException(UserException):
+    """Excepción cuando el customer ya existe"""
+    def __init__(self, field: str, value: str):
+        super().__init__(f"Proveedor con {field} '{value}' ya existe", f"CUSTOMER_{field.upper()}_ALREADY_EXISTS")
+        self.field = field
+        self.value = value
+
+
+class CustomerAuthUidAlreadyExistsException(UserException):
+    """Excepción cuando el auth_uid del customer ya existe"""
+    def __init__(self, auth_uid: str):
+        super().__init__(f"Proveedor con auth_uid '{auth_uid}' ya existe", "CUSTOMER_AUTH_UID_ALREADY_EXISTS")
+
+
+class CustomerRucAlreadyExistsException(UserException):
+    """Excepción cuando el RUC del customer ya existe"""
+    def __init__(self, ruc: str):
+        super().__init__(f"Proveedor con RUC '{ruc}' ya existe", "CUSTOMER_RUC_ALREADY_EXISTS")
+
+
+class CustomerEmailAlreadyExistsException(UserException):
+    """Excepción cuando el email del customer ya existe"""
+    def __init__(self, email: str):
+        super().__init__(f"Proveedor con email '{email}' ya existe", "CUSTOMER_EMAIL_ALREADY_EXISTS")
+
+
+class CustomerUsernameAlreadyExistsException(UserException):
+    """Excepción cuando el username del customer ya existe"""
+    def __init__(self, username: str):
+        super().__init__(f"Proveedor con username '{username}' ya existe", "CUSTOMER_USERNAME_ALREADY_EXISTS")
+
+
+class CustomerNotFoundException(UserException):
+    """Excepción cuando no se encuentra un customer"""
+    def __init__(self, message: str = "Proveedor no encontrado"):
+        super().__init__(message, "CUSTOMER_NOT_FOUND") 

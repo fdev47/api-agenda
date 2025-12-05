@@ -19,9 +19,16 @@ from ...application.use_cases.update_customer_use_case import UpdateCustomerUseC
 from ...application.use_cases.delete_customer_use_case import DeleteCustomerUseCase
 from ...infrastructure.container import container
 from ...infrastructure.connection import get_db_session
-from ...domain.exceptions.user_exceptions import UserException, UserNotFoundException
+from ...domain.exceptions.user_exceptions import (
+    UserException, 
+    UserNotFoundException,
+    CustomerAuthUidAlreadyExistsException,
+    CustomerRucAlreadyExistsException,
+    CustomerEmailAlreadyExistsException,
+    CustomerUsernameAlreadyExistsException
+)
 from ..middleware import auth_middleware
-from commons.error_utils import raise_not_found_error, raise_internal_error
+from commons.error_utils import raise_not_found_error, raise_internal_error, raise_conflict_error
 from commons.error_codes import ErrorCode
 
 router = APIRouter(tags=["Customers"])
@@ -69,10 +76,36 @@ async def create_customer(
         create_use_case = container.create_customer_use_case()
         result = await create_use_case.execute(request)
         return result
+    except CustomerAuthUidAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el auth_uid '{request.auth_uid}'",
+            error_code="CUSTOMER_AUTH_UID_ALREADY_EXISTS"
+        )
+    except CustomerRucAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el RUC '{request.ruc}'",
+            error_code="CUSTOMER_RUC_ALREADY_EXISTS"
+        )
+    except CustomerEmailAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el email '{request.email}'",
+            error_code="CUSTOMER_EMAIL_ALREADY_EXISTS"
+        )
+    except CustomerUsernameAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el username '{request.username}'",
+            error_code="CUSTOMER_USERNAME_ALREADY_EXISTS"
+        )
     except UserException as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise_internal_error(
+            message=f"Error al crear proveedor: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
+        raise_internal_error(
+            message=f"Error inesperado: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
 
 @router.get("/", response_model=CustomerListResponse)
 async def get_customers(
@@ -157,11 +190,40 @@ async def update_customer(
         result = await update_use_case.execute(customer_id, request)
         return result
     except UserNotFoundException as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise_not_found_error(
+            message=f"Customer con ID '{customer_id}' no encontrado",
+            error_code=ErrorCode.USER_NOT_FOUND.value
+        )
+    except CustomerAuthUidAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el auth_uid proporcionado",
+            error_code="CUSTOMER_AUTH_UID_ALREADY_EXISTS"
+        )
+    except CustomerRucAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el RUC proporcionado",
+            error_code="CUSTOMER_RUC_ALREADY_EXISTS"
+        )
+    except CustomerEmailAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el email proporcionado",
+            error_code="CUSTOMER_EMAIL_ALREADY_EXISTS"
+        )
+    except CustomerUsernameAlreadyExistsException as e:
+        raise_conflict_error(
+            message=f"Ya existe un proveedor con el username proporcionado",
+            error_code="CUSTOMER_USERNAME_ALREADY_EXISTS"
+        )
     except UserException as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise_internal_error(
+            message=f"Error al actualizar proveedor: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
+        raise_internal_error(
+            message=f"Error inesperado: {str(e)}",
+            error_code=ErrorCode.INTERNAL_SERVER_ERROR.value
+        )
 
 @router.delete("/{customer_id}", response_model=CustomerDeletedResponse)
 async def delete_customer(

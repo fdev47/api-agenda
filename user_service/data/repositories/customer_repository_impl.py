@@ -5,8 +5,15 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
+from sqlalchemy.exc import IntegrityError
 from ...domain.interfaces.customer_repository import CustomerRepository
 from ...domain.entities.customer import Customer
+from ...domain.exceptions.user_exceptions import (
+    CustomerAuthUidAlreadyExistsException,
+    CustomerRucAlreadyExistsException,
+    CustomerEmailAlreadyExistsException,
+    CustomerUsernameAlreadyExistsException
+)
 from ...infrastructure.models.customer import CustomerDB
 
 
@@ -32,8 +39,26 @@ class CustomerRepositoryImpl(CustomerRepository):
         )
 
         self.session.add(customer_db)
-        await self.session.commit()
-        await self.session.refresh(customer_db)
+        
+        try:
+            await self.session.commit()
+            await self.session.refresh(customer_db)
+        except IntegrityError as e:
+            await self.session.rollback()
+            error_msg = str(e.orig).lower()
+            
+            # Detectar qué constraint fue violada
+            if 'auth_uid' in error_msg or 'customers_auth_uid_key' in error_msg:
+                raise CustomerAuthUidAlreadyExistsException(customer.auth_uid)
+            elif 'ruc' in error_msg or 'customers_ruc_key' in error_msg:
+                raise CustomerRucAlreadyExistsException(customer.ruc)
+            elif 'email' in error_msg or 'customers_email_key' in error_msg:
+                raise CustomerEmailAlreadyExistsException(customer.email)
+            elif 'username' in error_msg or 'customers_username_key' in error_msg:
+                raise CustomerUsernameAlreadyExistsException(customer.username)
+            else:
+                # Error de integridad desconocido
+                raise
 
         return Customer(
             id=customer_db.id,
@@ -189,16 +214,33 @@ class CustomerRepositoryImpl(CustomerRepository):
         if not update_values:
             return existing_customer  # No hay cambios
         
-        result = await self.session.execute(
-            update(CustomerDB)
-            .where(CustomerDB.id == customer_id)
-            .values(**update_values)
-        )
-        await self.session.commit()
+        try:
+            result = await self.session.execute(
+                update(CustomerDB)
+                .where(CustomerDB.id == customer_id)
+                .values(**update_values)
+            )
+            await self.session.commit()
 
-        if result.rowcount > 0:
-            return await self.get_by_id(customer_id)
-        return None
+            if result.rowcount > 0:
+                return await self.get_by_id(customer_id)
+            return None
+        except IntegrityError as e:
+            await self.session.rollback()
+            error_msg = str(e.orig).lower()
+            
+            # Detectar qué constraint fue violada
+            if 'auth_uid' in error_msg or 'customers_auth_uid_key' in error_msg:
+                raise CustomerAuthUidAlreadyExistsException(update_values.get('auth_uid', ''))
+            elif 'ruc' in error_msg or 'customers_ruc_key' in error_msg:
+                raise CustomerRucAlreadyExistsException(update_values.get('ruc', ''))
+            elif 'email' in error_msg or 'customers_email_key' in error_msg:
+                raise CustomerEmailAlreadyExistsException(update_values.get('email', ''))
+            elif 'username' in error_msg or 'customers_username_key' in error_msg:
+                raise CustomerUsernameAlreadyExistsException(update_values.get('username', ''))
+            else:
+                # Error de integridad desconocido
+                raise
 
     async def delete(self, customer_id: UUID) -> bool:
         """Eliminar un customer"""

@@ -8,7 +8,13 @@ from ...domain.entities.customer import Customer
 from ...domain.entities.address import Address
 from ...domain.dto.requests.customer_requests import CreateCustomerRequest
 from ...domain.dto.responses.customer_responses import CustomerResponse
-from ...domain.exceptions.user_exceptions import UserException
+from ...domain.exceptions.user_exceptions import (
+    UserException,
+    CustomerAuthUidAlreadyExistsException,
+    CustomerRucAlreadyExistsException,
+    CustomerEmailAlreadyExistsException,
+    CustomerUsernameAlreadyExistsException
+)
 
 class CreateCustomerUseCase:
     """Caso de uso para crear un customer"""
@@ -54,6 +60,14 @@ class CreateCustomerUseCase:
             # 3. Retornar CustomerResponse completo
             return CustomerResponse.model_validate(created_customer)
 
+        except (
+            CustomerAuthUidAlreadyExistsException,
+            CustomerRucAlreadyExistsException,
+            CustomerEmailAlreadyExistsException,
+            CustomerUsernameAlreadyExistsException
+        ):
+            # Re-lanzar las excepciones de duplicidad para que sean manejadas por la capa de API
+            raise
         except UserException:
             raise
         except Exception as e:
