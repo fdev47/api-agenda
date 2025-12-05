@@ -28,17 +28,30 @@ class CreateUserUseCase:
         Returns:
             UserResponse: Usuario creado
         """
+        auth_user = None
+        user_id = None
+        
         try:
             # 1. Crear usuario en Firebase (auth_service)
             auth_user = await self._create_firebase_user(request, access_token)
+            user_id = auth_user["user_id"]
             
             # 2. Crear usuario en la base de datos (user_service)
-            user_id = auth_user["user_id"]
             db_user = await self._create_db_user(request, user_id, access_token)
             
             return db_user
             
         except Exception as e:
+            # Si se creó el usuario en Firebase pero falló la creación en la BD,
+            # eliminar el usuario de Firebase para mantener la integridad
+            if auth_user and user_id:
+                try:
+                    await self._delete_firebase_user(user_id, access_token)
+                except Exception as delete_error:
+                    # Log el error pero no lo lanzamos para no ocultar el error original
+                    print(f"⚠️ Error al eliminar usuario de Firebase durante rollback: {delete_error}")
+            
+            # Manejar el error original
             handle_auth_service_error(e)
     
     async def _create_firebase_user(self, request: CreateUserRequest, access_token: str) -> dict:
@@ -87,3 +100,19 @@ class CreateUserUseCase:
             
             response = await client.post(f"{config.API_PREFIX}/users/", data=db_data)
             return UserResponse(**response)
+    
+    async def _delete_firebase_user(self, auth_uid: str, access_token: str) -> None:
+        """
+        Eliminar usuario de Firebase
+        
+        Args:
+            auth_uid: ID del usuario en Firebase
+            access_token: Token de acceso para las llamadas a los servicios
+        """
+        try:
+            async with APIClient(self.auth_service_url, access_token) as client:
+                await client.delete(f"{config.API_PREFIX}/auth/users/{auth_uid}")
+                print(f"✅ Usuario de Firebase '{auth_uid}' eliminado correctamente")
+        except Exception as e:
+            print(f"❌ Error al eliminar usuario de Firebase '{auth_uid}': {str(e)}")
+            raise
