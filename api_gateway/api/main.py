@@ -26,6 +26,7 @@ from .sector.routes import router as sector_router
 from .ramp.ramp_routes import router as ramp_router
 from .ramp_schedule.ramp_schedule_routes import router as ramp_schedule_router
 from .notification.notification_routes import router as notification_router
+from .auth.routes import router as auth_router
 
 
 def create_api_gateway_service() -> ServiceConfig:
@@ -52,6 +53,7 @@ def create_api_gateway_app():
     
     # Configurar routers
     routers = [
+        RouterConfig(auth_router, prefix="/auth", tags=["Auth"]),
         RouterConfig(user_router, prefix="/users", tags=["Users"]),
         RouterConfig(profile_router, prefix="/profiles", tags=["Profiles"]),
         RouterConfig(location_router, prefix="/location", tags=["Location"]),

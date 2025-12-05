@@ -23,6 +23,9 @@ from ..application.ramp_schedule.use_cases.update_ramp_schedule_use_case import 
 from ..application.ramp_schedule.use_cases.delete_ramp_schedule_use_case import DeleteRampScheduleUseCase
 from ..application.ramp_schedule.use_cases.get_ramp_schedules_by_ramp_use_case import GetRampSchedulesByRampUseCase
 
+# Auth
+from ..application.auth.use_cases import ChangePasswordUseCase
+
 
 class Container(containers.DeclarativeContainer):
     """Container de dependencias para el API Gateway"""
@@ -60,4 +63,7 @@ class Container(containers.DeclarativeContainer):
     list_ramp_schedules_use_case = providers.Factory(ListRampSchedulesUseCase)
     update_ramp_schedule_use_case = providers.Factory(UpdateRampScheduleUseCase)
     delete_ramp_schedule_use_case = providers.Factory(DeleteRampScheduleUseCase)
-    get_ramp_schedules_by_ramp_use_case = providers.Factory(GetRampSchedulesByRampUseCase) 
+    get_ramp_schedules_by_ramp_use_case = providers.Factory(GetRampSchedulesByRampUseCase)
+    
+    # Auth
+    change_password_use_case = providers.Factory(ChangePasswordUseCase) 
