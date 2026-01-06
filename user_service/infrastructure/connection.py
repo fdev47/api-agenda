@@ -5,10 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from commons.database import get_db_manager, Base
 
-# Obtener el gestor de base de datos para este servicio
+# Obtener el gestor de base de datos
 db_manager = get_db_manager()
 
-# Re-exportar para compatibilidad con código existente
 engine = db_manager.engine
 AsyncSessionLocal = db_manager.AsyncSessionLocal
 

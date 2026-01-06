@@ -17,11 +17,9 @@ class UpdateProfileUseCase:
     
     async def execute(self, profile_id: UUID, request: UpdateProfileRequest) -> Optional[Profile]:
         """Ejecutar el use case"""
-        # Verificar que el perfil existe
         existing_profile = await self.profile_repository.get_by_id(profile_id)
         if not existing_profile:
             raise ProfileNotFoundException(str(profile_id))
         
-        # Actualizar perfil
         updated_profile = await self.profile_repository.update(existing_profile)
         return updated_profile 

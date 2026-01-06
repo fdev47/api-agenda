@@ -36,16 +36,14 @@ class CreateProfileUseCase:
             roles.append(role)
         
         # Crear perfil sin roles primero
+        # Nota: Por ahora solo creamos el perfil sin roles para evitar problemas
+        # La asignación de roles se puede implementar en un use case separado
         profile = Profile(
             name=request.name,
             description=request.description,
-            roles=[]  # Sin roles inicialmente
+            roles=[]
         )
         
         created_profile = await self._profile_repository.create(profile)
-        
-        # Ahora asignar los roles al perfil creado
-        # Nota: Por ahora solo creamos el perfil sin roles para evitar problemas
-        # La asignación de roles se puede implementar en un use case separado
         
         return ProfileResponse.from_orm(created_profile) 

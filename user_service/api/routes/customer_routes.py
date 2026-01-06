@@ -42,7 +42,6 @@ async def get_current_customer_info(
     try:
         auth_uid = current_user["user_id"]
         
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_current_use_case = container.get_current_customer_use_case()
         result = await get_current_use_case.execute(auth_uid)
@@ -71,7 +70,6 @@ async def create_customer(
 ):
     """Crear un nuevo customer"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         create_use_case = container.create_customer_use_case()
         result = await create_use_case.execute(request)
@@ -120,7 +118,6 @@ async def get_customers(
 ):
     """Obtener todos los customers con filtros opcionales"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         list_use_case = container.list_customers_use_case()
         result = await list_use_case.execute(
@@ -145,7 +142,6 @@ async def get_customer(
 ):
     """Obtener un customer por ID"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_customer_use_case()
         result = await get_use_case.execute(customer_id)
@@ -184,7 +180,6 @@ async def update_customer(
 ):
     """Actualizar un customer"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         update_use_case = container.update_customer_use_case()
         result = await update_use_case.execute(customer_id, request)
@@ -232,7 +227,6 @@ async def delete_customer(
 ):
     """Eliminar un customer"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         delete_use_case = container.delete_customer_use_case()
         result = await delete_use_case.execute(customer_id)

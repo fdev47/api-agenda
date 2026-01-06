@@ -60,7 +60,6 @@ class RoleRepositoryImpl(IRoleRepository):
         if not role_db:
             raise ValueError(f"Rol con ID {role.id} no encontrado")
         
-        # Actualizar campos
         role_db.name = role.name
         role_db.description = role.description
         

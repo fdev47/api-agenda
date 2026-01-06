@@ -30,13 +30,11 @@ async def create_user(
     - Si Firebase falla, no toca PostgreSQL
     """
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         create_use_case = container.create_user_use_case()
         user = await create_use_case.execute(request)
         return user
     except Exception as e:
-        # Si falla, la excepción ya está manejada en el use case
         raise e
 
 
@@ -48,7 +46,6 @@ async def get_current_user(
     """Obtener información del usuario actual"""
     try:
         auth_uid = current_user["user_id"]
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_user_by_auth_uid_use_case()
         user = await get_use_case.execute(auth_uid)
@@ -72,7 +69,6 @@ async def get_user_by_id(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener usuario por ID (requiere autenticación)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     get_use_case = container.get_user_by_id_use_case()
     user = await get_use_case.execute(user_id)
@@ -91,7 +87,6 @@ async def get_user_by_username(
 ):
     """Obtener usuario por username (requiere autenticación)"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_user_by_username_use_case()
         user = await get_use_case.execute(username)
@@ -120,7 +115,6 @@ async def list_users(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Listar usuarios (requiere autenticación)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     list_use_case = container.list_users_use_case()
     users = await list_use_case.execute(
@@ -142,7 +136,6 @@ async def update_user(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Actualizar usuario (requiere autenticación)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     update_use_case = container.update_user_use_case()
     user = await update_use_case.execute(user_id, request)
@@ -161,7 +154,6 @@ async def delete_user(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Eliminar usuario (requiere autenticación)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     delete_use_case = container.delete_user_use_case()
     success = await delete_use_case.execute(user_id)

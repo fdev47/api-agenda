@@ -50,24 +50,18 @@ class CreateUserUseCase:
             UserException: Si falla la creación en la base de datos
         """
         try:
-            # Validar que se proporcione auth_uid
             if not request.auth_uid:
                 raise UserException("auth_uid es requerido para crear usuario en la base de datos")
             
-            # Crear usuario en la base de datos
             user = await self.user_repository.create(request)
             
-            # Retornar respuesta
             return UserResponse.model_validate(user)
             
         except UserAlreadyExistsException:
-            # Re-lanzar errores específicos de dominio
             raise
         except UserException:
-            # Re-lanzar errores de dominio
             raise
         except Exception as e:
-            # Convertir errores inesperados en errores de dominio
             raise UserException(
                 f"Error inesperado al crear usuario en la base de datos: {str(e)}"
             ) 

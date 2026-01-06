@@ -18,12 +18,10 @@ class UpdateAddressUseCase:
     async def execute(self, address_id: UUID, request: UpdateAddressRequest) -> AddressUpdatedResponse:
         """Ejecutar el caso de uso"""
         try:
-            # Verificar que la dirección existe
             existing_address = await self.address_repository.get_by_id(address_id)
             if not existing_address:
                 raise UserNotFoundException(f"Dirección con ID {address_id} no encontrada")
             
-            # Crear entidad Address con datos actualizados
             updated_address = Address(
                 id=existing_address.id,
                 street=request.street or existing_address.street,
@@ -34,7 +32,6 @@ class UpdateAddressUseCase:
                 additional_info=request.additional_info if request.additional_info is not None else existing_address.additional_info
             )
             
-            # Actualizar en el repositorio
             result = await self.address_repository.update(address_id, updated_address)
             
             if not result:

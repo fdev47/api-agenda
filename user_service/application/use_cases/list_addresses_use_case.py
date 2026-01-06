@@ -15,10 +15,8 @@ class ListAddressesUseCase:
     async def execute(self) -> AddressListResponse:
         """Ejecutar el caso de uso"""
         try:
-            # Obtener todas las direcciones del repositorio
             addresses = await self.address_repository.get_all()
             
-            # Convertir a DTOs de respuesta
             address_responses = [
                 AddressResponse.model_validate(address) for address in addresses
             ]

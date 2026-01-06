@@ -27,10 +27,10 @@ class CustomerDB(Base):
     ruc = Column(String(20), unique=True, nullable=False)
     company_name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
-    username = Column(String(50), unique=True, nullable=True)  # Nuevo campo
-    phone = Column(String(20), nullable=True)  # Teléfono fijo
-    cellphone_number = Column(String(20), nullable=True)  # Número de celular
-    cellphone_country_code = Column(String(5), nullable=True)  # Código de país del celular
+    username = Column(String(50), unique=True, nullable=True)
+    phone = Column(String(20), nullable=True)
+    cellphone_number = Column(String(20), nullable=True)
+    cellphone_country_code = Column(String(5), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     address_id = Column(UUID(as_uuid=True), ForeignKey("addresses.id"), nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())

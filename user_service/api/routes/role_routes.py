@@ -24,7 +24,6 @@ async def create_role(
 ):
     """Crear un nuevo rol"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         create_use_case = container.create_role_use_case()
         role = await create_use_case.execute(request)
@@ -44,7 +43,6 @@ async def get_role_by_id(
 ):
     """Obtener rol por ID"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_role_by_id_use_case()
         role = await get_use_case.execute(role_id)
@@ -70,7 +68,6 @@ async def list_roles(
 ):
     """Listar roles"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         list_use_case = container.list_roles_use_case()
         roles = await list_use_case.execute(skip=skip, limit=limit)
@@ -96,7 +93,6 @@ async def update_role(
 ):
     """Actualizar rol"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         update_use_case = container.update_role_use_case()
         role = await update_use_case.execute(role_id, request)
@@ -121,7 +117,6 @@ async def delete_role(
 ):
     """Eliminar rol"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         delete_use_case = container.delete_role_use_case()
         success = await delete_use_case.execute(role_id)

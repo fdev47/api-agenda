@@ -68,8 +68,8 @@ class UserRepositoryImpl(UserRepository):
         user_db = UserDB(
             auth_uid=user_data.auth_uid,
             email=user_data.email,
-            username=user_data.username,  # Agregar username
-            branch_code=user_data.branch_code,  # Agregar branch_code
+            username=user_data.username,
+            branch_code=user_data.branch_code,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             phone=user_data.phone,
@@ -93,7 +93,6 @@ class UserRepositoryImpl(UserRepository):
             await self._session.commit()
             await self._session.refresh(user_db)
             
-            # Recargar el usuario con las relaciones explícitamente
             # Solo cargar perfiles, sin cargar roles
             query = select(UserDB).options(
                 selectinload(UserDB.profiles)
@@ -118,9 +117,7 @@ class UserRepositoryImpl(UserRepository):
         """Listar usuarios con paginación y filtros opcionales"""
         query = select(UserDB).options(selectinload(UserDB.profiles))
         
-        # Aplicar filtros si están presentes
         if username:
-            # Búsqueda LIKE para username (case insensitive)
             query = query.where(UserDB.username.ilike(f"%{username}%"))
         
         if user_type:
@@ -147,7 +144,6 @@ class UserRepositoryImpl(UserRepository):
         if not user_db:
             return None
         
-        # Actualizar campos si están presentes
         if user_data.username is not None:
             user_db.username = user_data.username
         if user_data.branch_code is not None:
@@ -167,7 +163,6 @@ class UserRepositoryImpl(UserRepository):
         if user_data.user_type is not None:
             user_db.user_type = user_data.user_type
         
-        # Actualizar perfiles si se proporcionan
         if user_data.profile_ids is not None:
             # Limpiar perfiles existentes
             user_db.profiles.clear()
@@ -182,8 +177,6 @@ class UserRepositoryImpl(UserRepository):
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        # Recargar el usuario con las relaciones explícitamente
-        # Solo cargar perfiles, sin cargar roles
         query = select(UserDB).options(
             selectinload(UserDB.profiles)
         ).where(UserDB.id == user_db.id)
@@ -213,7 +206,6 @@ class UserRepositoryImpl(UserRepository):
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        # Recargar el usuario con las relaciones explícitamente
         query = select(UserDB).options(
             selectinload(UserDB.profiles)
         ).where(UserDB.id == user_db.id)
@@ -235,7 +227,6 @@ class UserRepositoryImpl(UserRepository):
         await self._session.commit()
         await self._session.refresh(user_db)
         
-        # Recargar el usuario con las relaciones explícitamente
         query = select(UserDB).options(
             selectinload(UserDB.profiles)
         ).where(UserDB.id == user_db.id)

@@ -47,7 +47,6 @@ class CustomerRepositoryImpl(CustomerRepository):
             await self.session.rollback()
             error_msg = str(e.orig).lower()
             
-            # Detectar qué constraint fue violada
             if 'auth_uid' in error_msg or 'customers_auth_uid_key' in error_msg:
                 raise CustomerAuthUidAlreadyExistsException(customer.auth_uid)
             elif 'ruc' in error_msg or 'customers_ruc_key' in error_msg:
@@ -57,7 +56,6 @@ class CustomerRepositoryImpl(CustomerRepository):
             elif 'username' in error_msg or 'customers_username_key' in error_msg:
                 raise CustomerUsernameAlreadyExistsException(customer.username)
             else:
-                # Error de integridad desconocido
                 raise
 
         return Customer(
@@ -159,13 +157,10 @@ class CustomerRepositoryImpl(CustomerRepository):
         """Obtener todos los customers con filtros opcionales"""
         query = select(CustomerDB)
         
-        # Aplicar filtros si están presentes
         if username:
-            # Búsqueda LIKE para username (case insensitive)
             query = query.where(CustomerDB.username.ilike(f"%{username}%"))
         
         if company_name:
-            # Búsqueda LIKE para company_name (case insensitive)
             query = query.where(CustomerDB.company_name.ilike(f"%{company_name}%"))
             
         if is_active is not None:
@@ -200,12 +195,10 @@ class CustomerRepositoryImpl(CustomerRepository):
 
     async def update(self, customer_id: UUID, update_data: dict) -> Optional[Customer]:
         """Actualizar un customer"""
-        # Primero obtener el customer existente
         existing_customer = await self.get_by_id(customer_id)
         if not existing_customer:
             return None
         
-        # Actualizar solo los campos proporcionados
         update_values = {}
         for field, value in update_data.items():
             if hasattr(existing_customer, field) and value is not None:
@@ -229,7 +222,6 @@ class CustomerRepositoryImpl(CustomerRepository):
             await self.session.rollback()
             error_msg = str(e.orig).lower()
             
-            # Detectar qué constraint fue violada
             if 'auth_uid' in error_msg or 'customers_auth_uid_key' in error_msg:
                 raise CustomerAuthUidAlreadyExistsException(update_values.get('auth_uid', ''))
             elif 'ruc' in error_msg or 'customers_ruc_key' in error_msg:
@@ -239,7 +231,6 @@ class CustomerRepositoryImpl(CustomerRepository):
             elif 'username' in error_msg or 'customers_username_key' in error_msg:
                 raise CustomerUsernameAlreadyExistsException(update_values.get('username', ''))
             else:
-                # Error de integridad desconocido
                 raise
 
     async def delete(self, customer_id: UUID) -> bool:

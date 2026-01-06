@@ -15,12 +15,10 @@ class DeactivateUserUseCase:
     
     async def execute(self, user_id: UUID) -> UserResponse:
         """Ejecutar el use case"""
-        # Verificar que el usuario existe
         user = await self._user_repository.get_by_id(user_id)
         if not user:
             raise UserNotFoundException(f"user_id: {user_id}")
         
-        # Desactivar usuario
         deactivated_user = await self._user_repository.deactivate(user_id)
         
         if not deactivated_user:

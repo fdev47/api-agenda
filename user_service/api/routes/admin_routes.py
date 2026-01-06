@@ -23,7 +23,6 @@ async def assign_role(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Asignar rol a un usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     assign_role_use_case = container.assign_role_use_case()
     await assign_role_use_case.execute(user_id, role)
@@ -43,7 +42,6 @@ async def assign_permission(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Asignar permiso a un usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     assign_permission_use_case = container.assign_permission_use_case()
     await assign_permission_use_case.execute(user_id, permission)
@@ -62,7 +60,6 @@ async def get_user_roles(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Obtener roles de un usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     get_user_roles_use_case = container.get_user_roles_use_case()
     roles = await get_user_roles_use_case.execute(user_id)
@@ -79,7 +76,6 @@ async def activate_user(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Activar usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     activate_user_use_case = container.activate_user_use_case()
     user = await activate_user_use_case.execute(user_id)
@@ -101,7 +97,6 @@ async def deactivate_user(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Desactivar usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     deactivate_user_use_case = container.deactivate_user_use_case()
     user = await deactivate_user_use_case.execute(user_id)
@@ -123,7 +118,6 @@ async def delete_user_admin(
     db: AsyncSession = Depends(get_db_session)
 ):
     """Eliminar usuario (solo admin)"""
-    # Inyectar la sesión de base de datos en el contenedor
     container.db_session.override(db)
     delete_user_use_case = container.delete_user_use_case()
     success = await delete_user_use_case.execute(user_id)

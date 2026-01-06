@@ -14,7 +14,6 @@ class DeleteProfileUseCase:
     
     async def execute(self, profile_id: UUID) -> bool:
         """Ejecutar el use case"""
-        # Verificar que el perfil existe
         existing_profile = await self.profile_repository.get_by_id(profile_id)
         if not existing_profile:
             raise ProfileNotFoundException(str(profile_id))

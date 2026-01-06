@@ -16,7 +16,6 @@ class GetAddressUseCase:
     async def execute(self, address_id: UUID) -> AddressResponse:
         """Ejecutar el caso de uso"""
         try:
-            # Obtener dirección del repositorio
             address = await self.address_repository.get_by_id(address_id)
             
             if not address:

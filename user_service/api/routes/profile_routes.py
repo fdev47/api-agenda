@@ -24,7 +24,6 @@ async def create_profile(
 ):
     """Crear un nuevo perfil"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         create_use_case = container.create_profile_use_case()
         profile = await create_use_case.execute(request)
@@ -44,7 +43,6 @@ async def get_profile_by_id(
 ):
     """Obtener perfil por ID"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_profile_by_id_use_case()
         profile = await get_use_case.execute(profile_id)
@@ -70,7 +68,6 @@ async def list_profiles(
 ):
     """Listar perfiles"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         list_use_case = container.list_profiles_use_case()
         profiles = await list_use_case.execute(skip=skip, limit=limit)
@@ -96,7 +93,6 @@ async def update_profile(
 ):
     """Actualizar perfil"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         update_use_case = container.update_profile_use_case()
         profile = await update_use_case.execute(profile_id, request)
@@ -121,7 +117,6 @@ async def delete_profile(
 ):
     """Eliminar perfil"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         delete_use_case = container.delete_profile_use_case()
         success = await delete_use_case.execute(profile_id)

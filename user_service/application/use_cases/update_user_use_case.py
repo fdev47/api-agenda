@@ -16,12 +16,10 @@ class UpdateUserUseCase:
     
     async def execute(self, user_id: UUID, user_data: UpdateUserRequest) -> UserResponse:
         """Ejecutar el use case"""
-        # Verificar que el usuario existe
         existing_user = await self._user_repository.get_by_id(user_id)
         if not existing_user:
             raise UserNotFoundException(f"user_id: {user_id}")
         
-        # Actualizar usuario
         updated_user = await self._user_repository.update(user_id, user_data)
         
         if not updated_user:

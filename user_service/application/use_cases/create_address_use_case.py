@@ -18,7 +18,6 @@ class CreateAddressUseCase:
     async def execute(self, request: CreateAddressRequest) -> AddressCreatedResponse:
         """Ejecutar el caso de uso"""
         try:
-            # Crear entidad Address
             address = Address(
                 id=uuid4(),
                 street=request.street,
@@ -29,7 +28,6 @@ class CreateAddressUseCase:
                 additional_info=request.additional_info
             )
             
-            # Guardar en el repositorio
             created_address = await self.address_repository.create(address)
             
             return AddressCreatedResponse(

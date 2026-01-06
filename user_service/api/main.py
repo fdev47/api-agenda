@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
-# ⭐ CARGAR .env AL INICIO
+# Cargar .env al inicio
 load_dotenv()
 
 from commons.config import config
@@ -56,11 +56,11 @@ def create_user_app():
     # Crear aplicación usando factory común
     app = create_service_factory(
         service_config=service_config,
-        base_model=Base,  # ✅ Habilitar ORM con modelos de User Service
+        base_model=Base,  # Habilitar ORM
         routers=routers,
         custom_exception_handlers=custom_exception_handlers,
-        enable_auth=False,  # Deshabilitado para usar dependencias
-        enable_auto_tables=True  # ✅ Habilitar creación automática de tablas
+        enable_auth=False,
+        enable_auto_tables=True
     )
     
     return app

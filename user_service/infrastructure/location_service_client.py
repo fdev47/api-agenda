@@ -86,13 +86,13 @@ class LocationServiceClient:
     async def get_location_details(self, country_id: UUID, state_id: UUID, city_id: UUID) -> Dict[str, Any]:
         """Obtener detalles completos de ubicación"""
         try:
-            # Obtener todos los datos en paralelo
+            # Obtener todos los datos en concurrencia
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 country_url = f"{self.base_url}{self.api_prefix}/v1/countries/{country_id}"
                 state_url = f"{self.base_url}{self.api_prefix}/v1/states/{state_id}"
                 city_url = f"{self.base_url}{self.api_prefix}/v1/cities/{city_id}"
                 
-                # Hacer requests en paralelo
+                # Hacer requests en concurrencia
                 responses = await asyncio.gather(
                     client.get(country_url),
                     client.get(state_url),

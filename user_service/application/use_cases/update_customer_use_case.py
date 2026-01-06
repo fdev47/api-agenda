@@ -27,17 +27,13 @@ class UpdateCustomerUseCase:
     async def execute(self, customer_id: UUID, request: UpdateCustomerRequest) -> CustomerUpdatedResponse:
         """Ejecutar el caso de uso"""
         try:
-            # 1. Verificar que el customer existe
             existing_customer = await self.customer_repository.get_by_id(customer_id)
             if not existing_customer:
                 raise UserNotFoundException(f"Customer con ID {customer_id} no encontrado")
-            
-            # 2. Actualizar dirección si se proporciona
+
             if request.address:
-                # Obtener la dirección actual del customer
                 current_address = await self.address_repository.get_by_id(existing_customer.address_id)
                 if current_address:
-                    # Actualizar la dirección existente
                     current_address.street = request.address.street
                     current_address.city_id = request.address.city_id
                     current_address.state_id = request.address.state_id
@@ -46,9 +42,7 @@ class UpdateCustomerUseCase:
                     current_address.additional_info = request.address.additional_info
                     
                     await self.address_repository.update(current_address)
-                    print(f"✅ Dirección actualizada: {current_address.id}")
             
-            # 3. Actualizar customer
             update_data = request.model_dump(exclude_unset=True, exclude={'address'})
             if update_data:
                 updated_customer = await self.customer_repository.update(customer_id, update_data)
@@ -66,7 +60,6 @@ class UpdateCustomerUseCase:
             CustomerEmailAlreadyExistsException,
             CustomerUsernameAlreadyExistsException
         ):
-            # Re-lanzar las excepciones de duplicidad para que sean manejadas por la capa de API
             raise
         except UserException:
             raise

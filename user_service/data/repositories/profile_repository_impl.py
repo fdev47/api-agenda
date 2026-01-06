@@ -51,12 +51,11 @@ class ProfileRepositoryImpl(IProfileRepository):
         await self._session.commit()
         await self._session.refresh(profile_db)
         
-        # Crear una entidad Profile sin roles para evitar problemas de validación
         created_profile = Profile(
             id=profile_db.id,
             name=profile_db.name,
             description=profile_db.description,
-            roles=[]  # Lista vacía para evitar problemas de lazy loading
+            roles=[]
         )
         
         return created_profile
@@ -96,7 +95,6 @@ class ProfileRepositoryImpl(IProfileRepository):
         if not profile_db:
             raise ValueError(f"Perfil con ID {profile.id} no encontrado")
         
-        # Actualizar campos
         profile_db.name = profile.name
         profile_db.description = profile.description
         

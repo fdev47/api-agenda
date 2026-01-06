@@ -20,10 +20,7 @@ class AssignPermissionUseCase:
         if not user:
             raise UserNotFoundException(f"Usuario con ID {user_id} no encontrado")
         
-        # Asignar el permiso al usuario
-        # Nota: Esta implementación dependerá de cómo se manejen los permisos en tu sistema
-        # Por ahora, asumimos que se actualiza el usuario con el nuevo permiso
-        # En un sistema real, esto podría involucrar una tabla de permisos o un campo JSON
+        # Esto podría involucrar una tabla de permisos o un campo JSON, por ahora lo hacemos así
         if not hasattr(user, 'permissions'):
             user.permissions = []
         

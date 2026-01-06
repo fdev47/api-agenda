@@ -30,7 +30,6 @@ async def create_address(
 ):
     """Crear una nueva dirección"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         create_use_case = container.create_address_use_case()
         result = await create_use_case.execute(request)
@@ -44,7 +43,6 @@ async def create_address(
 async def get_addresses(db: AsyncSession = Depends(get_db_session)):
     """Obtener todas las direcciones"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         list_use_case = container.list_addresses_use_case()
         result = await list_use_case.execute()
@@ -59,7 +57,6 @@ async def get_address(
 ):
     """Obtener una dirección por ID"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         get_use_case = container.get_address_use_case()
         result = await get_use_case.execute(address_id)
@@ -77,7 +74,6 @@ async def update_address(
 ):
     """Actualizar una dirección"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         update_use_case = container.update_address_use_case()
         result = await update_use_case.execute(address_id, request)
@@ -96,7 +92,6 @@ async def delete_address(
 ):
     """Eliminar una dirección"""
     try:
-        # Inyectar la sesión de base de datos en el contenedor
         container.db_session.override(db)
         delete_use_case = container.delete_address_use_case()
         result = await delete_use_case.execute(address_id)

@@ -17,11 +17,9 @@ class UpdateRoleUseCase:
     
     async def execute(self, role_id: UUID, request: UpdateRoleRequest) -> Optional[Role]:
         """Ejecutar el use case"""
-        # Verificar que el rol existe
         existing_role = await self.role_repository.get_by_id(role_id)
         if not existing_role:
             raise RoleNotFoundException(str(role_id))
         
-        # Actualizar rol
         updated_role = await self.role_repository.update(existing_role)
         return updated_role 

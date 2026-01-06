@@ -28,8 +28,6 @@ class AssignRoleUseCase:
             raise RoleNotFoundException(f"Rol '{role_name}' no encontrado")
         
         # Asignar el rol al usuario
-        # Nota: Esta implementación dependerá de cómo se manejen los roles en tu sistema
-        # Por ahora, asumimos que se actualiza el usuario con el nuevo rol
         user.role_id = role.id
         await self.user_repository.update(user)
         

@@ -16,12 +16,10 @@ class DeleteAddressUseCase:
     async def execute(self, address_id: UUID) -> AddressDeletedResponse:
         """Ejecutar el caso de uso"""
         try:
-            # Verificar que la dirección existe
             existing_address = await self.address_repository.get_by_id(address_id)
             if not existing_address:
                 raise UserNotFoundException(f"Dirección con ID {address_id} no encontrada")
             
-            # Eliminar del repositorio
             success = await self.address_repository.delete(address_id)
             
             if not success:

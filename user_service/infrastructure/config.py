@@ -10,7 +10,7 @@ class UserServiceSettings(BaseSettings):
     SERVICE_VERSION: str = "1.0.0"
     SERVICE_PORT: int = 8001
     
-    # Configuraciones específicas del servicio de usuarios
+    # Configuraciones específicas del servicio
     USER_DEFAULT_ROLE: str = "user"
     USER_ACTIVATION_REQUIRED: bool = False
     
@@ -18,7 +18,4 @@ class UserServiceSettings(BaseSettings):
         env_file = ".env"
 
 # Instancia de configuración específica del servicio
-user_settings = UserServiceSettings()
-
-# Importar configuración común
-from commons.config import settings, db_settings, service_settings 
+user_settings = UserServiceSettings() 

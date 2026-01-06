@@ -26,7 +26,6 @@ class CreateCustomerUseCase:
     async def execute(self, request: CreateCustomerRequest) -> CustomerResponse:
         """Ejecutar el caso de uso"""
         try:
-            # 1. Crear la dirección
             address = Address(
                 id=uuid4(),
                 street=request.address.street,
@@ -38,9 +37,7 @@ class CreateCustomerUseCase:
             )
             
             created_address = await self.address_repository.create(address)
-            print(f"✅ Dirección creada: {created_address.id}")
             
-            # 2. Crear el customer
             customer = Customer(
                 id=uuid4(),
                 auth_uid=request.auth_uid,
@@ -57,7 +54,6 @@ class CreateCustomerUseCase:
             
             created_customer = await self.customer_repository.create(customer)
             
-            # 3. Retornar CustomerResponse completo
             return CustomerResponse.model_validate(created_customer)
 
         except (
@@ -66,7 +62,6 @@ class CreateCustomerUseCase:
             CustomerEmailAlreadyExistsException,
             CustomerUsernameAlreadyExistsException
         ):
-            # Re-lanzar las excepciones de duplicidad para que sean manejadas por la capa de API
             raise
         except UserException:
             raise

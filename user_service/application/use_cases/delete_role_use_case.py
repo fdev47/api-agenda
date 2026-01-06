@@ -14,7 +14,7 @@ class DeleteRoleUseCase:
     
     async def execute(self, role_id: UUID) -> bool:
         """Ejecutar el use case"""
-        # Verificar que el rol existe
+
         existing_role = await self.role_repository.get_by_id(role_id)
         if not existing_role:
             raise RoleNotFoundException(str(role_id))

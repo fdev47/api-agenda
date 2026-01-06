@@ -14,10 +14,8 @@ class DeleteUserUseCase:
     
     async def execute(self, user_id: UUID) -> bool:
         """Ejecutar el use case"""
-        # Verificar que el usuario existe
         user = await self._user_repository.get_by_id(user_id)
         if not user:
             raise UserNotFoundException(f"user_id: {user_id}")
         
-        # Eliminar usuario
         return await self._user_repository.delete(user_id) 

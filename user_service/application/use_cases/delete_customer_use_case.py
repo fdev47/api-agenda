@@ -26,9 +26,8 @@ class DeleteCustomerUseCase:
             if customer.address_id:
                 try:
                     await self.address_repository.delete(customer.address_id)
-                    print(f"✅ Dirección eliminada: {customer.address_id}")
                 except Exception as e:
-                    print(f"⚠️  Error eliminando dirección: {e}")
+                    print(f"Error eliminando dirección: {e}")
             
             # 3. Eliminar el customer
             await self.customer_repository.delete(customer_id)
