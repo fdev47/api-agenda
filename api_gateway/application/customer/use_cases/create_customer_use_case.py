@@ -63,7 +63,7 @@ class CreateCustomerUseCase:
                 "email": request.email,
                 "password": request.password,
                 "display_name": request.company_name,
-                "phone_number": request.phone,
+                "phone_number": None,
                 "two_factor_enabled": request.two_factor_enabled,
                 "send_email_verification": request.send_email_verification
             }

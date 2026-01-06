@@ -57,8 +57,8 @@ class UpdateUserUseCase:
     
     def _needs_firebase_update(self, request: UpdateUserRequest) -> bool:
         """Determinar si se necesita actualizar Firebase"""
-        # Solo actualizar Firebase si se cambia email o phone
-        return request.email is not None or request.phone is not None or request.cellphone_number is not None
+        # Solo actualizar Firebase si se cambia email
+        return request.email is not None
     
     async def _update_firebase_user(self, auth_uid: str, request: UpdateUserRequest, access_token: str):
         """Actualizar usuario en Firebase"""
@@ -68,15 +68,6 @@ class UpdateUserUseCase:
                 
                 if request.email is not None:
                     firebase_data["email"] = request.email
-                
-                if request.phone is not None or request.cellphone_number is not None:
-                    # Determinar el número de teléfono
-                    if request.cellphone_number and request.cellphone_country_code:
-                        firebase_data["phone_number"] = f"{request.cellphone_country_code}{request.cellphone_number}"
-                    elif request.cellphone_number:
-                        firebase_data["phone_number"] = request.cellphone_number
-                    elif request.phone:
-                        firebase_data["phone_number"] = request.phone
                 
                 # Solo actualizar si hay datos para Firebase
                 if firebase_data:

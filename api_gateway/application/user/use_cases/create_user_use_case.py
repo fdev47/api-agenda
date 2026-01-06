@@ -59,19 +59,12 @@ class CreateUserUseCase:
         async with APIClient(self.auth_service_url, access_token) as client:
             # Preparar datos para Firebase
             display_name = f"{request.first_name or ''} {request.last_name or ''}".strip()
-            phone_number = None
-            if request.cellphone_number and request.cellphone_country_code:
-                phone_number = f"{request.cellphone_country_code}{request.cellphone_number}"
-            elif request.cellphone_number:
-                phone_number = request.cellphone_number
-            elif request.phone:
-                phone_number = request.phone
             
             firebase_data = {
                 "email": request.email,
                 "password": request.password,
                 "display_name": display_name,
-                "phone_number": phone_number,
+                "phone_number": None,
                 "two_factor_enabled": request.two_factor_enabled,
                 "send_email_verification": request.send_email_verification
             }
